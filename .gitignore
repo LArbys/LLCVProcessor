@@ -1,0 +1,6 @@
+*.txt
+*.root
+*.pyc
+*.ipynb
+*pylard*
+.depend
