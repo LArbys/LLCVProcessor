@@ -39,11 +39,12 @@ namespace llcv {
     auto ev_hit_in  = (larlite::event_hit*)     sto.get_data(larlite::data::kHit, "gaushit");
     LLCV_DEBUG() << "GOT: " << ev_hit_in->size() << " gaushit" << std::endl;
         
-    auto ev_pgraph  = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph,      "test");
-    auto ev_pixel2d = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"test_ctor");
+    auto ev_pgraph  = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph,      "test_nue");
+    auto ev_pixel2d = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"test_nue_ctor");
 
     LLCV_DEBUG() << "GOT: " << ev_pgraph->PGraphArray().size() << " vertices" << std::endl;
-    LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DClusterArray().size() << " contours" << std::endl;
+    LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DArray().size() << " pixel array" << std::endl;
+    LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DClusterArray().size() << " pixel cluster array" << std::endl;
 
     _HandShaker.pixel_distance_threshold(1.);
     _HandShaker.set_larlite_pointers(ev_pfpart, ev_vertex,
@@ -65,3 +66,4 @@ namespace llcv {
 }
 
 #endif
+	
