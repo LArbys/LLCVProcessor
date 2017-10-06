@@ -1,17 +1,21 @@
 import os,sys
 
-if len(sys.argv != 3):
+if len(sys.argv) != 5:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
+    print "MCINFO_FILE = str(sys.argv[3])"
+    print "OUTPUT_DIR  = str(sys.argv[4])"
     print 
     sys.exit(1)
 
 
 PGRAPH_FILE = str(sys.argv[1])
 HIT_FILE    = str(sys.argv[2])
+MCINFO_FILE = str(sys.argv[3])
+OUTPUT_DIR  = str(sys.argv[4])
 
-num = int(PGRAPH_FILE.split(".")[0].split("_")[-1])
+num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
 import ROOT
 from larlitecv import larlitecv
@@ -36,9 +40,12 @@ proc.add_ll_ana(dlshr3d)
 proc.configure(os.path.join(BASE_PATH,"config.cfg"))
 
 proc.add_lcv_input_file(PGRAPH_FILE)
-proc.add_ll_input_file(HIT_FILE)
 
-proc.set_output_ll_name("shower_reco_out_%d.root" % num)
+proc.add_ll_input_file(HIT_FILE)
+if MCINFO_FILE != "":
+    proc.add_ll_input_file(MCINFO_FILE)
+
+proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"shower_reco_out_%d.root" % num))
 
 proc.initialize()
 
@@ -49,4 +56,4 @@ proc.batch_process_lcv()
 
 proc.finalize()
 
-sys.exit(1)
+sys.exit(0)
