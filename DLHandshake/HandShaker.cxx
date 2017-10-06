@@ -261,7 +261,7 @@ namespace llcv {
 
 	//assert (child_id < _ptype_v.size());
 	//larlite::pfpart child_pfpart(_ptype_v.at(child_id),
-	larlite::pfpart child_pfpart(11,
+	larlite::pfpart child_pfpart(roi.PdgCode(),
 				     child_id,
 				     parent_id,
 				     empty_daughters);
