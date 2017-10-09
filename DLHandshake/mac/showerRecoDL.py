@@ -32,7 +32,8 @@ def getShowerRecoAlgModular():
     angle3D = showerreco.Angle3DFromVtxQweighted()
     angle3D.setVerbosity(True)
     
-    startPt = showerreco.YPlaneStartPoint3D()
+    # startPt = showerreco.YPlaneStartPoint3D()
+    startPt = showerreco.VertexIsStartPoint3D()
     startPt.setVerbosity(True)
 
     energy = showerreco.LinearEnergy()
@@ -59,6 +60,7 @@ def getShowerRecoAlgModular():
 
     dqdx = showerreco.dQdxModule()
     dqdx.setTrunkLength(3.)
+
     # dqdx.SetFillTree(True)
     
     # shrFilter = showerreco.FilterShowers()
@@ -69,10 +71,13 @@ def getShowerRecoAlgModular():
     alg.AddShowerRecoModule(angle3D)
     #alg.AddShowerRecoModule( showerreco.StartPoint3DModule() )
     #alg.AddShowerRecoModule( showerreco.NearestStartPoint3D() )
-    alg.AddShowerRecoModule( startPt )
-    alg.AddShowerRecoModule( dqdx )
+
+    # no longer needed... proto shower stage takes care
+    alg.AddShowerRecoModule(startPt)
+    alg.AddShowerRecoModule(dqdx)
     alg.AddShowerRecoModule(energy)
-    alg.AddShowerRecoModule( showerreco.FillLength() )
+    alg.AddShowerRecoModule(showerreco.FillLength())
+
     #alg.AddShowerRecoModule( shrFilter )
     
     alg.PrintModuleList()
