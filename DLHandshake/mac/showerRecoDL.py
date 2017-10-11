@@ -76,7 +76,7 @@ def getShowerRecoAlgModular():
     alg.AddShowerRecoModule(startPt)
     alg.AddShowerRecoModule(dqdx)
     alg.AddShowerRecoModule(energy)
-    alg.AddShowerRecoModule(showerreco.FillLength())
+    # alg.AddShowerRecoModule(showerreco.FillLength())
 
     #alg.AddShowerRecoModule( shrFilter )
     
