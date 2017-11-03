@@ -36,17 +36,13 @@ proc.add_llcv_ana(dlhs)
 from showerRecoDL import DLShowerReco3D
 dlshr3d = DLShowerReco3D()
 proc.add_ll_ana(dlshr3d)
-
 proc.configure(os.path.join(BASE_PATH,"config.cfg"))
-
 proc.add_lcv_input_file(PGRAPH_FILE)
-
 proc.add_ll_input_file(HIT_FILE)
 if MCINFO_FILE != "INVALID":
     proc.add_ll_input_file(MCINFO_FILE)
 
 proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"shower_reco_out_%d.root" % num))
-
 proc.initialize()
 
 #

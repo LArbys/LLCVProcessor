@@ -17,7 +17,7 @@ def getShowerRecoAlgModular():
     # and if you are developing you ought to be updating it here!
     
     alg = showerreco.ShowerRecoAlgModular()
-    alg.SetDebug(True)
+    alg.SetDebug(False)
     alg.SetVerbose(False)
 
     # filteralgo = showerreco.FilterPFPart()
@@ -30,14 +30,14 @@ def getShowerRecoAlgModular():
     # angle3D.setVerbosity(True)
 
     angle3D = showerreco.Angle3DFromVtxQweighted()
-    angle3D.setVerbosity(True)
+    angle3D.setVerbosity(False)
     
     # startPt = showerreco.YPlaneStartPoint3D()
     startPt = showerreco.VertexIsStartPoint3D()
-    startPt.setVerbosity(True)
+    startPt.setVerbosity(False)
 
     energy = showerreco.LinearEnergy()
-    energy.setVerbosity(True)
+    energy.setVerbosity(False)
 
     # implement position-dependent calibration
     energy.CreateResponseMap(20)
@@ -76,7 +76,7 @@ def getShowerRecoAlgModular():
     alg.AddShowerRecoModule(startPt)
     alg.AddShowerRecoModule(dqdx)
     alg.AddShowerRecoModule(energy)
-    # alg.AddShowerRecoModule(showerreco.FillLength())
+    alg.AddShowerRecoModule(showerreco.EstimateLength())
 
     #alg.AddShowerRecoModule( shrFilter )
     
