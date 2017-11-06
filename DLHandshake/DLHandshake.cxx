@@ -39,8 +39,8 @@ namespace llcv {
     auto ev_hit_in  = (larlite::event_hit*)     sto.get_data(larlite::data::kHit, "gaushit");
     LLCV_DEBUG() << "GOT: " << ev_hit_in->size() << " gaushit" << std::endl;
         
-    auto ev_pgraph  = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph,      "test_nue");
-    auto ev_pixel2d = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"test_nue_ctor");
+    auto ev_pgraph  = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph,      "test");
+    auto ev_pixel2d = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"test_ctor");
 
     LLCV_DEBUG() << "GOT: " << ev_pgraph->PGraphArray().size() << " vertices" << std::endl;
     LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DArray().size() << " pixel array" << std::endl;
