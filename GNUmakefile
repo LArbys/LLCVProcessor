@@ -1,4 +1,4 @@
-SUBDIRS :=  Base DLHandshake
+SUBDIRS :=  Base DLHandshake RecoTruthMatch
 
 .phony: all clean
 
