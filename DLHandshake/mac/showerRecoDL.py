@@ -85,7 +85,7 @@ def getShowerRecoAlgModular():
     
     return alg
 
-def DefaultShowerReco3D(req_pdg=True):
+def DefaultShowerReco3D(req_pdg):
     
     # Create analysis unit
     ana_unit = fmwk.ShowerReco3D()
@@ -99,7 +99,7 @@ def DefaultShowerReco3D(req_pdg=True):
 
     return ana_unit
 
-def DLShowerReco3D(req_pdg=True):
+def DLShowerReco3D(req_pdg):
     suffix = "josh"
     shower_ana_unit=DefaultShowerReco3D(req_pdg)
     print "Load DefaultShowerReco3D @ ",shower_ana_unit

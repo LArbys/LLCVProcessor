@@ -1,11 +1,12 @@
 import os,sys
 
-if len(sys.argv) < 5:
+if len(sys.argv) != 6:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
     print "MCINFO_FILE = str(sys.argv[3])"
     print "OUTPUT_DIR  = str(sys.argv[4])"
+    print "REQPDG      = bool(sys.argv[5])"
     print 
     sys.exit(1)
 
@@ -14,10 +15,7 @@ PGRAPH_FILE = str(sys.argv[1])
 HIT_FILE    = str(sys.argv[2])
 MCINFO_FILE = str(sys.argv[3])
 OUTPUT_DIR  = str(sys.argv[4])
-
-REQPDG = True
-if len(sys.argv)==6:
-    REQPDG = bool(sys.argv[5])
+REQPDG      = bool(sys.argv[5])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
