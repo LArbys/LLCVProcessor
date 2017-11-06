@@ -1,6 +1,6 @@
 import os,sys
 
-if len(sys.argv) != 5:
+if len(sys.argv) < 5:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
@@ -14,6 +14,10 @@ PGRAPH_FILE = str(sys.argv[1])
 HIT_FILE    = str(sys.argv[2])
 MCINFO_FILE = str(sys.argv[3])
 OUTPUT_DIR  = str(sys.argv[4])
+
+REQPDG = True
+if len(sys.argv)==6:
+    REQPDG = bool(sys.argv[5])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
@@ -34,7 +38,7 @@ dlhs = llcv.DLHandshake()
 proc.add_llcv_ana(dlhs)
 
 from showerRecoDL import DLShowerReco3D
-dlshr3d = DLShowerReco3D()
+dlshr3d = DLShowerReco3D(REQPDG)
 proc.add_ll_ana(dlshr3d)
 proc.configure(os.path.join(BASE_PATH,"config.cfg"))
 proc.add_lcv_input_file(PGRAPH_FILE)

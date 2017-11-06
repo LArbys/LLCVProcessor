@@ -42,7 +42,8 @@ def getShowerRecoAlgModular():
     # implement position-dependent calibration
     energy.CreateResponseMap(20)
     dQdsAVG = 248.
-    fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
+    #fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
+    fin = open('/home/vgenty/dqds_mc_xyz.txt','r')
     for line in fin:
         words = line.split()
         x = float(words[0])
@@ -84,33 +85,23 @@ def getShowerRecoAlgModular():
     
     return alg
 
-def DefaultShowerReco3D():
+def DefaultShowerReco3D(req_pdg=True):
     
     # Create analysis unit
     ana_unit = fmwk.ShowerReco3D()
     
-    # require PDG == 11 for PFParticles
-    ana_unit.SetRequirePDG11(True)
+    # require PDG == 11 for PFParticles (?)
+    ana_unit.SetRequirePDG11(req_pdg)
     
     # Attach shower reco alg
     sralg = getShowerRecoAlgModular()
-    # sralg.SetDebug()
-    # sralg.Verbose(False)
-    # sralg.Verbose(True)
-    # sralg.SetUseArea(True)
-
-    # Attach calo alg
-    # from ROOT import calo
-    # calg = calo.CalorimetryAlg()
-    # sralg.CaloAlgo(calg)
-    #sralg.SetUseModBox(True)
     ana_unit.AddShowerAlgo(sralg)
 
     return ana_unit
 
-def DLShowerReco3D():
+def DLShowerReco3D(req_pdg=True):
     suffix = "josh"
-    shower_ana_unit=DefaultShowerReco3D()
+    shower_ana_unit=DefaultShowerReco3D(req_pdg)
     print "Load DefaultShowerReco3D @ ",shower_ana_unit
 
     # set ProtoShower Algo to go from data-products to a ProtoShower object
