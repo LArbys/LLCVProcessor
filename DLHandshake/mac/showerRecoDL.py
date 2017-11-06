@@ -101,8 +101,9 @@ def DefaultShowerReco3D(req_pdg):
 
 def DLShowerReco3D(req_pdg):
     suffix = "josh"
-    shower_ana_unit=DefaultShowerReco3D(req_pdg)
     print "Load DefaultShowerReco3D @ ",shower_ana_unit
+    shower_ana_unit=DefaultShowerReco3D(req_pdg)
+    print "... with req_pdg=%d" % int(req_pdg)
 
     # set ProtoShower Algo to go from data-products to a ProtoShower object
     protoshoweralg = protoshower.ProtoShowerAlgDL()
