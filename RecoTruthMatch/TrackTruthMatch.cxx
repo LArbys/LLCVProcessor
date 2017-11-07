@@ -13,11 +13,21 @@
 #include "DataFormat/track.h"
 
 #include <array>
+#include <cassert>
 
 namespace llcv {
 
-  void TrackTruthMatch::configure(const larcv::PSet&) {
+  void TrackTruthMatch::configure(const larcv::PSet& cfg) {
     LLCV_DEBUG() << "start" << std::endl;
+
+    _trk_reco_prod = cfg.get<std::string>("TrackRecoProducer");
+    _adc_img_prod  = cfg.get<std::string>("ADCImageProducer");
+    _seg_img_prod  = cfg.get<std::string>("TrueImageProducer");
+
+
+    LLCV_INFO() << "TrackRecoProducer: " << _trk_reco_prod << std::endl;
+    LLCV_INFO() << "ADCImageProducer:  " << _adc_img_prod << std::endl;
+    LLCV_INFO() << "TrueImageProducer: " << _seg_img_prod << std::endl;
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -50,22 +60,28 @@ namespace llcv {
   }
 
   bool TrackTruthMatch::process(larcv::IOManager& mgr, larlite::storage_manager& sto) {
-    const auto ev_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"trackReco");
-    const auto ev_adc_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,"wire");
-    const auto ev_seg_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,"segment");
+
+    if (_seg_img_prod.empty()) return true;
+
+    assert(!_trk_reco_prod.empty());
+    assert(!_adc_img_prod.empty());
+    
+    const auto ev_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_trk_reco_prod);
+    const auto ev_adc_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_adc_img_prod);
+    const auto ev_seg_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_seg_img_prod);
 
     LLCV_DEBUG() << "LC RSE=(" << ev_seg_img->run() << "," << ev_seg_img->subrun() << "," << ev_seg_img->event() << ") " 
 		 << "& LL RSE=(" << sto.run_id()  << "," << sto.subrun_id() << "," << sto.event_id() << ")" << std::endl;
 
     LLCV_DEBUG() << "GOT: " << ev_vertex->size() << " vertices" << std::endl;
     
-    _run    = (int) ev_seg_img->run();
-    _subrun = (int) ev_seg_img->subrun();
-    _event  = (int) ev_seg_img->event();
+    _run    = (int) ev_adc_img->run();
+    _subrun = (int) ev_adc_img->subrun();
+    _event  = (int) ev_adc_img->event();
     _entry  = (int) mgr.current_entry();
     
     if (ev_vertex->empty()) return true;
-    
+
     larlite::event_track *ev_track = nullptr;
     auto const& ass_track_vv = sto.find_one_ass(ev_vertex->id(), ev_track, ev_vertex->name());
     if (!ev_track) return true;

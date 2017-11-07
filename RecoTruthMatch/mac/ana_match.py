@@ -1,17 +1,20 @@
 import os,sys
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
     print 
-    print "SSNET_FILE  = str(sys.argv[1])"
-    print "TRACK_FILE  = str(sys.argv[2])"
-    print "OUTPUT_DIR  = str(sys.argv[3])"
+    print 
+    print "CONFIG_FILE = str(sys.argv[1])"
+    print "SSNET_FILE  = str(sys.argv[2])"
+    print "TRACK_FILE  = str(sys.argv[3])"
+    print "OUTPUT_DIR  = str(sys.argv[4])"
     print 
     sys.exit(1)
 
 
-SSNET_FILE = str(sys.argv[1])
-TRACK_FILE = str(sys.argv[2])
-OUTPUT_DIR = str(sys.argv[3])
+CONFIG_FILE = str(sys.argv[1])
+SSNET_FILE  = str(sys.argv[2])
+TRACK_FILE  = str(sys.argv[3])
+OUTPUT_DIR  = str(sys.argv[4])
 
 num = int(os.path.basename(SSNET_FILE).split(".")[0].split("_")[-1])
 
@@ -31,7 +34,7 @@ proc = llcv.Processor()
 track_match = llcv.TrackTruthMatch()
 proc.add_llcv_ana(track_match)
 
-proc.configure(os.path.join(BASE_PATH,"config.cfg"))
+proc.configure(CONFIG_FILE)
 proc.dataco().set_outputfile(os.path.join(OUTPUT_DIR,"track_truth_match_%d.root" % num),"larcv")
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_ll_input_file(TRACK_FILE)

@@ -12,12 +12,17 @@ namespace llcv {
   TrackTruthMatch(const std::string name="TrackTruthMatch") : AnaBase(name) {}
     ~TrackTruthMatch() {}
 
-    void configure(const larcv::PSet&);
+    void configure(const larcv::PSet& cfg);
     void initialize();
     bool process(larcv::IOManager& mgr, larlite::storage_manager& sto);
     void finalize();
 
   private:
+
+    std::string _trk_reco_prod;
+    std::string _adc_img_prod; 
+    std::string _seg_img_prod; 
+
     TTree* _tree;
     
     int _run;
