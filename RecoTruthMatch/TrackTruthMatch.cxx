@@ -113,7 +113,7 @@ namespace llcv {
 
 	auto& pt_type_v = _trk_type_vv[aid];
 	pt_type_v.clear();
-	pt_type_v.resize(larcv::kROITypeMax+1,0);
+	pt_type_v.resize(((int)larcv::kROITypeMax)+1,0);
 
 	LLCV_DEBUG() << "@track=" << aid << " sz=" << track.NumberTrajectoryPoints() << std::endl;
 
@@ -127,7 +127,7 @@ namespace llcv {
 	    const auto& seg_img = ev_seg_img->Image2DArray()[plane];
 	    xpixel = kINVALID_DOUBLE;
 	    ypixel = kINVALID_DOUBLE;
-	    Project3D(meta_v[plane],vertex.X(),vertex.Y(),vertex.Z(),0.0,plane,xpixel,ypixel);
+	    Project3D(meta_v[plane],pt.X(),pt.Y(),pt.Z(),0.0,plane,xpixel,ypixel);
 	    int xx = (int)(xpixel+0.5);
 	    int yy = (int)(ypixel+0.5);
 	    yy = seg_img.meta().rows() - yy - 1;
