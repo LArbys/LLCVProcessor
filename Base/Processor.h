@@ -78,7 +78,6 @@ namespace llcv {
 
   private:
     bool _batch_process(const std::string& ftype);
-    
 
   };
 }

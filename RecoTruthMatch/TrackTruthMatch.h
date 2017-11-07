@@ -18,8 +18,18 @@ namespace llcv {
     void finalize();
 
   private:
-
+    TTree* _tree;
     
+    int _run;
+    int _subrun;
+    int _event;
+    int _vtxid;
+    int _ntracks;
+    std::vector<int> _npts_v;
+    std::vector<std::vector<int> > _pt_type_vv;
+
+    void ClearVertex();
+      
   };
 
 }

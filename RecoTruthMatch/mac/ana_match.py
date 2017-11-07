@@ -32,10 +32,9 @@ track_match = llcv.TrackTruthMatch()
 proc.add_llcv_ana(track_match)
 
 proc.configure(os.path.join(BASE_PATH,"config.cfg"))
-
+proc.dataco().set_outputfile(os.path.join(OUTPUT_DIR,"track_truth_match_%d.root" % num),"larcv")
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_ll_input_file(TRACK_FILE)
-
 proc.initialize()
 
 #

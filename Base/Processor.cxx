@@ -41,7 +41,6 @@ namespace llcv {
     LLCV_INFO() << "start" << std::endl;
     _dataco.initialize();
 
-    
     for(auto ptr : _llcv_ana_v)
       ptr->initialize();
 
