@@ -26,7 +26,8 @@ namespace llcv {
     int _vtxid;
     int _ntracks;
     std::vector<int> _npts_v;
-    std::vector<std::vector<int> > _pt_type_vv;
+    std::vector<int> _trk_type_v;
+    std::vector<std::vector<int> > _trk_type_vv;
 
     void ClearVertex();
       
