@@ -28,16 +28,30 @@ namespace llcv {
     _tree->Branch("run"    , &_run    , "run/I");
     _tree->Branch("subrun" , &_subrun , "subrun/I");
     _tree->Branch("event"  , &_event  , "event/I");
+    _tree->Branch("entry"  , &_entry  , "entry/I");
     _tree->Branch("vtxid"  , &_vtxid  , "vtxid/I");
     _tree->Branch("ntracks", &_ntracks, "ntracks/I");
+
+    _tree->Branch("unknownfrac_v" , &_unknownfrac_v);
+    _tree->Branch("electronfrac_v", &_electronfrac_v);
+    _tree->Branch("gammafrac_v"   , &_gammafrac_v);
+    _tree->Branch("pizerofrac_v"  , &_pizerofrac_v);
+    _tree->Branch("muonfrac_v"    , &_muonfrac_v);
+    _tree->Branch("kminusfrac_v"  , &_kminusfrac_v);
+    _tree->Branch("piminusfrac_v" , &_piminusfrac_v);
+    _tree->Branch("protonfrac_v"  , &_protonfrac_v);
+
+    _tree->Branch("npx_v"  , &_npx_v);
     _tree->Branch("npts_v" , &_npts_v);
     _tree->Branch("trk_type_v", &_trk_type_v);
     _tree->Branch("trk_type_vv", &_trk_type_vv);
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
   bool TrackTruthMatch::process(larcv::IOManager& mgr, larlite::storage_manager& sto) {
     const auto ev_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"trackReco");
+    const auto ev_adc_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,"wire");
     const auto ev_seg_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,"segment");
 
     LLCV_DEBUG() << "LC RSE=(" << ev_seg_img->run() << "," << ev_seg_img->subrun() << "," << ev_seg_img->event() << ") " 
@@ -45,9 +59,10 @@ namespace llcv {
 
     LLCV_DEBUG() << "GOT: " << ev_vertex->size() << " vertices" << std::endl;
     
-    _run    = ev_seg_img->run();
-    _subrun = ev_seg_img->subrun();
-    _event  = ev_seg_img->event();
+    _run    = (int) ev_seg_img->run();
+    _subrun = (int) ev_seg_img->subrun();
+    _event  = (int) ev_seg_img->event();
+    _entry  = (int) mgr.current_entry();
     
     if (ev_vertex->empty()) return true;
     
@@ -70,9 +85,21 @@ namespace llcv {
 
       _vtxid = vtx_id;
       _ntracks = (int)ass_track_v.size();
-      _npts_v.resize(_ntracks);
+
+      _unknownfrac_v.resize(_ntracks);
+      _electronfrac_v.resize(_ntracks);
+      _gammafrac_v.resize(_ntracks);
+      _pizerofrac_v.resize(_ntracks);
+      _muonfrac_v.resize(_ntracks);
+      _kminusfrac_v.resize(_ntracks);
+      _piminusfrac_v.resize(_ntracks);
+      _protonfrac_v.resize(_ntracks);
+      _npx_v.resize(_ntracks);      
+      _npts_v.resize(_ntracks);      
       _trk_type_v.resize(_ntracks);
       _trk_type_vv.resize(_ntracks);
+      
+
 
       LLCV_DEBUG() << "@vtx_id=" << vtx_id << std::endl;
       LLCV_DEBUG() << "..." << ass_track_vv[vtx_id].size() << " associated tracks" << std::endl;
@@ -82,6 +109,8 @@ namespace llcv {
 	const auto& track = ev_track->at(assid);
 
 	_npts_v[aid] = track.NumberTrajectoryPoints();
+	_npx_v[aid] = 0;
+
 	auto& pt_type_v = _trk_type_vv[aid];
 	pt_type_v.clear();
 	pt_type_v.resize(larcv::kROITypeMax+1,0);
@@ -94,27 +123,58 @@ namespace llcv {
 	  LLCV_DEBUG() << "@pid: "<<pid<<"=(" << pt.X() << ","  << pt.Y() << "," << pt.Z() << ")" << std::endl;
 
 	  for(size_t plane=0; plane<3; ++plane) {
-	    const auto& plane_img = ev_seg_img->Image2DArray()[plane];
+	    const auto& adc_img = ev_adc_img->Image2DArray()[plane];
+	    const auto& seg_img = ev_seg_img->Image2DArray()[plane];
 	    xpixel = kINVALID_DOUBLE;
 	    ypixel = kINVALID_DOUBLE;
 	    Project3D(meta_v[plane],vertex.X(),vertex.Y(),vertex.Z(),0.0,plane,xpixel,ypixel);
 	    int xx = (int)(xpixel+0.5);
 	    int yy = (int)(ypixel+0.5);
-	    yy = plane_img.meta().rows() - yy - 1;
-	    float pixel_type = plane_img.pixel(yy,xx);
+	    yy = seg_img.meta().rows() - yy - 1;
+	    float pixel_value = adc_img.pixel(yy,xx);
+	    if(pixel_value==0) continue;
+	    float pixel_type  = seg_img.pixel(yy,xx);
 	    pt_type_v.at((size_t)pixel_type) += 1;
-
+	    _npx_v[aid] += 1;
 	    LLCV_DEBUG() << "p:" << plane << "(" << yy << "," << xx << ")=" << (size_t)pixel_type << std::endl;
-
 	  } // end plane
 	} // end 3D point
 
 	auto res_iter = std::max_element(std::begin(pt_type_v), std::end(pt_type_v));
 	auto res_loc  = std::distance(std::begin(pt_type_v), res_iter);
 
+	auto& unknownfrac  = _unknownfrac_v[aid];
+	auto& electronfrac = _electronfrac_v[aid];
+	auto& gammafrac    = _gammafrac_v[aid];
+	auto& pizerofrac   = _pizerofrac_v[aid];
+	auto& muonfrac     = _muonfrac_v[aid];
+	auto& kminusfrac   = _kminusfrac_v[aid];
+	auto& piminusfrac  = _piminusfrac_v[aid];
+	auto& protonfrac   = _protonfrac_v[aid];
+
+	unknownfrac  = 0.0;
+	electronfrac = 0.0;
+	gammafrac    = 0.0;
+	pizerofrac   = 0.0;
+	muonfrac     = 0.0;
+	kminusfrac   = 0.0;
+	piminusfrac  = 0.0;
+	protonfrac   = 0.0;
+	
+	float npixels = (float) _npx_v[aid];
+	if (npixels) {
+	  unknownfrac  = (float) pt_type_v.at(0) / npixels;
+	  electronfrac = (float) pt_type_v.at(3) / npixels;
+	  gammafrac    = (float) pt_type_v.at(4) / npixels;
+	  pizerofrac   = (float) pt_type_v.at(5) / npixels;
+	  muonfrac     = (float) pt_type_v.at(6) / npixels;
+	  kminusfrac   = (float) pt_type_v.at(7) / npixels;
+	  piminusfrac  = (float) pt_type_v.at(8) / npixels;
+	  protonfrac   = (float) pt_type_v.at(9) / npixels;
+	}
 	_trk_type_v[aid] = (int)res_loc;
 
-      } // end track
+      } // End track
 
       _tree->Fill();
     } // end vertex
@@ -130,11 +190,22 @@ namespace llcv {
   }
 
   void TrackTruthMatch::ClearVertex() {
-    _vtxid   = larcv::kINVALID_INT;
-    _ntracks = larcv::kINVALID_INT;
+    _vtxid   = -1.0*larcv::kINVALID_INT;
+    _ntracks = -1.0*larcv::kINVALID_INT;
+
+    _npx_v.clear();
     _npts_v.clear();
     _trk_type_v.clear();
     _trk_type_vv.clear();
+
+    _unknownfrac_v.clear(); 
+    _electronfrac_v.clear();
+    _gammafrac_v.clear(); 
+    _pizerofrac_v.clear(); 
+    _muonfrac_v.clear(); 
+    _kminusfrac_v.clear(); 
+    _piminusfrac_v.clear();
+    _protonfrac_v.clear(); 
   }
 
 }

@@ -23,8 +23,20 @@ namespace llcv {
     int _run;
     int _subrun;
     int _event;
+    int _entry;
     int _vtxid;
     int _ntracks;
+
+    std::vector<float> _unknownfrac_v; 
+    std::vector<float> _electronfrac_v;
+    std::vector<float> _gammafrac_v;   
+    std::vector<float> _pizerofrac_v;  
+    std::vector<float> _muonfrac_v;    
+    std::vector<float> _kminusfrac_v;  
+    std::vector<float> _piminusfrac_v; 
+    std::vector<float> _protonfrac_v;  
+
+    std::vector<int> _npx_v;
     std::vector<int> _npts_v;
     std::vector<int> _trk_type_v;
     std::vector<std::vector<int> > _trk_type_vv;
