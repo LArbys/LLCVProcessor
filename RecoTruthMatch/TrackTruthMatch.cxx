@@ -66,7 +66,7 @@ namespace llcv {
     assert(!_trk_reco_prod.empty());
     assert(!_adc_img_prod.empty());
     
-    const auto ev_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_trk_reco_prod);
+    const auto ev_vertex  = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_trk_reco_prod);
     const auto ev_adc_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_adc_img_prod);
     const auto ev_seg_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_seg_img_prod);
 
@@ -80,6 +80,11 @@ namespace llcv {
     _event  = (int) ev_adc_img->event();
     _entry  = (int) mgr.current_entry();
     
+    // check data coordinator...
+    assert(_run    == (int)sto.run_id());
+    assert(_subrun == (int)sto.subrun_id());
+    assert(_event  == (int)sto.event_id());
+
     if (ev_vertex->empty()) return true;
 
     larlite::event_track *ev_track = nullptr;
