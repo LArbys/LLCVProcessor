@@ -227,8 +227,8 @@ namespace llcv {
 	    int xx = (int)(xpixel+0.5);
 	    int yy = (int)(ypixel+0.5);
 
-	    float pixel_value = adc_img.pixel(yy,xx);
-	    assert(pixel_value);
+	    // float pixel_value = adc_img.pixel(yy,xx);
+	    // assert(pixel_value);
 	    float pixel_type  = seg_img.pixel(yy,xx);
 	    shr_type_v.at((size_t)pixel_type) += 1;
 	    _npx_v[shr_id] += 1;
