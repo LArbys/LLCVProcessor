@@ -29,5 +29,5 @@ class MatchFactory:
         return self.algo
 
     def output_file(self,num):
-        return str(self.out_name + "%d_.root" % num)
+        return str(self.out_name + "%d.root" % num)
 
