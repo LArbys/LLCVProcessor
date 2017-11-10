@@ -5,6 +5,7 @@
 
 #pragma link C++ class llcv::MatchUtils+;
 #pragma link C++ class llcv::TrackTruthMatch+;
+#pragma link C++ class llcv::TrackPGraphMatch+;
 #pragma link C++ class llcv::ShowerTruthMatch+;
 
 #endif
