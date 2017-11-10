@@ -81,7 +81,7 @@ namespace llcv {
     std::vector<std::pair<double,double> > time_bounds;
     std::vector<std::pair<double,double> > wire_bounds;
     std::vector<std::vector<larcv::ImageMeta> > meta_vv;
-
+    
     for(auto const& key_value : ev_pixel2d.Pixel2DClusterArray()) {
       
       auto const& plane = key_value.first;
@@ -132,7 +132,7 @@ namespace llcv {
 	if(wire_max < cwire_max) wire_max = cwire_max;
 
 	// std::cout<<"    cluster " << plane << "-" << contour_idx << " time bounds: " << ctime_min << " => " << ctime_max
-	// 	 <<" ... wire bounds: " << cwire_min << " => " << cwire_max << std::endl;
+	//   	 <<" ... wire bounds: " << cwire_min << " => " << cwire_max << std::endl;
 	
       }
       wire_min -=2;
@@ -151,8 +151,7 @@ namespace llcv {
       contours_v[plane] = std::move(llcv::as_contour_array(key_value.second));
 
     }
-    
-    // loop over hits and assign to a cluster
+
     ::geo2d::Vector<float> pt;
     size_t plane=0;
     double wire=0;
@@ -169,29 +168,26 @@ namespace llcv {
       if(wire > wire_bound.second) continue;
       if(wire < wire_bound.first ) continue;
       auto const& contours = contours_v[plane];
-      double max_dist = -1.e9;
       double dist = 0.;
+      double dist_thresh = _dist_thresh;
       size_t parent_ctor_idx  = larcv::kINVALID_INDEX;
-      size_t parent_ctor_size = 0;
       for(size_t contour_idx=0; contour_idx<contours.size(); ++contour_idx) {
 	auto const& contour = contours[contour_idx];
 	if(contour.empty()) continue;
 	auto const& meta    = meta_v[contour_idx];
+	if (meta.plane() != plane) continue;
 	if(meta.min_x() > wire || meta.max_x() < wire) continue;
 	if(meta.min_y() > time || meta.max_y() < time) continue;
 	pt.x = (wire - meta.min_x()) / meta.pixel_width();
 	pt.y = (meta.max_y() - time) / meta.pixel_height();
 	dist = cv::pointPolygonTest(contour,pt,true);
-	if(dist < _dist_thresh || dist < max_dist) continue;
-	//std::cout <<"wire " << wire << " time " << time << " px " << pt.x << " py " << pt.y <<  std::endl;
-	if(dist >= 0 && parent_ctor_size > contour.size()) continue;
-	//std::cout <<"good!"<<std::endl;
+	//if(plane==2) std::cout << "cid= " << contour_idx << "wire " << wire << " time " << time << " px " << pt.x << " py " << pt.y <<  " dist= " << dist << std::endl;
+	if(dist < dist_thresh) continue;
+	//if(plane==2) std::cout <<"good!"<<std::endl;
 	parent_ctor_idx = contour_idx;
-	parent_ctor_size = contour.size();
-	max_dist = dist;
+	pxcluster_to_hit[plane][parent_ctor_idx].push_back(_ev_hit->size());
       }
       if(parent_ctor_idx == larcv::kINVALID_INDEX) continue;
-      pxcluster_to_hit[plane][parent_ctor_idx].push_back(_ev_hit->size());
       _ev_hit->push_back(h);
     }
     

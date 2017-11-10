@@ -59,7 +59,7 @@ def getShowerRecoAlgModular():
     energy.setVerbosity(False)
     energy.SetFillTree(True)
 
-    dqdx = showerreco.dQdxModule()
+    dqdx = showerreco.dQdxModuleUVY()
     dqdx.setTrunkLength(3.)
 
     # dqdx.SetFillTree(True)

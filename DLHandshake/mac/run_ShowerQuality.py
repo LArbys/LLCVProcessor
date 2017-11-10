@@ -3,7 +3,7 @@ import os, sys
 if len(sys.argv) != 3:
     print 
     print "INFILE  = str(sys.argv[1])"
-    print "OUTFILE = str(sys.argv[2])"
+    print "OUTDIR = str(sys.argv[2])"
     print 
     sys.exit(1)
 
