@@ -4,31 +4,11 @@ from recotool import showerreco
 from ROOT import protoshower
 
 def getShowerRecoAlgModular():
-    # This function returns the default shower reco module
-    # If you want to extend, customize, or otherwise alter the default
-    # reco (which you should!) it's recommended that you do one of two
-    # things:
-    #   1) Copy this function, and change the lines you need
-    #   2) Use this function as is and replace the modules with the built-in functions
-    #       to ShowerRecoAlgModular
-    # Then, use the return value (alg) in place of ShowerRecoAlg in your python script
-    
-    # It should be noted, however, that this "default" set of modules is not yet developed
-    # and if you are developing you ought to be updating it here!
     
     alg = showerreco.ShowerRecoAlgModular()
     alg.SetDebug(False)
     alg.SetVerbose(False)
-
-    # filteralgo = showerreco.FilterPFPart()
-    # filteralgo.setMinNHitsAbsolute(5)
-    # filteralgo.setMinNHitsLargest(10)
     
-    # angle3D = showerreco.Angle3DFormula()
-    # angle3D.setMaxAngleError(0.1)
-    # angle3D.setValidateDirection(True)
-    # angle3D.setVerbosity(True)
-
     angle3D = showerreco.Angle3DFromVtxQweighted()
     angle3D.setVerbosity(False)
     
@@ -62,25 +42,14 @@ def getShowerRecoAlgModular():
     dqdx = showerreco.dQdxModuleUVY()
     dqdx.setTrunkLength(3.)
 
-    # dqdx.SetFillTree(True)
-    
-    # shrFilter = showerreco.FilterShowers()
-    # shrFilter.setAngleCut(15.)
-    # shrFilter.setVerbosity(False)
+    length = showerreco.FillLengthUVY()
 
-    # alg.AddShowerRecoModule( filteralgo )
     alg.AddShowerRecoModule(angle3D)
-    #alg.AddShowerRecoModule( showerreco.StartPoint3DModule() )
-    #alg.AddShowerRecoModule( showerreco.NearestStartPoint3D() )
-
-    # no longer needed... proto shower stage takes care
     alg.AddShowerRecoModule(startPt)
     alg.AddShowerRecoModule(dqdx)
     alg.AddShowerRecoModule(energy)
-    alg.AddShowerRecoModule(showerreco.EstimateLength())
+    alg.AddShowerRecoModule(length)
 
-    #alg.AddShowerRecoModule( shrFilter )
-    
     alg.PrintModuleList()
     
     return alg
