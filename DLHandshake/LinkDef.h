@@ -5,6 +5,7 @@
 
 #pragma link C++ class llcv::HandShaker+;
 #pragma link C++ class llcv::DLHandshake+;
+#pragma link C++ class llcv::ShowerHitMaker+;
 
 #endif
 
