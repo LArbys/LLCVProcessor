@@ -3,6 +3,7 @@
 
 #include "ShowerHitMaker.h"
 #include "DataFormat/hit.h"
+#include <cassert>
 
 namespace llcv {
 
@@ -25,7 +26,10 @@ namespace llcv {
     
     std::vector<larcv::Image2D> shr_img_v;
     auto roi_exists = MakeShowerImage(ev_pixel2d,shr_img_v);
-    if(!roi_exists) return true;
+    if(!roi_exists) {
+      LLCV_INFO() << "no ROI exists..." << std::endl;
+      return true;
+    }
 
     for(size_t plane=0; plane<3; ++plane) {
       
@@ -71,6 +75,9 @@ namespace llcv {
     const auto& pixel_m = ev_pixel2d->Pixel2DArray();
     const auto& meta_m  = ev_pixel2d->MetaArray();
 
+    if (pixel_m.empty()) return false;
+    if (meta_m.empty()) return false;
+    
     for(size_t plane=0; plane<3; ++plane) {
 
       auto meta_itr = meta_m.find(plane);
@@ -85,7 +92,7 @@ namespace llcv {
       size_t npx_y = meta.rows();
 
       auto pixel_itr = pixel_m.find(plane);
-      if (pixel_itr == pixel_m.end()) throw llcv_err("No pixel?");
+      if (pixel_itr == pixel_m.end()) continue;
       const auto& pixel_v = (*pixel_itr).second;
 
       for(const auto& pixel : pixel_v) {
