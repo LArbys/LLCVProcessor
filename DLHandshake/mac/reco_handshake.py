@@ -1,20 +1,16 @@
 import os,sys
 
-if len(sys.argv) != 6:
+if len(sys.argv) != 4:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
-    print "MCINFO_FILE = str(sys.argv[3])"
-    print "OUTPUT_DIR  = str(sys.argv[4])"
-    print "REQPDG      = int(sys.argv[5])"
+    print "OUTPUT_DIR  = str(sys.argv[3])"
     print 
     sys.exit(1)
-
+    
 PGRAPH_FILE = str(sys.argv[1])
 HIT_FILE    = str(sys.argv[2])
-MCINFO_FILE = str(sys.argv[3])
-OUTPUT_DIR  = str(sys.argv[4])
-REQPDG      = int(sys.argv[5])
+OUTPUT_DIR  = str(sys.argv[3])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
@@ -31,34 +27,16 @@ sys.path.insert(0,BASE_PATH)
 #
 proc = llcv.Processor()
 
-# handshake
 dlhs = llcv.DLHandshake()
 proc.add_llcv_ana(dlhs)
-
-# identify shower hits
-dlshr = llcv.ShowerHitMaker()
-proc.add_llcv_ana(dlshr)
-
-# recluster seeds
-from reclusterElec import ReclusterElec
-recluster = ReclusterElec()
-proc.add_ll_ana(recluster)
-
-# reco shower
-from showerRecoDL import DLShowerReco3D
-print "...set REQPDG=%d" % REQPDG
-dlshr3d = DLShowerReco3D(REQPDG)
-proc.add_ll_ana(dlshr3d)
 
 proc.configure(os.path.join(BASE_PATH,"config.cfg"))
 
 proc.add_lcv_input_file(PGRAPH_FILE)
 proc.add_ll_input_file(HIT_FILE)
 
-if MCINFO_FILE != "INVALID":
-    proc.add_ll_input_file(MCINFO_FILE)
+proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"handshake_reco_out_%d.root" % num))
 
-proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"shower_reco_out_%d.root" % num))
 proc.initialize()
 
 #

@@ -53,29 +53,41 @@ namespace llcv {
     LLCV_INFO() << "end" << std::endl;
   }
   
-  bool Processor::batch_process_lcv()
+  bool Processor::batch_process_lcv(int start,int nentries)
   { 
     LLCV_INFO() << "start" << std::endl;
-    return _batch_process("larcv");
+    return _batch_process("larcv",start,nentries);
     LLCV_INFO() << "end" << std::endl;
   }
 
-  bool Processor::batch_process_ll()
+  bool Processor::batch_process_ll(int start,int nentries)
   { 
     LLCV_INFO() << "start" << std::endl;
-    return _batch_process("larlite");
+    return _batch_process("larlite",start,nentries);
     LLCV_INFO() << "end" << std::endl;
   }
   
-  bool Processor::_batch_process(const std::string& ftype) {
-    size_t nentries = (size_t)_dataco.get_nentries(ftype);
+  bool Processor::_batch_process(const std::string& ftype,int start, int nentries) {
+    int type_nentries = (int)_dataco.get_nentries(ftype);
 
-    LLCV_INFO() << "Processing " << nentries << " entries @ ftype=" << ftype  << std::endl;
+    if (start > type_nentries) 
+      throw llcv_err("requested index out of range");
+    
+    if (nentries<0) 
+      nentries = type_nentries;
+    
+    nentries += start;
+    
+    if (nentries>(start+type_nentries))
+      nentries = type_nentries;
 
-    for(size_t entry=0; entry < nentries; ++entry) {
+    LLCV_INFO() << "Processing " << type_nentries << " entries @ ftype=" << ftype  << std::endl;
+
+    for(int entry=start; entry<nentries; ++entry) {
+      
       LLCV_DEBUG() << "@entry=" << entry << std::endl;
       _dataco.goto_entry(entry,ftype);
-
+      
       // ll & llcv
       LLCV_DEBUG() << "processing ll+lcv" << std::endl;
        for(size_t aid=0; aid < _llcv_ana_v.size(); ++aid) {
@@ -86,6 +98,7 @@ namespace llcv {
       // ll
       LLCV_DEBUG() << "processing ll" << std::endl;
       for(size_t aid=0; aid < _ll_ana_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _ll_ana_v[aid]->class_name() << " (" << _ll_ana_v[aid] << ")"  << std::endl;
 	_ll_status_v[aid] = _ll_ana_v[aid]->analyze(&_dataco.get_larlite_io());
 	_ll_unit_status = _ll_unit_status && _ll_status_v[aid];
       }

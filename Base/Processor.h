@@ -41,8 +41,8 @@ namespace llcv {
 
     larlitecv::DataCoordinator& dataco() { return _dataco; }
 
-    bool batch_process_lcv();
-    bool batch_process_ll();
+    bool batch_process_lcv(int start=0, int nentries=-1);
+    bool batch_process_ll(int start=0, int nentries=-1);
     
     const std::string& name() const { return _name; }
     
@@ -77,7 +77,8 @@ namespace llcv {
     bool _lcv_unit_status;
 
   private:
-    bool _batch_process(const std::string& ftype);
+    bool _batch_process(const std::string& ftype,
+			int start,int nentries);
 
   };
 }

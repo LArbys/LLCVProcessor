@@ -11,8 +11,7 @@ def getShowerRecoAlgModular():
     
     angle3D = showerreco.Angle3DFromVtxQweighted()
     angle3D.setVerbosity(False)
-    
-    # startPt = showerreco.YPlaneStartPoint3D()
+
     startPt = showerreco.VertexIsStartPoint3D()
     startPt.setVerbosity(False)
 
@@ -22,8 +21,8 @@ def getShowerRecoAlgModular():
     # implement position-dependent calibration
     energy.CreateResponseMap(20)
     dQdsAVG = 248.
-    fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
-    #fin = open('/home/vgenty/dqds_mc_xyz.txt','r')
+    #fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
+    fin = open('/home/vgenty/dqds_mc_xyz.txt','r')
     for line in fin:
         words = line.split()
         x = float(words[0])
@@ -69,7 +68,6 @@ def DefaultShowerReco3D(req_pdg):
     return ana_unit
 
 def DLShowerReco3D(req_pdg):
-    suffix = "josh"
 
     shower_ana_unit=DefaultShowerReco3D(req_pdg)
     print "Load DefaultShowerReco3D @ ",shower_ana_unit
@@ -77,10 +75,10 @@ def DLShowerReco3D(req_pdg):
 
     # set ProtoShower Algo to go from data-products to a ProtoShower object
     protoshoweralg = protoshower.ProtoShowerAlgDL()
-    protoshoweralg.SetVertexProducer("dl")
+    protoshoweralg.SetVertexProducer("dlraw")
     shower_ana_unit.GetProtoShowerHelper().setProtoShowerAlg( protoshoweralg )
     
-    shower_ana_unit.SetInputProducer("dl")
+    shower_ana_unit.SetInputProducer("dlraw")
     shower_ana_unit.SetOutputProducer("showerreco")
 
     return shower_ana_unit

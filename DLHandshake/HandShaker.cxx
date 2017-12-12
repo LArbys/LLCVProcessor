@@ -97,19 +97,26 @@ namespace llcv {
       auto const& meta_v = meta_vv[plane];
 
       pxcluster_to_hit[plane].resize(key_value.second.size());
-      pxcluster_to_cluster[plane].resize(key_value.second.size());
+      
+      pxcluster_to_cluster[plane].resize(key_value.second.size(),
+					 larlite::data::kINVALID_UINT);
+      
       double time_min=1e9;
       double time_max=0;
       double wire_min=1e9;
       double wire_max=0;
 
       for(unsigned int contour_idx=0; contour_idx < key_value.second.size(); ++contour_idx) {
+	
 	auto const& contour = key_value.second[contour_idx];
 	auto const& image_meta = meta_v[contour_idx];
 	double ctime_min=1e9;
 	double ctime_max=0;
 	double cwire_min=1e9;
 	double cwire_max=0;
+
+	if (contour.empty()) continue;
+
 	for(auto const& pt : contour) {
 	  double time = image_meta.max_y() - image_meta.pixel_height() * pt.Y();
 	  double wire = image_meta.min_x() + image_meta.pixel_width() * pt.X();
@@ -118,6 +125,7 @@ namespace llcv {
 	  if(cwire_min > wire) cwire_min = wire;
 	  if(cwire_max < wire) cwire_max = wire;
 	}
+
 	pxcluster_to_cluster[plane][contour_idx] = _ev_cluster->size();
 	larlite::cluster c;
 	c.set_id(_ev_cluster->size());
@@ -198,6 +206,10 @@ namespace llcv {
       for(size_t pxcluster_idx=0; pxcluster_idx<pxcluster_to_cluster[plane].size(); ++pxcluster_idx) {
 	auto const& cindex = pxcluster_to_cluster[plane][pxcluster_idx];
 	auto const& hindex_v = pxcluster_to_hit[plane][pxcluster_idx];
+	if (cindex == larlite::data::kINVALID_UINT) {
+	  assert(hindex_v.empty());;
+	  continue;
+	}
 	_ass_cluster_to_hit[cindex] = hindex_v;
       }
     }
@@ -230,6 +242,7 @@ namespace llcv {
       std::vector<size_t> child_id_v;
       child_pfpart_v.reserve(roi_v.size());
       child_id_v.reserve(roi_v.size());
+      //std::cout << "GOT: " << roi_v.size() << " particles @pgraph_idx=" << pgraph_idx << std::endl;
 
       _ass_pfpart_to_track.resize   (parent_id + 1 + roi_v.size());
       _ass_pfpart_to_shower.resize  (parent_id + 1 + roi_v.size());
@@ -255,12 +268,11 @@ namespace llcv {
 	// record particle type from analysis
 	//
 
-	//assert (child_id < _ptype_v.size());
-	//larlite::pfpart child_pfpart(_ptype_v.at(child_id),
 	larlite::pfpart child_pfpart(roi.PdgCode(),
 				     child_id,
 				     parent_id,
 				     empty_daughters);
+
 	child_pfpart_v.push_back(child_pfpart);
 	child_id_v.push_back(child_id);
 
@@ -303,6 +315,9 @@ namespace llcv {
 	auto const& pxcluster_idx = pxcluster_idx_v[roi_idx];
 	for(size_t plane=0; plane<pxcluster_to_cluster.size(); ++plane) {
 	  auto const& cindex = pxcluster_to_cluster[plane][pxcluster_idx];
+	  if (cindex == larlite::data::kINVALID_UINT) {
+	    continue;
+	  }
 	  _ass_pfpart_to_cluster[child_id].push_back(cindex);
 	  if(roi.Shape() == larcv::kShapeShower) {
 	    auto shower_id = _ev_shower->size()-1;

@@ -30,7 +30,7 @@ proc = llcv.Processor()
 dlhs = llcv.ShowerHitMaker()
 proc.add_llcv_ana(dlhs)
 
-proc.configure(os.path.join(BASE_PATH,"config.cfg"))
+proc.configure(os.path.join(BASE_PATH,"config_shower_hits.cfg"))
 proc.add_lcv_input_file(PGRAPH_FILE)
 proc.add_ll_input_file(HIT_FILE)
 
