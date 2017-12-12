@@ -50,7 +50,7 @@ proc.initialize()
 #
 # run over larcv entries
 #
-proc.batch_process_ll(13,1)
+proc.batch_process_ll()
 
 proc.finalize()
 

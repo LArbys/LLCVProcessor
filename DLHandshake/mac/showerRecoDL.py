@@ -21,8 +21,8 @@ def getShowerRecoAlgModular():
     # implement position-dependent calibration
     energy.CreateResponseMap(20)
     dQdsAVG = 248.
-    #fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
-    fin = open('/home/vgenty/dqds_mc_xyz.txt','r')
+    fin = open('/usr/local/share/dllee_unified/larlite/UserDev/RecoTool/ShowerReco3D/dqds_mc_xyz.txt','r')
+    #fin = open('/home/vgenty/dqds_mc_xyz.txt','r')
     for line in fin:
         words = line.split()
         x = float(words[0])
