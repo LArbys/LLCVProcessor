@@ -88,7 +88,7 @@ proc.add_ll_input_file(HIT_FILE)
 if MCINFO_FILE != "INVALID":
     proc.add_ll_input_file(MCINFO_FILE)
 
-proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"shower_reco_recluster_out_%d.root" % num))
+proc.set_output_ll_name(os.path.join(OUTPUT_DIR,"shower_reco_out_%d.root" % num))
 proc.initialize()
 
 #
