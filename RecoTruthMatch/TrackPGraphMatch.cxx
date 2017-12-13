@@ -160,6 +160,7 @@ namespace llcv {
 	  auto const& pix_meta = pix_meta_v.at(cidx);
 	  
 	  auto& pgraph_img = pgraph_img_v[plane];
+	  pgraph_img.paint(-1);
 
 	  for(const auto& px : pix) {
 	    auto posx = pix_meta.pos_x(px.Y());
@@ -178,6 +179,7 @@ namespace llcv {
 
       LLCV_DEBUG() << "@vtx_id=" << vtx_id << std::endl;
       LLCV_DEBUG() << "..." << ass_track_vv[vtx_id].size() << " associated tracks" << std::endl;
+      LLCV_DEBUG() << "..." << npars << " particles" << std::endl;
 
       _npx_v.resize(_ntracks);
       _npts_v.resize(_ntracks);
@@ -195,7 +197,6 @@ namespace llcv {
 	trk_type_v.clear();
 	trk_type_v.resize(npars+1,0);
 
-
 	LLCV_DEBUG() << "@track=" << aid << " sz=" << track.NumberTrajectoryPoints() << std::endl;
 
 	for(size_t pid=0; pid< track.NumberTrajectoryPoints(); ++pid) {
@@ -204,6 +205,7 @@ namespace llcv {
 	  LLCV_DEBUG() << "@pid: "<<pid<<"=(" << pt.X() << ","  << pt.Y() << "," << pt.Z() << ")" << std::endl;
 
 	  for(size_t plane=0; plane<3; ++plane) {
+	    LLCV_DEBUG() << "@plane=" << plane << std::endl;
 	    const auto& adc_img = ev_adc_img->Image2DArray()[plane];
 	    const auto& pgraph_img = pgraph_img_v[plane];
 	    xpixel = kINVALID_DOUBLE;
@@ -215,20 +217,26 @@ namespace llcv {
 	    float pixel_value = adc_img.pixel(yy,xx);
 	    if(pixel_value==0) continue;
 	    float pixel_type  = pgraph_img.pixel(yy,xx);
+
+	    LLCV_DEBUG() << "(xx,yy) = " << "(" << yy << "," << xx << ")=" << pixel_type << std::endl;
+
 	    if (pixel_type<0) trk_type_v.back() += 1;
 	    else trk_type_v.at((size_t)pixel_type) += 1;
 	    _npx_v[aid] += 1;
-	    LLCV_DEBUG() << "p:" << plane << "(" << yy << "," << xx << ")=" << pixel_type << std::endl;
 	  } // end plane
-	} // end 3D point
+	} // end 3D poin
 
 	auto res_iter = std::max_element(std::begin(trk_type_v), std::end(trk_type_v)-1);
 	auto res_loc  = std::distance(std::begin(trk_type_v), res_iter);
 	
 	_trk_type_v[aid] = (int)res_loc;
 	
+	LLCV_DEBUG() << "...next track" << std::endl;
+	LLCV_DEBUG() << std::endl;
       } // End track
       
+	LLCV_DEBUG() << "...next vertex" << std::endl;
+	LLCV_DEBUG() << std::endl;
       _tree->Fill();
     } // end vertex
     
