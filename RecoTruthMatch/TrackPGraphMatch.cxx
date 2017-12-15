@@ -136,7 +136,12 @@ namespace llcv {
       _vtx_z = vertex.Z();
       
       auto npars = roi_v.size();
-
+      
+      for(size_t plane=0; plane<3; ++plane) {
+	auto& pgraph_img = pgraph_img_v[plane];
+	pgraph_img.paint(-1);
+      }
+      
       for(size_t roid=0; roid < npars; ++roid) {
 	const auto& roi = roi_v[roid];
 	auto cidx = cluster_idx_v.at(roid);
@@ -160,7 +165,6 @@ namespace llcv {
 	  auto const& pix_meta = pix_meta_v.at(cidx);
 	  
 	  auto& pgraph_img = pgraph_img_v[plane];
-	  pgraph_img.paint(-1);
 
 	  for(const auto& px : pix) {
 	    auto posx = pix_meta.pos_x(px.Y());
@@ -170,7 +174,7 @@ namespace llcv {
 	    pgraph_img.set_pixel(row,col,px_val);
 	  } // end pixel
 	} // end plane
-      }	// end pgraph
+      }	// end this ROI
 
       
       _vtxid   = (int)vtx_id;
