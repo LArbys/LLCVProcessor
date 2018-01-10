@@ -105,41 +105,38 @@ namespace llcv {
     // get the associated pf clusters
     larlite::event_shower *ev_shower = nullptr;
     auto const& ass_shower_vv = sto.find_one_ass(ev_vertex->id(), ev_shower, "showerreco");
-    if (!ev_shower or ev_shower->empty()) {
-      LLCV_INFO()  << "No shower, next" << std::endl;
-      return true;
-    }
-
-    LLCV_INFO() << "... got " << ev_shower->size() << " showers" << std::endl;
-
-    // std::cout << ev_shower->size() << std::endl;
-    // for(auto ass_shower_v : ass_shower_vv) {
-    //   std::cout << ass_shower_v.size() << std::endl;
-    //   for(auto ass_shower : ass_shower_v)
-    // 	std::cout << "[" << ass_shower << "]" << std::endl;
-    //   std::cout << std::endl;
-    // }
-
-
-    // get the associated cluster(s)
+    //if (!ev_shower or ev_shower->empty()) {
+    //  LLCV_INFO()  << "No shower, next" << std::endl;
+    //  return true;
+    //}
+    
     larlite::event_cluster * ev_cluster = nullptr;
-    auto const& ass_cluster_vv = sto.find_one_ass(ev_shower->id(), ev_cluster, ev_shower->name());
-    if (!ev_cluster or ev_cluster->empty()) {
-      LLCV_CRITICAL() << "NO associated cluster to shower" << std::endl;
-      throw llcv_err("die");
-    }
-
-    LLCV_INFO() << "... got " << ev_cluster->size() << " clusters" << std::endl;
-
-    // get the associated hit(s)
     larlite::event_hit * ev_hit = nullptr;
-    auto const& ass_hit_vv = sto.find_one_ass(ev_cluster->id(), ev_hit, ev_cluster->name());
-    if (!ev_hit or ev_hit->empty()) {
-      LLCV_CRITICAL() << "NO associated hits to cluster" << std::endl;
-      throw llcv_err("die");
-    }
+    auto ass_cluster_vv = ass_shower_vv; // i forget the type
+    ass_cluster_vv.clear();
+    auto ass_hit_vv = ass_cluster_vv;
+ 
+    if (ev_shower) { 
+      LLCV_INFO() << "... got " << ev_shower->size() << " showers" << std::endl;
+  
+      // get the associated cluster(s)
+      ass_cluster_vv = sto.find_one_ass(ev_shower->id(), ev_cluster, ev_shower->name());
+      if (!ev_cluster or ev_cluster->empty()) {
+        LLCV_CRITICAL() << "NO associated cluster to shower" << std::endl;
+        throw llcv_err("die");
+      }
 
-    LLCV_INFO() << "... got " << ev_hit->size() << " hits" << std::endl;
+      LLCV_INFO() << "... got " << ev_cluster->size() << " clusters" << std::endl;
+
+      // get the associated hit(s)
+      ass_hit_vv = sto.find_one_ass(ev_cluster->id(), ev_hit, ev_cluster->name());
+      if (!ev_hit or ev_hit->empty()) {
+        LLCV_CRITICAL() << "NO associated hits to cluster" << std::endl;
+        throw llcv_err("die");
+      }
+
+      LLCV_INFO() << "... got " << ev_hit->size() << " hits" << std::endl;
+    } 
 
     std::array<larcv::ImageMeta,3> meta_v;
     for(size_t plane=0; plane<3; ++plane) 
@@ -160,6 +157,12 @@ namespace llcv {
 
       _nshowers = 0;
       
+
+      if(!ev_shower) {
+        _tree->Fill(); 
+        continue;
+      }
+          
       std::vector<const larlite::shower* > shower_v;
       std::vector<std::array<std::vector<const larlite::hit*>, 3> > hit_vvv;
 
