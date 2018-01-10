@@ -168,6 +168,17 @@ namespace llcv {
       for( size_t pfp_id=0; pfp_id < ass_pfpart_v.size(); ++ pfp_id) {
 
 	const auto pfpart_id = ass_pfpart_v.at(pfp_id);
+	
+	if (pfpart_id >= ass_shower_vv.size()) {
+	  std::cout << std::endl;
+	  std::cout << "---------------------------" << std::endl;
+	  std::cout << "Edge case detected!" << std::endl;
+	  std::cout << "Vertex found, pfparticle exists, but no shower found?" << std::endl;
+	  std::cout << "Skip for now..." << std::endl;
+	  std::cout << "---------------------------" << std::endl << std::endl;
+	  continue;
+	}
+
 	const auto& ass_shower_v = ass_shower_vv.at(pfpart_id);
 
 	for(size_t shr_id=0; shr_id < ass_shower_v.size(); ++ shr_id) {
