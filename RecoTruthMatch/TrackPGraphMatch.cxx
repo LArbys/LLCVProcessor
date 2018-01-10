@@ -218,6 +218,21 @@ namespace llcv {
 	    int xx = (int)(xpixel+0.5);
 	    int yy = (int)(ypixel+0.5);
 	    yy = pgraph_img.meta().rows() - yy - 1;
+	    
+	    if (yy >= (int)adc_img.meta().rows() or yy < 0) {
+	      LLCV_WARNING() << "3D location outside of image! Skip this plane" << std::endl;
+	      LLCV_WARNING() << "(rx,ry,rz)=(" << pt.X() << "," << pt.Y() << "," << pt.Z() << ")" << std::endl;
+	      LLCV_WARNING() << "(x,y)=(" << xx << "," << yy << ")" << std::endl;
+	      continue;
+	    }
+	    
+	    if (xx >= (int)adc_img.meta().cols() or xx < 0) {
+	      LLCV_WARNING() << "3D location outside of image! Skip this plane" << std::endl;
+	      LLCV_WARNING() << "(rx,ry,rz)=(" << pt.X() << "," << pt.Y() << "," << pt.Z() << ")" << std::endl;
+	      LLCV_WARNING() << "(x,y)=(" << xx << "," << yy << ")" << std::endl;
+	      continue;
+	    }
+
 	    float pixel_value = adc_img.pixel(yy,xx);
 	    if(pixel_value==0) continue;
 	    float pixel_type  = pgraph_img.pixel(yy,xx);
