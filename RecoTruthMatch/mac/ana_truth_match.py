@@ -20,7 +20,7 @@ SSNET_FILE    = str(sys.argv[3])
 TRK_SHR_FILE  = str(sys.argv[4])
 OUTPUT_DIR    = str(sys.argv[5])
 
-num = int(os.path.basename(SSNET_FILE).split(".")[0].split("_")[-1])
+num = int(os.path.basename(TRK_SHR_FILE).split(".")[0].split("_")[-1])
 
 import ROOT
 from larlitecv import larlitecv
