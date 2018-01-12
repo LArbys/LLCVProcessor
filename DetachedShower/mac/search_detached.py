@@ -1,17 +1,19 @@
 import os,sys,gc
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 4:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
-    print "OUT_DIR    = str(sys.argv[2])"
+    print "VTX_FILE   = str(sys.argv[2])"
+    print "OUT_DIR    = str(sys.argv[3])"
     print
     print
     sys.exit(1)
 
 
 SSNET_FILE = str(sys.argv[1])
-OUT_DIR    = str(sys.argv[2])
+VTX_FILE   = str(sys.argv[2])
+OUT_DIR    = str(sys.argv[3])
 
 import ROOT
 from larcv import larcv as lcv
