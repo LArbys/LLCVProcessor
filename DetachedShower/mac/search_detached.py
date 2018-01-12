@@ -61,9 +61,10 @@ proc.add_llcv_ana(locate_shr)
 proc.configure(os.path.join(BASE_PATH,"cfg","second_shower.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "out.root"),"larcv")
 proc.add_lcv_input_file(SSNET_FILE)
+proc.add_lcv_input_file(VTX_FILE)
 proc.initialize()
 
-proc.batch_process_lcv_reverse(0,1)
+proc.batch_process_lcv_reverse(1,1)
 
 proc.finalize()
 

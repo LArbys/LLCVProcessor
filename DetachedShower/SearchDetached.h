@@ -1,6 +1,9 @@
 #ifndef SEARCHDETACHED_H
 #define SEARCHDETACHED_H
 
+// me
+#include "SearchAlgoBase.h"
+
 //llcv
 #include "LLCVBase/AnaBase.h"
 
@@ -15,7 +18,7 @@ namespace llcv {
     
   public:
     
-  SearchDetached(const std::string name="SearchDetached") : AnaBase(name) {}
+  SearchDetached(const std::string name="SearchDetached") : AnaBase(name), _algo(nullptr) {}
     ~SearchDetached() {}
     
     void configure(const larcv::PSet& cfg);
@@ -32,6 +35,8 @@ namespace llcv {
     
   private:
 
+    SearchAlgoBase* _algo;
+    
     std::string _adc_img_prod;
     std::string _shr_img_prod;
     std::string _pgraph_prod;
@@ -40,6 +45,8 @@ namespace llcv {
     std::string _out_pgraph_prod;
     std::string _out_pixel_prod;
     
+    float _search_distance;
+
     larcv::LArbysImageMaker _larmkr;
 
   };
