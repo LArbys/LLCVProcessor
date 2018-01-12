@@ -66,6 +66,20 @@ namespace llcv {
     return _batch_process("larlite",start,nentries);
     LLCV_INFO() << "end" << std::endl;
   }
+
+  bool Processor::batch_process_lcv_reverse(int start,int nentries)
+  { 
+    LLCV_INFO() << "start" << std::endl;
+    return _batch_process_reverse("larcv",start,nentries);
+    LLCV_INFO() << "end" << std::endl;
+  }
+
+  bool Processor::batch_process_ll_reverse(int start,int nentries)
+  { 
+    LLCV_INFO() << "start" << std::endl;
+    return _batch_process_reverse("larlite",start,nentries);
+    LLCV_INFO() << "end" << std::endl;
+  }
   
   bool Processor::_batch_process(const std::string& ftype,int start, int nentries) {
     int type_nentries = (int)_dataco.get_nentries(ftype);
@@ -90,8 +104,9 @@ namespace llcv {
       
       // ll & llcv
       LLCV_DEBUG() << "processing ll+lcv" << std::endl;
-       for(size_t aid=0; aid < _llcv_ana_v.size(); ++aid) {
-	 _llcv_status_v[aid] = _llcv_ana_v[aid]->_process_(_dataco.get_larcv_io(),_dataco.get_larlite_io());
+      for(size_t aid=0; aid < _llcv_ana_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _llcv_ana_v[aid]->name() << " (" << _llcv_ana_v[aid] << ")"  << std::endl;
+	_llcv_status_v[aid] = _llcv_ana_v[aid]->_process_(_dataco.get_larcv_io(),_dataco.get_larlite_io());
 	_llcv_unit_status = _llcv_unit_status && _llcv_status_v[aid];
       }
 
@@ -106,8 +121,61 @@ namespace llcv {
       //lcv
       LLCV_DEBUG() << "processing lcv" << std::endl;
       for(size_t aid=0; aid < _lcv_proc_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _lcv_proc_v[aid]->name() << " (" << _lcv_proc_v[aid] << ")"  << std::endl;
 	_lcv_status_v[aid] = _lcv_proc_v[aid]->process(_dataco.get_larcv_io());
 	_lcv_unit_status = _lcv_unit_status && _lcv_status_v[aid];
+      }
+
+      // (?)
+      _dataco.save_entry();
+    }
+    
+    return true;
+  }
+
+  bool Processor::_batch_process_reverse(const std::string& ftype,int start, int nentries) {
+    int type_nentries = (int)_dataco.get_nentries(ftype);
+
+    if (start > type_nentries) 
+      throw llcv_err("requested index out of range");
+    
+    if (nentries<0) 
+      nentries = type_nentries;
+    
+    nentries += start;
+    
+    if (nentries>(start+type_nentries))
+      nentries = type_nentries;
+
+    LLCV_INFO() << "Processing " << type_nentries << " entries @ ftype=" << ftype  << std::endl;
+
+    for(int entry=start; entry<nentries; ++entry) {
+      
+      LLCV_DEBUG() << "@entry=" << entry << std::endl;
+      _dataco.goto_entry(entry,ftype);
+      
+      // ll
+      LLCV_DEBUG() << "processing ll" << std::endl;
+      for(size_t aid=0; aid < _ll_ana_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _ll_ana_v[aid]->class_name() << " (" << _ll_ana_v[aid] << ")"  << std::endl;
+	_ll_status_v[aid] = _ll_ana_v[aid]->analyze(&_dataco.get_larlite_io());
+	_ll_unit_status = _ll_unit_status && _ll_status_v[aid];
+      }
+    
+      //lcv
+      LLCV_DEBUG() << "processing lcv" << std::endl;
+      for(size_t aid=0; aid < _lcv_proc_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _lcv_proc_v[aid]->name() << " (" << _lcv_proc_v[aid] << ")"  << std::endl;
+	_lcv_status_v[aid] = _lcv_proc_v[aid]->process(_dataco.get_larcv_io());
+	_lcv_unit_status = _lcv_unit_status && _lcv_status_v[aid];
+      }
+      
+      // ll & llcv
+      LLCV_DEBUG() << "processing ll+lcv" << std::endl;
+      for(size_t aid=0; aid < _llcv_ana_v.size(); ++aid) {
+	LLCV_DEBUG() << "@id=" << aid << " name=" << _llcv_ana_v[aid]->name() << " (" << _llcv_ana_v[aid] << ")"  << std::endl;
+	_llcv_status_v[aid] = _llcv_ana_v[aid]->_process_(_dataco.get_larcv_io(),_dataco.get_larlite_io());
+	_llcv_unit_status = _llcv_unit_status && _llcv_status_v[aid];
       }
 
       // (?)

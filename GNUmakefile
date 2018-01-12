@@ -1,4 +1,4 @@
-SUBDIRS :=  Base DLHandshake RecoTruthMatch
+SUBDIRS :=  Base DLHandshake RecoTruthMatch DetachedShower
 
 .phony: all clean
 

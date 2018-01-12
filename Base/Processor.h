@@ -26,7 +26,6 @@ namespace llcv {
     
     void configure(const std::string& fname);
     void initialize();
-    bool batch_process();
     bool process_event(int run, int subrun, int event);
     void finalize();
     
@@ -39,11 +38,13 @@ namespace llcv {
     void set_output_ll_name(const std::string& fname);
     void set_output_lcv_name(const std::string& fname);
 
-    larlitecv::DataCoordinator& dataco() { return _dataco; }
-
     bool batch_process_lcv(int start=0, int nentries=-1);
     bool batch_process_ll(int start=0, int nentries=-1);
-    
+ 
+    bool batch_process_lcv_reverse(int start=0, int nentries=-1);
+    bool batch_process_ll_reverse(int start=0, int nentries=-1);
+
+    larlitecv::DataCoordinator& dataco() { return _dataco; }
     const std::string& name() const { return _name; }
     
     size_t get_n_ll_entries()  { return (size_t)_dataco.get_nentries("larlite"); }
@@ -54,7 +55,6 @@ namespace llcv {
     void add_lc_proc(larcv::ProcessBase* ptr);
 
   private:
-
     //whoami
     std::string _name;
 
@@ -76,9 +76,12 @@ namespace llcv {
     std::vector<bool> _lcv_status_v;
     bool _lcv_unit_status;
 
-  private:
+    // internal batch process
     bool _batch_process(const std::string& ftype,
 			int start,int nentries);
+
+    bool _batch_process_reverse(const std::string& ftype,
+				int start,int nentries);
 
   };
 }

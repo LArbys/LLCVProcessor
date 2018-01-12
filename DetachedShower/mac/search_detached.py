@@ -1,0 +1,69 @@
+import os,sys,gc
+
+if len(sys.argv) != 3:
+    print
+    print
+    print "SSNET_FILE = str(sys.argv[1])"
+    print "OUT_DIR    = str(sys.argv[2])"
+    print
+    print
+    sys.exit(1)
+
+
+SSNET_FILE = str(sys.argv[1])
+OUT_DIR    = str(sys.argv[2])
+
+import ROOT
+from larcv import larcv as lcv
+from larlite import larlite as ll
+from ROOT import llcv
+
+BASE_PATH = os.path.realpath(__file__)
+BASE_PATH = os.path.dirname(BASE_PATH)
+sys.path.insert(0,BASE_PATH)
+
+from lcv_modules import *
+
+proc = llcv.Processor()
+
+#
+# run ssnet
+#
+
+# max
+for plane in xrange(3):
+    res = ChannelMax(plane)
+    proc.add_lc_proc(res)
+
+# combine
+combine = Combine()
+proc.add_lc_proc(combine)
+
+# mask
+mask = Mask()
+proc.add_lc_proc(mask)
+
+# image
+shr_image = ShowerImage()
+proc.add_lc_proc(shr_image)
+
+#
+# find detached shower
+#
+locate_shr = llcv.SearchDetached()
+proc.add_llcv_ana(locate_shr)
+
+#
+# process
+#
+proc.configure(os.path.join(BASE_PATH,"cfg","second_shower.cfg"))
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "out.root"),"larcv")
+proc.add_lcv_input_file(SSNET_FILE)
+proc.initialize()
+
+proc.batch_process_lcv_reverse(0,1)
+
+proc.finalize()
+
+sys.exit(0)
+
