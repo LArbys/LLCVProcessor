@@ -50,9 +50,18 @@ shr_image = ShowerImage()
 proc.add_lc_proc(shr_image)
 
 #
-# find detached shower
+# find single detached shower
 #
+
+# algo
+single_shr = llcv.SearchAlgoSingle()
+single_shr.set_verbosity(0)
+
+# driver
 locate_shr = llcv.SearchDetached()
+
+locate_shr.SetAlgo(single_shr)
+
 proc.add_llcv_ana(locate_shr)
 
 #

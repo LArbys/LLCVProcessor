@@ -154,7 +154,7 @@ namespace llcv {
       vtx3d.x = vtx_X;
       vtx3d.y = vtx_Y;
       vtx3d.z = vtx_Z;
-      auto ret = _algo->Search(vtx3d,mat_v);
+      auto ret_v = _algo->Search(vtx3d,mat_v);
 
       std::exit(1);
     }
