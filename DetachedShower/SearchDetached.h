@@ -49,9 +49,10 @@ namespace llcv {
     std::string _out_pixel_prod;
     
     float _search_distance;
+    bool _mask_particles;
 
     larcv::LArbysImageMaker _larmkr;
-
+    
   };
 
 }

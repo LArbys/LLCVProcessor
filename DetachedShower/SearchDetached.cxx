@@ -36,8 +36,14 @@ namespace llcv {
     _out_pixel_prod  = cfg.get<std::string>("OutPixel2DProducer");
 
     _search_distance = cfg.get<float>("SearchDistance");
+    
+    _mask_particles = cfg.get<bool>("MaskParticles");
 
     _larmkr.Configure(cfg.get<larcv::PSet>("LArbysImageMaker"));
+
+    if(!_algo) throw llcv_err("No algo specified");
+    
+    _algo->Configure(cfg.get<larcv::PSet>(_algo->Name()));
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -64,17 +70,22 @@ namespace llcv {
     //
     // mask the particle image
     //
-    auto shr_img_v = ev_adc_img->Image2DArray();
+    auto adc_img_v = ev_adc_img->Image2DArray();
+    auto shr_img_v = ev_shr_img->Image2DArray();
     const auto& pgraph_v   = ev_pgraph->PGraphArray();
     const auto& pix_m      = ev_pixel->Pixel2DClusterArray();
     const auto& pix_meta_m = ev_pixel->ClusterMetaArray();
-
-    MaskImage(pgraph_v,pix_m,pix_meta_m,shr_img_v);
+    
+    if (_mask_particles) {
+      MaskImage(pgraph_v,pix_m,pix_meta_m,adc_img_v);
+      MaskImage(pgraph_v,pix_m,pix_meta_m,shr_img_v);
+    }
 
     // 
     // search for the other shower per vertex
     //
 
+    std::vector<larcv::Image2D> adc_crop_img_v(3);
     std::vector<larcv::Image2D> shr_crop_img_v(3);
     for(size_t vtxid=1; vtxid < pgraph_v.size(); ++vtxid) {
       
@@ -110,6 +121,7 @@ namespace llcv {
 	auto row = vtx_pixel_v[plane].first;
 	auto col = vtx_pixel_v[plane].second;
 
+	const auto& adc_img  = shr_img_v[plane];
 	const auto& shr_img  = shr_img_v[plane];
 	const auto& meta = shr_img.meta();
 
@@ -139,6 +151,7 @@ namespace llcv {
 	std::cout << meta.dump() << std::endl;
 	std::cout << crop_meta.dump() << std::endl;
 
+	adc_crop_img_v[plane] = adc_img.crop(crop_meta);
 	shr_crop_img_v[plane] = shr_img.crop(crop_meta);
       }
       
@@ -148,14 +161,18 @@ namespace llcv {
       // cv::imwrite("orig_2.png",mat0_v.back());
       // cv::imwrite("crop_2.png",mat1_v.back());
 
-      auto mat_v = _larmkr.ExtractImage(shr_crop_img_v);
-      
+      auto adc_mat_meta_v = _larmkr.ExtractImage(adc_crop_img_v);
+      auto shr_mat_meta_v = _larmkr.ExtractImage(shr_crop_img_v);
+
       larocv::data::Vertex3D vtx3d;
       vtx3d.x = vtx_X;
       vtx3d.y = vtx_Y;
       vtx3d.z = vtx_Z;
-      auto ret_v = _algo->Search(vtx3d,mat_v);
 
+      auto ret_v = _algo->Search(vtx3d,adc_mat_meta_v,shr_mat_meta_v);
+      
+      // convert to larlite cluster
+      
       std::exit(1);
     }
     
