@@ -9,14 +9,15 @@
 namespace llcv {
   
   void SearchAlgoSingle::Configure(const larcv::PSet &pset) {
-    
+    LLCV_DEBUG() << "start" << std::endl;
     _shower_frac   = pset.get<float>("ShowerFrac",0.8);
     _shower_size   = pset.get<float>("ShowerSize",40);
     _shower_impact = pset.get<float>("ShowerImpact",4); // 4cm
     
     _PixelScan3D.set_verbosity((larocv::msg::Level_t)this->logger().level());
     _PixelScan3D.Configure(pset.get<larocv::Config_t>("PixelScan3D"));
-
+    LLCV_DEBUG() << "end" << std::endl;
+    return;
   }
 
   std::vector<llcv::DetachedCandidate>

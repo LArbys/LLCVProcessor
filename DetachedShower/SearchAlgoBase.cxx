@@ -17,6 +17,8 @@ namespace llcv {
     std::vector<cv::Mat> adc_mat_v(3);
     std::vector<cv::Mat> shr_mat_v(3);
     std::vector<larocv::ImageMeta> adc_meta_v(3);
+
+    vtx3d.vtx2d_v.resize(3);
     
     for(size_t plane=0; plane<3; ++plane) {
       const auto& adc_mat_meta = adc_mat_meta_v[plane];

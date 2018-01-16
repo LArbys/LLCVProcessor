@@ -19,7 +19,11 @@ namespace llcv {
 
   public:
 
-  SearchAlgoBase(std::string name="SearchAlgoBase") : _name(name) {}
+  SearchAlgoBase(std::string name="SearchAlgoBase")
+    : llcv_base(name)
+      ,_name(name) 
+    {}
+    
     virtual ~SearchAlgoBase() {}
 
     const std::string& Name() const;
