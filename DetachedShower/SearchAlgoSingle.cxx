@@ -53,7 +53,6 @@ namespace llcv {
       ctor_vv[plane] = std::move(ctor_v);
     }
     
-    
     std::array<size_t, 3> vtx_ctor_v;
     std::array<bool,3> valid_plane_v;
     std::array<cv::Mat,3> simg_v;
@@ -62,6 +61,14 @@ namespace llcv {
 
     LLCV_DEBUG() << "@vtx3d=(" << vtx3d.x << "," << vtx3d.y << "," << vtx3d.z << ")" << std::endl;
     
+    cv::imwrite("/tmp/adc0_img0.png",adc_mat_v[0]);
+    cv::imwrite("/tmp/adc0_img1.png",adc_mat_v[1]);
+    cv::imwrite("/tmp/adc0_img2.png",adc_mat_v[2]);
+
+    cv::imwrite("/tmp/shr0_img0.png",shr_mat_v[0]);
+    cv::imwrite("/tmp/shr0_img1.png",shr_mat_v[1]);
+    cv::imwrite("/tmp/shr0_img2.png",shr_mat_v[2]);
+
     // project the vertex into the contour, if inside, remove from image
     for(size_t plane=0; plane<3; ++plane) {
       LLCV_DEBUG() << "@plane=" << plane << std::endl;
@@ -76,25 +83,35 @@ namespace llcv {
       if (vtx2d.pt.x < 0 or vtx2d.pt.x == kINVALID_FLOAT) continue;
       if (vtx2d.pt.y < 0 or vtx2d.pt.y == kINVALID_FLOAT) continue;
       
-      auto id = larocv::FindContainingContour(ctor_v, vtx2d.pt);
-      
+      double distance = kINVALID_DOUBLE;
+      auto id = larocv::FindContainingContour(ctor_v, vtx2d.pt,distance);
+
+      if (id == kINVALID_SIZE) {
+	LLCV_DEBUG() << "Could not be found..." << std::endl;
+	continue;      
+      }
+
+      if (distance < -10) {
+	LLCV_DEBUG() << "Too far away..." << std::endl;
+	continue;
+      }
+
       valid_plane_v[plane] = true;
 
       LLCV_DEBUG() << "masking vertex contour @id=" << id << std::endl;
-      if (id == kINVALID_SIZE) continue;
 
       const auto& ctor = ctor_v.at(id);
       vtx_ctor_v[plane] = id;
       simg_v[plane] = larocv::MaskImage(simg_v[plane],ctor,0,true);
     }
-      
+
     // find shower contours
     for(size_t plane=0; plane<3; ++plane) {
       auto sctor_v  = larocv::FindContours(simg_v[plane]); 
       sctor_vv[plane] = std::move(sctor_v);
     }
     
-    // clear possible detahed shower contours
+    // clear possible detached shower contours
     for(auto& v : actor_vv) v.clear();
     
     for(size_t plane = 0; plane<3; ++plane) {
@@ -135,7 +152,7 @@ namespace llcv {
 	actor_v.emplace_back(ctor);
       }
     }
-      
+
     //
     // not enough contours, continue
     //
@@ -215,8 +232,6 @@ namespace llcv {
       sps.pt = *vtx;
     }
 
-    LLCV_DEBUG() << "Second shower candidate idenfitied" << std::endl;
-
     //
     // get the radial point closest to the vertex in 3D
     //
@@ -230,14 +245,25 @@ namespace llcv {
       }
     }
     
-    //
-    // min_sp is the 3D start point
-    //
-    
+    LLCV_DEBUG() << "Second shower candidate idenfitied" << std::endl;
+
     // make a single shower
     res_v.resize(1);
     auto& res = res_v.front();
+    
+    res.origin = vtx3d;
+    res.start  = min_sp->pt;
 
+    for(int plane=0; plane<3; ++plane) {
+      DetachedCluster dc;
+      auto aid = trip.at(plane);
+      dc.ctor = actor_vv.at(plane).at(aid);
+      dc.start_x = kINVALID_FLOAT;
+      dc.start_y = kINVALID_FLOAT;
+      dc.plane = plane;
+      res.Move(std::move(dc),plane);
+    }
+    
     LLCV_DEBUG() << "end" << std::endl;
     return res_v;
   }

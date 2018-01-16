@@ -8,6 +8,7 @@
 #include "LLCVBase/AnaBase.h"
 
 //lcv
+#include "DataFormat/EventPGraph.h"
 #include "LArbysImageMaker.h"
 
 //ll
@@ -35,6 +36,12 @@ namespace llcv {
 
     void SetAlgo(SearchAlgoBase* algo) 
     { if(!algo) throw llcv_err("Invalid algo specified"); _algo = algo; }
+
+  private:
+    void FillOutput(const std::vector<DetachedCandidate>& detached_v,
+		    larcv::EventPGraph* ev_pgraph,
+		    larcv::EventPixel2D* ev_pixel,
+		    const std::vector<larcv::Image2D>& adc_img_v);
 
   private:
 

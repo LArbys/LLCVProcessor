@@ -6,6 +6,7 @@
 
 // locv
 #include "LArOpenCV/ImageCluster/Base/ImageClusterTypes.h"
+#include "LArOpenCV/ImageCluster/AlgoData/Vertex.h"
 
 // cpp
 #include <stdexcept>
@@ -33,10 +34,14 @@ namespace llcv {
     
     const llcv::DetachedCluster& CandidateCluster(int plane) const
     { if (plane >=3 or plane<0) throw std::runtime_error("Invalid plane"); return _dcluster_v[plane]; }
+
+    larocv::data::Vertex3D origin;
+    larocv::data::Vertex3D start;
     
   private:
     std::vector<llcv::DetachedCluster> _dcluster_v;
 
+    
   };
 
 }

@@ -50,8 +50,6 @@ namespace llcv {
 
   void SearchDetached::initialize() {
     LLCV_DEBUG() << "start" << std::endl;
-
-
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -63,7 +61,7 @@ namespace llcv {
     
     auto ev_pgraph  = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph ,_pgraph_prod);
     auto ev_pixel   = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,_pixel_prod);
-
+    
     auto ev_out_pgraph = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph ,_out_pgraph_prod);
     auto ev_out_pixel  = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,_out_pixel_prod);
 
@@ -87,7 +85,7 @@ namespace llcv {
 
     std::vector<larcv::Image2D> adc_crop_img_v(3);
     std::vector<larcv::Image2D> shr_crop_img_v(3);
-    for(size_t vtxid=1; vtxid < pgraph_v.size(); ++vtxid) {
+    for(size_t vtxid=0; vtxid < pgraph_v.size(); ++vtxid) {
       
       const auto& pgraph = pgraph_v[vtxid];
       const auto& par = pgraph.ParticleArray().front();
@@ -121,7 +119,7 @@ namespace llcv {
 	auto row = vtx_pixel_v[plane].first;
 	auto col = vtx_pixel_v[plane].second;
 
-	const auto& adc_img  = shr_img_v[plane];
+	const auto& adc_img  = adc_img_v[plane];
 	const auto& shr_img  = shr_img_v[plane];
 	const auto& meta = shr_img.meta();
 
@@ -155,12 +153,6 @@ namespace llcv {
 	shr_crop_img_v[plane] = shr_img.crop(crop_meta);
       }
       
-      // auto mat0_v = _larmkr.ExtractMat(shr_img_v);
-      // auto mat1_v = _larmkr.ExtractMat(shr_crop_img_v);
-	
-      // cv::imwrite("orig_2.png",mat0_v.back());
-      // cv::imwrite("crop_2.png",mat1_v.back());
-
       auto adc_mat_meta_v = _larmkr.ExtractImage(adc_crop_img_v);
       auto shr_mat_meta_v = _larmkr.ExtractImage(shr_crop_img_v);
 
@@ -171,15 +163,75 @@ namespace llcv {
 
       auto ret_v = _algo->Search(vtx3d,adc_mat_meta_v,shr_mat_meta_v);
       
-      // convert to larlite cluster
-      
-      std::exit(1);
+      // no detached showers
+      if (ret_v.empty()) continue;
+
+      // convert to larcv data products
+      FillOutput(ret_v,ev_out_pgraph,ev_out_pixel,adc_crop_img_v);
+
+      LLCV_DEBUG() << "...next vertex" << std::endl;
     }
     
     LLCV_DEBUG() << "end" << std::endl;
     return true;
   }
   
+
+  void SearchDetached::FillOutput(const std::vector<DetachedCandidate>& detached_v,
+				  larcv::EventPGraph* ev_pgraph,
+				  larcv::EventPixel2D* ev_pixel,
+				  const std::vector<larcv::Image2D>& adc_img_v) {
+    larcv::PGraph out_pg;
+
+    for(size_t pid=0;pid<detached_v.size();++pid) {
+      const auto& detached = detached_v[pid];
+      
+      larcv::ROI proi;
+      
+      proi.Position(detached.origin.x,detached.origin.y,detached.origin.z,kINVALID_DOUBLE);
+      proi.EndPosition(detached.start.x,detached.start.y,detached.start.z,kINVALID_DOUBLE);
+      proi.Shape(larcv::kShapeShower);
+
+      for(size_t plane=0; plane<3; ++plane)
+	proi.AppendBB(adc_img_v.at(plane).meta());
+
+      out_pg.Emplace(std::move(proi),pid);
+
+      std::vector<larcv::Pixel2D> ctor_v;
+
+      for(size_t plane=0; plane<3; ++plane) {
+	
+	const auto& pmeta = adc_img_v[plane].meta();
+	
+	ctor_v.clear();
+
+	const auto& pctor = detached.CandidateCluster(plane).ctor;
+	const auto& img2d = adc_img_v.at(plane);
+	
+	if(!pctor.empty()) {
+	  ctor_v.reserve(pctor.size());
+	  
+	  // Store contour
+	  for(const auto& pt : pctor)  {
+	    auto col  = pmeta.cols() - pt.x - 1;
+	    auto row  = pt.y;
+	    auto gray = 1.0;
+	    ctor_v.emplace_back(row,col);
+	    ctor_v.back().Intensity(gray);
+	  }
+	} // empty particle contour on this plane
+	  
+	larcv::Pixel2DCluster pixctor(std::move(ctor_v));
+	ev_pixel->Emplace(plane,std::move(pixctor),pmeta);
+      } // 3 planes
+
+    } // end this detached
+
+    ev_pgraph->Emplace(std::move(out_pg));
+        
+    return; 
+  }
+
   void SearchDetached::MaskImage(const std::vector<larcv::PGraph>& pgraph_v,
 				 const std::map<larcv::PlaneID_t, std::vector<larcv::Pixel2DCluster> >& pix_m,
 				 const std::map<larcv::PlaneID_t, std::vector<larcv::ImageMeta> >&   pix_meta_m,
