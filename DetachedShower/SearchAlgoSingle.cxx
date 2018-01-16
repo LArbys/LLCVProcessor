@@ -9,7 +9,9 @@
 namespace llcv {
   
   void SearchAlgoSingle::Configure(const larcv::PSet &pset) {
-    LLCV_DEBUG() << "start" << std::endl;
+
+    larocv::logger::get_shared().set((larocv::msg::Level_t)this->logger().level());
+
     _shower_frac   = pset.get<float>("ShowerFrac",0.8);
     _shower_size   = pset.get<float>("ShowerSize",40);
     _shower_impact = pset.get<float>("ShowerImpact",4); // 4cm
@@ -26,6 +28,8 @@ namespace llcv {
 			       std::vector<cv::Mat>& shr_mat_v,
 			       const std::vector<larocv::ImageMeta>& meta_v) { 
     
+    larocv::logger::get_shared().set((larocv::msg::Level_t)this->logger().level());
+
     LLCV_DEBUG() << "start" << std::endl;
     
     //

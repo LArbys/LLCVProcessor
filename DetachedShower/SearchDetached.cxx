@@ -123,8 +123,8 @@ namespace llcv {
 	const auto& shr_img  = shr_img_v[plane];
 	const auto& meta = shr_img.meta();
 
-	std::cout << "@plane=" << plane << std::endl;
-	std::cout << "(row,col)="<< row << "," << col << ")" << std::endl;
+	LLCV_DEBUG() << "@plane=" << plane << std::endl;
+	LLCV_DEBUG() << "(row,col)="<< row << "," << col << ")" << std::endl;
 
 	double width  = _search_distance*meta.pixel_width();
 	double height = _search_distance*meta.pixel_height();
@@ -135,22 +135,30 @@ namespace llcv {
 	double origin_x = meta.pos_x(col);
 	double origin_y = meta.pos_y(row);
 
-	std::cout << "(" << origin_x << "," << origin_y << ")" << std::endl;
+	LLCV_DEBUG() << "(" << origin_x << "," << origin_y << ")" << std::endl;
 
 	origin_x -= width/2.0;
 	origin_y += height/2.0;
-	
+
+
+	if (origin_x > meta.tr().x) origin_x = meta.tr().x;
+	if (origin_y > meta.tl().y) origin_y = meta.tl().y;
+
+	if (origin_x < 0) origin_x = 0;
+	if (origin_y < 0) origin_y = 0;
+
 	larcv::ImageMeta crop_meta(width,height,
 				   row_count,col_count,
 				   origin_x,origin_y,
 				   plane);
 	
-	std::cout << "a" << std::endl;
-	std::cout << meta.dump() << std::endl;
-	std::cout << crop_meta.dump() << std::endl;
+	LLCV_WARNING() << meta.dump();
+	LLCV_WARNING() << crop_meta.dump();
 
 	adc_crop_img_v[plane] = adc_img.crop(crop_meta);
 	shr_crop_img_v[plane] = shr_img.crop(crop_meta);
+	
+	LLCV_WARNING() << std::endl;
       }
       
       auto adc_mat_meta_v = _larmkr.ExtractImage(adc_crop_img_v);
@@ -160,7 +168,7 @@ namespace llcv {
       vtx3d.x = vtx_X;
       vtx3d.y = vtx_Y;
       vtx3d.z = vtx_Z;
-
+      
       auto ret_v = _algo->Search(vtx3d,adc_mat_meta_v,shr_mat_meta_v);
       
       // no detached showers

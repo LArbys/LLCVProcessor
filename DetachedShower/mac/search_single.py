@@ -55,10 +55,11 @@ proc.add_lc_proc(shr_image)
 
 # algo
 single_shr = llcv.SearchAlgoSingle()
-single_shr.set_verbosity(0)
+single_shr.set_verbosity(2)
 
 # driver
 locate_shr = llcv.SearchDetached()
+single_shr.set_verbosity(2)
 
 locate_shr.SetAlgo(single_shr)
 
@@ -73,7 +74,7 @@ proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 proc.initialize()
 
-proc.batch_process_lcv_reverse(1,1)
+proc.batch_process_lcv_reverse()
 
 proc.finalize()
 
