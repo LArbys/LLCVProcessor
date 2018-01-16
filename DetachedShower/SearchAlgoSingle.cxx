@@ -65,14 +65,6 @@ namespace llcv {
 
     LLCV_DEBUG() << "@vtx3d=(" << vtx3d.x << "," << vtx3d.y << "," << vtx3d.z << ")" << std::endl;
     
-    cv::imwrite("/tmp/adc0_img0.png",adc_mat_v[0]);
-    cv::imwrite("/tmp/adc0_img1.png",adc_mat_v[1]);
-    cv::imwrite("/tmp/adc0_img2.png",adc_mat_v[2]);
-
-    cv::imwrite("/tmp/shr0_img0.png",shr_mat_v[0]);
-    cv::imwrite("/tmp/shr0_img1.png",shr_mat_v[1]);
-    cv::imwrite("/tmp/shr0_img2.png",shr_mat_v[2]);
-
     // project the vertex into the contour, if inside, remove from image
     for(size_t plane=0; plane<3; ++plane) {
       LLCV_DEBUG() << "@plane=" << plane << std::endl;
