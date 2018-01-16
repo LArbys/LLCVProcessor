@@ -74,7 +74,7 @@ proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 proc.initialize()
 
-proc.batch_process_lcv_reverse()
+proc.batch_process_lcv_reverse(0,10)
 
 proc.finalize()
 

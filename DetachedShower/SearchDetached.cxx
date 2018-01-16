@@ -152,13 +152,13 @@ namespace llcv {
 				   origin_x,origin_y,
 				   plane);
 	
-	LLCV_WARNING() << meta.dump();
-	LLCV_WARNING() << crop_meta.dump();
+	LLCV_DEBUG() << meta.dump();
+	LLCV_DEBUG() << crop_meta.dump();
 
 	adc_crop_img_v[plane] = adc_img.crop(crop_meta);
 	shr_crop_img_v[plane] = shr_img.crop(crop_meta);
 	
-	LLCV_WARNING() << std::endl;
+	LLCV_DEBUG() << std::endl;
       }
       
       auto adc_mat_meta_v = _larmkr.ExtractImage(adc_crop_img_v);
