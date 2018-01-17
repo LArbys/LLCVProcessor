@@ -42,7 +42,7 @@ namespace llcv {
     _larmkr.Configure(cfg.get<larcv::PSet>("LArbysImageMaker"));
 
     if(!_algo) throw llcv_err("No algo specified");
-    
+
     _algo->Configure(cfg.get<larcv::PSet>(_algo->Name()));
 
     LLCV_DEBUG() << "end" << std::endl;
@@ -65,26 +65,28 @@ namespace llcv {
     auto ev_out_pgraph = (larcv::EventPGraph*) mgr.get_data(larcv::kProductPGraph ,_out_pgraph_prod);
     auto ev_out_pixel  = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,_out_pixel_prod);
 
-    //
-    // mask the particle image
-    //
     auto adc_img_v = ev_adc_img->Image2DArray();
     auto shr_img_v = ev_shr_img->Image2DArray();
     const auto& pgraph_v   = ev_pgraph->PGraphArray();
     const auto& pix_m      = ev_pixel->Pixel2DClusterArray();
     const auto& pix_meta_m = ev_pixel->ClusterMetaArray();
-    
+
+    //
+    // mask the particles around the vertex out of the image
+    //
     if (_mask_particles) {
       MaskImage(pgraph_v,pix_m,pix_meta_m,adc_img_v);
       MaskImage(pgraph_v,pix_m,pix_meta_m,shr_img_v);
     }
 
     // 
-    // search for the other shower per vertex
+    // search for a detached candidate per vertex
     //
-
     std::vector<larcv::Image2D> adc_crop_img_v(3);
     std::vector<larcv::Image2D> shr_crop_img_v(3);
+
+    std::vector<std::pair<int,int> > vtx_pixel_v;
+
     for(size_t vtxid=0; vtxid < pgraph_v.size(); ++vtxid) {
       
       const auto& pgraph = pgraph_v[vtxid];
@@ -95,13 +97,13 @@ namespace llcv {
 
       LLCV_DEBUG() << "@vtxid=" << vtxid 
 		   << " (" << vtx_X << "," << vtx_Y << "," << vtx_Z << ")" << std::endl;
-
-      // project 3d vertex into plane
-      // crop image to specified dimension
+      
+      // project 3d vertex into plane & crop to specified dimension
       double xpixel = kINVALID_DOUBLE;
       double ypixel = kINVALID_DOUBLE;
 
-      std::vector<std::pair<int,int> > vtx_pixel_v(3);
+      vtx_pixel_v.clear();
+      vtx_pixel_v.resize(3);
 
       for(size_t plane=0; plane<3; ++plane) {
 	xpixel = ypixel = kINVALID_DOUBLE;
@@ -114,7 +116,7 @@ namespace llcv {
 	LLCV_DEBUG() << "@plane=" << plane << " (" << yy << "," << xx << ")" << std::endl;
       }
 
-      // crop the image by defined number of pixels left and right
+      // crop the image by defined number of pixels left and right in user config
       for(size_t plane=0; plane<3; ++plane) {
 	auto row = vtx_pixel_v[plane].first;
 	auto col = vtx_pixel_v[plane].second;
@@ -125,27 +127,59 @@ namespace llcv {
 
 	LLCV_DEBUG() << "@plane=" << plane << std::endl;
 	LLCV_DEBUG() << "(row,col)="<< row << "," << col << ")" << std::endl;
+	LLCV_DEBUG() << "search dist=" << _search_distance << std::endl;
+	LLCV_DEBUG() << "pixel (width,height)=(" << meta.pixel_width() << "," << meta.pixel_height() << ")" << std::endl;
 
 	double width  = _search_distance*meta.pixel_width();
 	double height = _search_distance*meta.pixel_height();
 
+	LLCV_DEBUG() << "(width,height)=("<< width << "," << height << ")" << std::endl;
+
 	size_t row_count = (size_t) _search_distance;
 	size_t col_count = (size_t) _search_distance;
 
-	double origin_x = meta.pos_x(col);
-	double origin_y = meta.pos_y(row);
+	LLCV_DEBUG() << "(rows,cols)=("<< row_count << "," << col_count << ")" << std::endl;
+	LLCV_DEBUG() << "origin (x,y)=( " << meta.tl().x << "," << meta.tl().y << ")" << std::endl;
 
-	LLCV_DEBUG() << "(" << origin_x << "," << origin_y << ")" << std::endl;
+	double origin_x = meta.tl().x + meta.pixel_width() * ((double)col);
+	double origin_y = meta.tl().y - meta.pixel_height() * ((double)row);
+
+	LLCV_DEBUG() << "0 (" << origin_x << "," << origin_y << ")" << std::endl;
 
 	origin_x -= width/2.0;
 	origin_y += height/2.0;
 
+	LLCV_DEBUG() << "1 (" << origin_x << "," << origin_y << ")" << std::endl;
 
+	LLCV_DEBUG() << "tl: " << meta.tl().x << "," << meta.tl().y << std::endl;
+	LLCV_DEBUG() << "tr: " << meta.tr().x << "," << meta.tr().y << std::endl;
+	LLCV_DEBUG() << "bl: " << meta.bl().x << "," << meta.bl().y << std::endl;
+	LLCV_DEBUG() << "br: " << meta.br().x << "," << meta.br().y << std::endl;
+	
+	// check if origin is on the edge, move it to the edge if needed
+	if (origin_x < meta.tl().x) origin_x = meta.tl().x;
 	if (origin_x > meta.tr().x) origin_x = meta.tr().x;
-	if (origin_y > meta.tl().y) origin_y = meta.tl().y;
 
-	if (origin_x < 0) origin_x = 0;
-	if (origin_y < 0) origin_y = 0;
+	if (origin_y > meta.tl().y) origin_y = meta.tl().y;
+	if (origin_y < meta.br().y) origin_y = meta.br().y;
+
+	// check if origin on the other edge, move if on the edge
+	LLCV_DEBUG() << "2 (" << origin_x << "," << origin_y << ")" << std::endl;
+
+	auto max_x = origin_x + width;
+	auto min_y = origin_y - height;
+
+	if (max_x > meta.max_x()) {
+	  auto dist = meta.max_x() - max_x;
+	  origin_x += dist;
+	}
+
+	if (min_y < meta.min_y()) {
+	  auto dist = meta.min_y() - min_y;
+	  origin_y += dist;
+	}
+
+	LLCV_DEBUG() << "3 (" << origin_x << "," << origin_y << ")" << std::endl;
 
 	larcv::ImageMeta crop_meta(width,height,
 				   row_count,col_count,
@@ -161,17 +195,25 @@ namespace llcv {
 	LLCV_DEBUG() << std::endl;
       }
       
+      LLCV_DEBUG() << "extract image" << std::endl;
+      // convert cropped image2d to cv::Mat
       auto adc_mat_meta_v = _larmkr.ExtractImage(adc_crop_img_v);
       auto shr_mat_meta_v = _larmkr.ExtractImage(shr_crop_img_v);
+      LLCV_DEBUG() << "... extracted" << std::endl;
 
       larocv::data::Vertex3D vtx3d;
       vtx3d.x = vtx_X;
       vtx3d.y = vtx_Y;
       vtx3d.z = vtx_Z;
       
+      // search for detached candidates
+      LLCV_DEBUG() << "search!" << std::endl;
+
       auto ret_v = _algo->Search(vtx3d,adc_mat_meta_v,shr_mat_meta_v);
-      
-      // no detached showers
+
+      LLCV_DEBUG() << "ret_v sz=" << ret_v.size() << std::endl;
+
+      // no detached candidates
       if (ret_v.empty()) continue;
 
       // convert to larcv data products
@@ -192,6 +234,7 @@ namespace llcv {
     larcv::PGraph out_pg;
 
     for(size_t pid=0;pid<detached_v.size();++pid) {
+
       const auto& detached = detached_v[pid];
       
       larcv::ROI proi;
@@ -221,7 +264,7 @@ namespace llcv {
 	  
 	  // Store contour
 	  for(const auto& pt : pctor)  {
-	    auto col  = pmeta.cols() - pt.x - 1;
+	    auto col  = pmeta.rows() - pt.x - 1;
 	    auto row  = pt.y;
 	    auto gray = 1.0;
 	    ctor_v.emplace_back(row,col);
@@ -232,8 +275,7 @@ namespace llcv {
 	larcv::Pixel2DCluster pixctor(std::move(ctor_v));
 	ev_pixel->Emplace(plane,std::move(pixctor),pmeta);
       } // 3 planes
-
-    } // end this detached
+    } // end this detached shower
 
     ev_pgraph->Emplace(std::move(out_pg));
         

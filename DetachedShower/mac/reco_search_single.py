@@ -15,6 +15,8 @@ SSNET_FILE = str(sys.argv[1])
 VTX_FILE   = str(sys.argv[2])
 OUT_DIR    = str(sys.argv[3])
 
+NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
+
 import ROOT
 from larcv import larcv as lcv
 from larlite import larlite as ll
@@ -69,12 +71,12 @@ proc.add_llcv_ana(locate_shr)
 # process
 #
 proc.configure(os.path.join(BASE_PATH,"cfg","second_shower.cfg"))
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "out.root"),"larcv")
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "search_single_%d.root" % NUM),"larcv")
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 proc.initialize()
 
-proc.batch_process_lcv_reverse(0,10)
+proc.batch_process_lcv_reverse()
 
 proc.finalize()
 

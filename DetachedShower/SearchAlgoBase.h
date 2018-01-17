@@ -15,6 +15,14 @@
 #include "LArOpenCV/ImageCluster/AlgoClass/LArPlaneGeo.h"
 
 namespace llcv {
+
+  
+  //
+  // Base class for searching for detached stuff in the shower image
+  // user should inherit from me and fill out Configure & _Search_ methods
+  // to return a vector of DetachedCluster
+  //
+
   class SearchAlgoBase : public llcv_base {
 
   public:
@@ -28,7 +36,7 @@ namespace llcv {
 
     const std::string& Name() const;
 
-    void Configure(const larcv::PSet &pset);
+    virtual void Configure(const larcv::PSet &pset) = 0;
 
     std::vector<llcv::DetachedCandidate>
       Search(larocv::data::Vertex3D& vtx3d,

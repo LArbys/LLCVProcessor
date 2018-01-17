@@ -25,8 +25,8 @@ namespace llcv {
   private:
     float _shower_frac;  
     float _shower_size;  
-    float _shower_impact;
-    
+    bool _mask_vertex;
+
     larocv::PixelScan3D _PixelScan3D;
     
     inline bool CompareAsses(const std::array<size_t,3> & a1, const std::array<size_t,3> & a2)

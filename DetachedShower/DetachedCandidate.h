@@ -12,7 +12,11 @@
 #include <stdexcept>
 
 namespace llcv {
-
+  
+  //
+  // candidate cluster detached from vertex
+  // defined by a bounding contour
+  //
   class DetachedCluster {
   public:
     larocv::GEO2D_Contour_t ctor;
@@ -21,6 +25,9 @@ namespace llcv {
     int plane;
   };
   
+  //
+  // a grouping of upto 3 one-per-plane DetachedClusters
+  //
   class DetachedCandidate {
   public:
     DetachedCandidate() { _dcluster_v.resize(3); }

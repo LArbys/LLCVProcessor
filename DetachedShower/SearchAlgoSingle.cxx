@@ -10,33 +10,34 @@ namespace llcv {
   
   void SearchAlgoSingle::Configure(const larcv::PSet &pset) {
 
-    larocv::logger::get_shared().set((larocv::msg::Level_t)this->logger().level());
-
+    larocv::logger::get_shared().set((larocv::msg::Level_t)2);
     _shower_frac   = pset.get<float>("ShowerFrac",0.8);
-    _shower_size   = pset.get<float>("ShowerSize",40);
-    _shower_impact = pset.get<float>("ShowerImpact",4); // 4cm
-    
+    _shower_size   = pset.get<float>("ShowerSize",10);
+    _mask_vertex   = pset.get<bool>("MaskVertex");
     _PixelScan3D.set_verbosity((larocv::msg::Level_t)this->logger().level());
-    _PixelScan3D.Configure(pset.get<larocv::Config_t>("PixelScan3D"));
-    LLCV_DEBUG() << "end" << std::endl;
+    _PixelScan3D.Configure();
+
     return;
   }
 
   std::vector<llcv::DetachedCandidate>
-    SearchAlgoSingle::_Search_(const larocv::data::Vertex3D& vtx3d,
-			       std::vector<cv::Mat>& adc_mat_v,
-			       std::vector<cv::Mat>& shr_mat_v,
-			       const std::vector<larocv::ImageMeta>& meta_v) { 
-    
-    larocv::logger::get_shared().set((larocv::msg::Level_t)this->logger().level());
+  SearchAlgoSingle::_Search_(const larocv::data::Vertex3D& vtx3d,
+			     std::vector<cv::Mat>& adc_mat_v,
+			     std::vector<cv::Mat>& shr_mat_v,
+			     const std::vector<larocv::ImageMeta>& meta_v) { 
 
     LLCV_DEBUG() << "start" << std::endl;
     
     //
-    // setup the return & prepare images
+    // setup the return
     // 
     std::vector<llcv::DetachedCandidate> res_v;
+    res_v.clear();
 
+
+    //
+    // threshold the image
+    //
     for(auto& img : adc_mat_v)
       img = larocv::Threshold(img,10,255);    
 
@@ -47,25 +48,32 @@ namespace llcv {
       _PixelScan3D.SetPlaneInfo(meta);
 
     //
-    // find adc contours
+    // find adc contours per plane
     //
     std::vector<larocv::GEO2D_ContourArray_t> ctor_vv;
     ctor_vv.resize(3);
 
-    for(size_t plane=0; plane<3; ++plane) {
-      auto ctor_v  = larocv::FindContours(adc_mat_v.at(plane)); 
-      ctor_vv[plane] = std::move(ctor_v);
-    }
+    for(size_t plane=0; plane<3; ++plane)
+      ctor_vv[plane] = larocv::FindContours(adc_mat_v.at(plane)); 
+
     
-    std::array<size_t, 3> vtx_ctor_v;
-    std::array<bool,3> valid_plane_v;
-    std::array<cv::Mat,3> simg_v;
+    // shower image which will mask small cluster
+    std::array<cv::Mat,3> simg_v; 
+
+    // id of contour which is closest to vertex ( 10 px threshold )
+    std::array<size_t, 3> vtx_ctor_v; 
+
+    // contours in the shower image
     std::array<larocv::GEO2D_ContourArray_t,3> sctor_vv;
+
+    // candidate contours to perform 3D scan
     std::array<larocv::GEO2D_ContourArray_t,3> actor_vv;
 
     LLCV_DEBUG() << "@vtx3d=(" << vtx3d.x << "," << vtx3d.y << "," << vtx3d.z << ")" << std::endl;
     
-    // project the vertex into the contour, if inside, remove from image
+    //
+    // find the contour closest to the vertex -- may or may not exist
+    //
     for(size_t plane=0; plane<3; ++plane) {
       LLCV_DEBUG() << "@plane=" << plane << std::endl;
       
@@ -84,35 +92,36 @@ namespace llcv {
 
       if (id == kINVALID_SIZE) {
 	LLCV_DEBUG() << "Could not be found..." << std::endl;
+	vtx_ctor_v[plane] = kINVALID_SIZE;
 	continue;      
       }
 
       if (distance < -10) {
 	LLCV_DEBUG() << "Too far away..." << std::endl;
+	vtx_ctor_v[plane] = kINVALID_SIZE;
 	continue;
       }
 
-      valid_plane_v[plane] = true;
-
-      LLCV_DEBUG() << "masking vertex contour @id=" << id << std::endl;
-
-      const auto& ctor = ctor_v.at(id);
       vtx_ctor_v[plane] = id;
-      simg_v[plane] = larocv::MaskImage(simg_v[plane],ctor,0,true);
+      
+      LLCV_DEBUG() << "Identified vertex contour @ id=" << id << std::endl;
     }
 
+    //
     // find shower contours
-    for(size_t plane=0; plane<3; ++plane) {
-      auto sctor_v  = larocv::FindContours(simg_v[plane]); 
-      sctor_vv[plane] = std::move(sctor_v);
-    }
+    //
+    for(size_t plane=0; plane<3; ++plane)
+      sctor_vv[plane] = larocv::FindContours(simg_v[plane]); 
     
+    //
     // clear possible detached shower contours
+    //
     for(auto& v : actor_vv) v.clear();
     
+    //
+    // filter contours by size, area, shower fraction
+    //
     for(size_t plane = 0; plane<3; ++plane) {
-      
-      if(!valid_plane_v[plane]) continue;
 
       const auto& sctor_v  = sctor_vv[plane];
       const auto& ctor_v   = ctor_vv[plane];
@@ -120,26 +129,36 @@ namespace llcv {
       auto& actor_v = actor_vv[plane];
       actor_v.reserve(ctor_v.size());
       
-      // for each adc contour inspect showerness
+      // loop over ADC contours
       for(size_t aid = 0 ; aid < ctor_v.size(); ++aid) {
-	
-	// its the vertex contour
-	if (aid == vtx_ctor_v[plane]) continue; 
-
+	LLCV_DEBUG() << "@aid=" << aid << std::endl;
 	const auto& ctor = ctor_v[aid];
-	
-	// it's too small to be a second shower
-	if(larocv::ContourArea(ctor) < _shower_size) {
+
+	// it's the vertex contour
+	if ( (aid == vtx_ctor_v[plane]) && (_mask_vertex))  {
+	  LLCV_DEBUG() << "skip vtx contour @aid=" << aid << std::endl;
 	  simg_v[plane] = larocv::MaskImage(simg_v[plane],ctor,0,true);
 	  continue; 
 	}
 
+	// it's too small to be a second shower 
+	if(larocv::ContourArea(ctor) < _shower_size) {
+	  LLCV_DEBUG() << "too small" << std::endl;
+	  simg_v[plane] = larocv::MaskImage(simg_v[plane],ctor,0,true);
+	  continue; 
+	}
+	
+	// check if this adc contours is in the shower image
 	auto sid = larocv::FindContainingContour(sctor_v,ctor);
-	if (sid == kINVALID_SIZE) continue;
+	if (sid == kINVALID_SIZE) { 
+	  LLCV_DEBUG() << "no simg correspond" << std::endl;
+	  continue;
+	}
 
 	// it's not shower enough
 	double frac = larocv::AreaRatio(sctor_v.at(sid),ctor);
 	if (frac < _shower_frac)  {
+	  LLCV_DEBUG() << "not enough shower frac" << std::endl;
 	  simg_v[plane] = larocv::MaskImage(simg_v[plane],ctor,0,true); 
 	  continue;
 	}
@@ -153,27 +172,45 @@ namespace llcv {
     // not enough contours, continue
     //
     size_t cnt=0;
-    for(const auto& actor_v : actor_vv) 
-      { if (!actor_v.empty()) cnt +=1; }
-    
-    if (cnt<2) return res_v;
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& actor_v = actor_vv[plane];
+      if (!actor_v.empty()) cnt +=1; 
+      LLCV_DEBUG() << "@plane=" << plane << " actor sz=" << actor_v.size() << std::endl;
+    }
+
+    //
+    // There must be at least 1 on two planes to match
+    //
+    if (cnt<2) {
+      LLCV_DEBUG() << "... no candidate" << std::endl;
+      return res_v;
+    }
     
     //
-    // Register regions for the scan (spheres)
+    // Register regions for the scan -- spheres of fixed dimension
     //
+    LLCV_DEBUG() << "Scan" << std::endl;
     auto reg_vv = _PixelScan3D.RegionScan3D(simg_v,vtx3d);
       
     //
-    // associate to contours to valid 3D points on sphere
+    // Associate the candidate contours to valid 3D points on sphere
     //
+    LLCV_DEBUG() << "Associate" << std::endl;
     auto ass_vv = _PixelScan3D.AssociateContours(reg_vv,actor_vv);
       
     //
     // count the number of consistent 3D points per contour ID
     //
+
+    // vector of (trip)lets -- each triplet is a match of contours acrossp planes
     std::vector<std::array<size_t,3>> trip_v;
-    std::vector<std::vector<const larocv::data::Vertex3D*> > trip_vtx_ptr_vv;
+    
+    // counter per triplet of number of consistent 3D points
     std::vector<size_t> trip_cnt_v;
+    
+    // vector of 3D points per triplet to play with
+    std::vector<std::vector<const larocv::data::Vertex3D*> > trip_vtx_ptr_vv;
+
 
     bool found = false;
     for(size_t assvid =0; assvid < ass_vv.size(); ++assvid) {
@@ -202,24 +239,30 @@ namespace llcv {
     LLCV_DEBUG() << "trip_cnt_v sz=" << trip_cnt_v.size() << std::endl;
     for(size_t tid=0; tid< trip_v.size(); ++tid) {
       LLCV_DEBUG() << "@tid=" << tid 
-		     << " {" << trip_v[tid][0] << "," << trip_v[tid][1]  << "," << trip_v[tid][2] << "} = " 
-		     << trip_cnt_v[tid] << std::endl;
+		   << " {" << trip_v[tid][0] << "," << trip_v[tid][1]  << "," << trip_v[tid][2] << "} = " 
+		   << trip_cnt_v[tid] << std::endl;
     }
       
     
     //
     // no candidate could be associated across planes
     //
-    if (trip_v.empty()) return res_v;
+    if (trip_v.empty()) {
+      LLCV_DEBUG() << "... no associated particles across planes" << std::endl;
+      return res_v;
+    }
 
     //
-    // pick the most 3D consistent contours
+    // pick the most 3D consistent triplet
     //
     size_t maxid = std::distance(trip_cnt_v.begin(), std::max_element(trip_cnt_v.begin(), trip_cnt_v.end()));
     LLCV_DEBUG() << "Selected max element @pos=" << maxid << std::endl;
     const auto& trip           = trip_v.at(maxid);
     const auto& trip_vtx_ptr_v = trip_vtx_ptr_vv.at(maxid);
-      
+    
+    //
+    // make a vector of space points (was to do PCA, but forget it)
+    //
     std::vector<larocv::data::SpacePt> sps_v;
     sps_v.resize(trip_vtx_ptr_v.size());
     for(size_t sid=0; sid<sps_v.size(); ++sid) {
@@ -229,7 +272,7 @@ namespace llcv {
     }
 
     //
-    // get the radial point closest to the vertex in 3D
+    // get the radial point closest to the vertex in 3D to call a start point
     //
     double min_dist = kINVALID_DOUBLE;
     const larocv::data::SpacePt* min_sp = nullptr;
@@ -242,17 +285,27 @@ namespace llcv {
     }
     
     LLCV_DEBUG() << "Second shower candidate idenfitied" << std::endl;
+    
 
-    // make a single shower
+    //
+    // make a single shower since that's what this module does
+    //
     res_v.resize(1);
     auto& res = res_v.front();
     
+    // set the start point
     res.origin = vtx3d;
-    res.start  = min_sp->pt;
-
+    if(min_sp) res.start  = min_sp->pt;
+    
+    // fill the output
     for(int plane=0; plane<3; ++plane) {
+      LLCV_DEBUG() << "@plane=" << plane << std::endl;
       DetachedCluster dc;
       auto aid = trip.at(plane);
+      if (aid==kINVALID_SIZE) {
+	LLCV_DEBUG() << "...skip!" << std::endl;
+	continue;
+      }
       dc.ctor = actor_vv.at(plane).at(aid);
       dc.start_x = kINVALID_FLOAT;
       dc.start_y = kINVALID_FLOAT;
@@ -261,6 +314,7 @@ namespace llcv {
     }
     
     LLCV_DEBUG() << "end" << std::endl;
+    // send the output back to the driver to make pgraph + pixel2d
     return res_v;
   }
 
