@@ -154,12 +154,17 @@ namespace llcv {
       LLCV_DEBUG() << "@entry=" << entry << std::endl;
       _dataco.goto_entry(entry,ftype);
       
+      _ll_unit_status   = true;
+      _lcv_unit_status  = true;
+      _llcv_unit_status = true;
+
       // ll
       LLCV_DEBUG() << "processing ll" << std::endl;
       for(size_t aid=0; aid < _ll_ana_v.size(); ++aid) {
 	LLCV_DEBUG() << "@id=" << aid << " name=" << _ll_ana_v[aid]->class_name() << " (" << _ll_ana_v[aid] << ")"  << std::endl;
 	_ll_status_v[aid] = _ll_ana_v[aid]->analyze(&_dataco.get_larlite_io());
 	_ll_unit_status = _ll_unit_status && _ll_status_v[aid];
+	if(!_ll_unit_status) break;
       }
     
       //lcv
@@ -168,14 +173,16 @@ namespace llcv {
 	LLCV_DEBUG() << "@id=" << aid << " name=" << _lcv_proc_v[aid]->name() << " (" << _lcv_proc_v[aid] << ")"  << std::endl;
 	_lcv_status_v[aid] = _lcv_proc_v[aid]->process(_dataco.get_larcv_io());
 	_lcv_unit_status = _lcv_unit_status && _lcv_status_v[aid];
+	if(!_lcv_unit_status) break;
       }
       
       // ll & llcv
       LLCV_DEBUG() << "processing ll+lcv" << std::endl;
-      for(size_t aid=0; aid < _llcv_ana_v.size(); ++aid) {
+      for(size_t aid=0; aid < _llcv_ana_v.size() and _lcv_unit_status and _ll_unit_status; ++aid) {
 	LLCV_DEBUG() << "@id=" << aid << " name=" << _llcv_ana_v[aid]->name() << " (" << _llcv_ana_v[aid] << ")"  << std::endl;
 	_llcv_status_v[aid] = _llcv_ana_v[aid]->_process_(_dataco.get_larcv_io(),_dataco.get_larlite_io());
 	_llcv_unit_status = _llcv_unit_status && _llcv_status_v[aid];
+	if(!_llcv_unit_status) break;
       }
 
       // (?)

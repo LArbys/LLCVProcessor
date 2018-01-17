@@ -21,7 +21,12 @@ namespace llcv {
   private:
 
     HandShaker _HandShaker;
-    
+
+    std::string _in_hit_prod;
+    std::string _in_pgraph_prod;
+    std::string _in_ctor_prod;
+    std::string _out_prod;
+
   };
 
 }
