@@ -1,5 +1,5 @@
-#ifndef __INTERTOOL_INTERSEL_H__
-#define __INTERTOOL_INTERSEL_H__
+#ifndef __INTERTOOL_INTERSELBASE_H__
+#define __INTERTOOL_INTERSELBASE_H__
 
 namespace llcv {
 

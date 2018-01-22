@@ -1,5 +1,5 @@
-#ifndef __INTERTOOL_INTERANA_H__
-#define __INTERTOOL_INTERANA_H__
+#ifndef __INTERTOOL_INTERANABASE_H__
+#define __INTERTOOL_INTERANABASE_H__
 
 namespace llcv {
 
