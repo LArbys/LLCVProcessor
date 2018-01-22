@@ -6,7 +6,7 @@
 #pragma link C++ class llcv::InterImage+;
 #pragma link C++ class llcv::InterSelBase+;
 #pragma link C++ class llcv::InterAnaBase+;
-#pragma link C++ class llcv::InterManager+;
+#pragma link C++ class llcv::InterImageManager+;
 
 #endif
 
