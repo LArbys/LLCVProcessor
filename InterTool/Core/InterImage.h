@@ -8,13 +8,13 @@ namespace llcv {
 
   class InterImage {
   public:
-
+    
     cv::Mat mat;
     larocv::ImageMeta meta;
     larcv::Image2D img2d;
-
+    
     template<class T> T* get(){ return nullptr; }
-
+    
   };
 
   template<> inline cv::Mat* InterImage::get<cv::Mat> () { return &mat; }

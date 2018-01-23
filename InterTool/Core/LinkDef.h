@@ -5,12 +5,11 @@
 
 #pragma link C++ class llcv::InterImage+;
 #pragma link C++ class llcv::InterTTreeSpec+;
-#pragma link C++ class llcv::InterTTreeHandler+;
+#pragma link C++ class llcv::InterTTreeManager+;
 #pragma link C++ class llcv::InterSelBase+;
 #pragma link C++ class llcv::InterAnaBase+;
 #pragma link C++ class llcv::InterImageManager+;
 #pragma link C++ class llcv::InterDataManager+;
 #pragma link C++ class llcv::InterDriver+;
-#pragma link C++ class llcv::InterModule+;
 
 #endif

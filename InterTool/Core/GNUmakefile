@@ -1,6 +1,3 @@
-#
-# This is an example GNUmakefile for my packages
-#
 PACKAGE_NAME = InterTool_Core
 
 # specific names for this package

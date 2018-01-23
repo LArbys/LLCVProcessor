@@ -1,8 +1,13 @@
 #ifndef __INTERDRIVER_H__
 #define __INTERDRIVER_H__
 
+
 #include "InterAnaBase.h"
 #include "InterSelBase.h"
+
+#include "InterTTreeManager.h"
+#include "InterDataManager.h"
+#include "InterImageManager.h"
 
 namespace llcv {
 
@@ -16,6 +21,10 @@ namespace llcv {
     std::vector<InterSelBase*> _sel_base_v;
     
     
+    InterTTreeManager _tree_mgr;
+    InterDataManager  _data_mgr;
+    InterImageManager _img_mgr;
+
   };
   
   
