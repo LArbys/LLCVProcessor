@@ -20,7 +20,8 @@ namespace llcv {
     bool process(larcv::IOManager& mgr, larlite::storage_manager& sto);
     void finalize();
 
-    
+    InterDriver& Driver() { return _driver; }
+
   private:
     
     std::string _adc_img_prod;
@@ -30,10 +31,11 @@ namespace llcv {
     std::string _pgraph_prod;
     std::string _pixel_prod;
     
-    std::string _vertex_prod;
-    std::string _shower_prod;
-    std::string _track_prod;
+    std::string _shower_vertex_prod;
+    std::string _track_vertex_prod;
     std::string _opflash_prod;
+
+    InterDriver _driver;
     
   };
 
