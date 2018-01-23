@@ -1,23 +1,16 @@
-#
-# This is an example GNUmakefile for my packages
-#
-PACKAGE_NAME = InterTool_Core
+CC=g++
 
-# specific names for this package
-SOURCES = $(wildcard *.cxx)
-FMWK_HEADERS = LinkDef.h
-HEADERS = $(filter-out $(FMWK_HEADERS), $(wildcard *.h))
-
-# include options for this package
-INCFLAGS  = -I.      
+INCFLAGS = -I.
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += -I$(LARLITE_USERDEVDIR)
 INCFLAGS += $(shell larcv-config --includes)
 INCFLAGS += $(shell geo2d-config --includes)
 INCFLAGS += -I$(LAROPENCV_BASEDIR)
 INCFLAGS += -I$(LARCV_BASEDIR)/app/LArOpenCVHandle
+INCFLAGS += $(shell root-config --cflags)
 INCFLAGS += $(shell larlitecv-config --includes)
 
+LDFLAGS = -L.
 LDFLAGS += $(shell larlite-config --libs)
 LDFLAGS += -lBasicTool_FhiclLite
 LDFLAGS += $(shell larcv-config --libs)
@@ -27,18 +20,21 @@ LDFLAGS += -lLArOpenCV_ImageClusterBase
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoFunction
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoData
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoClass
+LDFLAGS += $(shell root-config --libs)
+LDFLAGS += $(shell larlitecv-config --libs)
 LDFLAGS += -lTreePlayer
 
-# platform-specific options
-OSNAME          = $(shell uname -s)
-HOST            = $(shell uname -n)
-OSNAMEMODE      = $(OSNAME)
+SOURCES=test.cxx
+OBJECTS=$(SOURCES:.cxx=.o)
+EXECUTABLE=test
 
-include $(LARLITECV_BASEDIR)/Makefile/Makefile.${OSNAME}
+all: $(OBJECTS) $(EXECUTABLE)
 
-# call the common GNUmakefile
-include $(LARLITECV_BASEDIR)/Makefile/GNUmakefile.CORE
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
 
-pkg_build:
-pkg_clean:
+$(OBJECTS): $(SOURCES)
+	$(CC) $(CFLAGS) $(INCFLAGS) -c $< -o $@
 
+clean:
+	rm *.o test

@@ -27,15 +27,14 @@ namespace llcv {
     llcv_base(name), 
       _name(name) ,
       _iimg_v(nullptr)
-      {}
+      { Reset(); }
 
     ~InterImageManager(){}
     
     void SetImage(const std::vector<larcv::Image2D>& img_v, llcv::InterImageType iitype);
-    void SetVertex(float x, float y, float z) {}
+    void SetVertex(float x, float y, float z);
+    void SetPixel(int row, int col, size_t plane);
     void Reset();
-
-    std::vector<std::pair<int,int> > _vtx_pixel_v;
 
     template <class T>
       std::vector<T*> Image(llcv::InterImageType iitype, int cropx, int cropy);
@@ -59,6 +58,8 @@ namespace llcv {
     larcv::LArbysImageMaker _larmkr;
     
     std::vector<InterImage>* _iimg_v;
+
+    std::vector<std::pair<int,int> > _vtx_pixel_v;
   };
 
 

@@ -4,6 +4,8 @@
 #include "InterImageManager.h"
 #include "InterImageManager.imp.h"
 
+#include "RecoTruthMatch/MatchUtils.h"
+
 #include <cassert>
 
 namespace llcv {
@@ -173,6 +175,31 @@ namespace llcv {
     _vtx_pixel_v.clear();
     _vtx_pixel_v.resize(3);
     LLCV_DEBUG() << "end" << std::endl; 
+  }
+
+  
+  void InterImageManager::SetVertex(float x, float y, float z) {
+    
+    SetIIT(kADC,-1,-1);
+    
+    static double xpixel;
+    static double ypixel;
+    for(size_t plane=0; plane<3; ++plane) {
+      xpixel = ypixel = kINVALID_DOUBLE;
+      const auto& meta = (*_iimg_v)[plane].img2d.meta();
+      Project3D(meta,x,y,z,0.0,plane,xpixel,ypixel);
+      int xx = (int)(xpixel+0.5);
+      int yy = (int)(ypixel+0.5);
+      yy = meta.rows() - yy - 1;
+      SetPixel(yy,xx,plane);
+      LLCV_DEBUG() << "@plane=" << plane << " (" << yy << "," << xx << ")" << std::endl;
+    }
+    
+  }
+  
+  void InterImageManager::SetPixel(int row, int col, size_t plane) {
+    if (plane>=_vtx_pixel_v.size()) throw llcv_err("Invalid plane");
+    _vtx_pixel_v[plane] = std::make_pair(row,col);
   }
 
   template std::vector<cv::Mat*> InterImageManager::Image<cv::Mat>(llcv::InterImageType iitype, int cropx, int cropy);
