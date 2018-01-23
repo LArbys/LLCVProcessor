@@ -4,11 +4,11 @@
 namespace llcv {
 
   enum InterImageType {
-    kUNKNOWN = 0,
+    kINTER_IMAGE_TYPE_UNKNOWN = 0,
     kADC = 1,
     kTRK = 2,
     kSHR = 3,
-    kMAX = 4
+    kINTER_IMAGE_TYPE_MAX = 4
   };
 
 }

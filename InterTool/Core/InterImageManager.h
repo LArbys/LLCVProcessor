@@ -10,7 +10,6 @@
 #include "InterImage.h"
 
 //locv
-#include "LArOpenCV/ImageCluster/AlgoData/Vertex.h"
 
 //lcv
 #include "DataFormat/Image2D.h"
@@ -38,8 +37,8 @@ namespace llcv {
 
     std::vector<std::pair<int,int> > _vtx_pixel_v;
 
-    std::vector<cv::Mat*> 
-      OCVImage(llcv::InterImageType iitype=kADC, int cropx=-1, int cropy=-1);
+    template <class T>
+      std::vector<T*> Image(llcv::InterImageType iitype, int cropx, int cropy);
 
   private:
 
@@ -49,18 +48,19 @@ namespace llcv {
     void SetIIT(InterImageType iitype,int cropx, int cropy);
 
     void InitializeOCVImage(InterImageType iitype);
+
     void CropImage(int cropx, int cropy,InterImageType iitype);
+    void CropImage(const std::pair<int,int>& cpair, InterImageType iitype);
 
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_adc_m;
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_shr_m;
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_trk_m;
 
-    larocv::data::Vertex3D _vtx;
-
     larcv::LArbysImageMaker _larmkr;
     
     std::vector<InterImage>* _iimg_v;
   };
+
 
 }
 

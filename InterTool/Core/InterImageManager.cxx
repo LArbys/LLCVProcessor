@@ -2,6 +2,7 @@
 #define __INTERIMAGEMANAGER_CXX__
 
 #include "InterImageManager.h"
+#include "InterImageManager.imp.h"
 
 #include <cassert>
 
@@ -44,6 +45,10 @@ namespace llcv {
     return;
   }
   
+  void InterImageManager::CropImage(const std::pair<int,int>& cpair, InterImageType iitype) {
+    CropImage(cpair.first,cpair.second,iitype);
+  }
+
   void InterImageManager::CropImage(int cropx, int cropy, InterImageType iitype) {
     LLCV_DEBUG() << "start" << std::endl;         
     
@@ -139,29 +144,8 @@ namespace llcv {
     return;
   }
 
-
-  std::vector<cv::Mat*> InterImageManager::OCVImage(llcv::InterImageType iitype, int cropx, int cropy) {
-    LLCV_DEBUG() << "start" << std::endl;     
-
-    std::pair<int,int> cpair = std::make_pair(cropx,cropy);
-
-    SetIIT(iitype,cpair);
-
-    if ((*_iimg_v).empty())
-      CropImage(cropx,cropy,iitype);
-    
-    std::vector<cv::Mat*> res_v;
-    res_v.reserve((*_iimg_v).size());
-    for(auto& iimg : *_iimg_v) 
-      res_v.push_back(&(iimg.mat));
-
-    LLCV_DEBUG() << "end" << std::endl;     
-    return res_v;
-  }
-
-
   void InterImageManager::SetImage(const std::vector<larcv::Image2D>& img_v, llcv::InterImageType iitype) {
-
+    
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "InterImageType=" << (int)iitype << std::endl;
 
@@ -177,6 +161,7 @@ namespace llcv {
     InitializeOCVImage(iitype);
 
     LLCV_DEBUG() << "end" << std::endl; 
+    return;
   }
 
   void InterImageManager::Reset() {
@@ -189,7 +174,11 @@ namespace llcv {
     _vtx_pixel_v.resize(3);
     LLCV_DEBUG() << "end" << std::endl; 
   }
-  
+
+  template std::vector<cv::Mat*> InterImageManager::Image<cv::Mat>(llcv::InterImageType iitype, int cropx, int cropy);
+  template std::vector<larocv::ImageMeta*> InterImageManager::Image<larocv::ImageMeta>(llcv::InterImageType iitype, int cropx, int cropy);
+  template std::vector<larcv::Image2D*> InterImageManager::Image<larcv::Image2D>(llcv::InterImageType iitype, int cropx, int cropy);
+
 }
 
 #endif
