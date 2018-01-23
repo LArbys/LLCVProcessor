@@ -1,5 +1,7 @@
-#ifndef __INTERTOOL_INTERSELBASE_CXX__
-#define __INTERTOOL_INTERSELBASE_CXX__
+#ifndef __INTERSELBASE_CXX__
+#define __INTERSELBASE_CXX__
+
+#include "InterSelBase.h"
 
 namespace llcv {
 

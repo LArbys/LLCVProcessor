@@ -1,4 +1,4 @@
-SUBDIRS :=  Core
+SUBDIRS :=  Core App
 
 .phony: all clean
 

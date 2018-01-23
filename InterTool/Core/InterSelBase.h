@@ -1,13 +1,15 @@
-#ifndef __INTERTOOL_INTERSELBASE_H__
-#define __INTERTOOL_INTERSELBASE_H__
+#ifndef __INTERSELBASE_H__
+#define __INTERSELBASE_H__
+
+#include "LLCVBase/llcv_base.h"
 
 namespace llcv {
-
-  class InterSel { 
+  
+  class InterSelBase : public llcv_base { 
   public:
-    InterSel(){}
-    virtual ~InterSel(){}
-
+  InterSelBase(std::string name="InterSelBase") : llcv_base(name) {}
+    virtual ~InterSelBase(){}
+    
   };
 
 }

@@ -1,13 +1,15 @@
-#ifndef __INTERTOOL_INTERANABASE_H__
-#define __INTERTOOL_INTERANABASE_H__
+#ifndef __INTERANABASE_H__
+#define __INTERANABASE_H__
+
+#include "LLCVBase/llcv_base.h"
 
 namespace llcv {
 
-  class InterAna { 
+  class InterAnaBase : public llcv_base { 
   public:
-    InterAna(){}
-    virtual ~InterAna(){}
-
+  InterAnaBase(std::string name="InterAnaBase") : llcv_base(name) {}
+    virtual ~InterAnaBase(){}
+    
   };
 
 }

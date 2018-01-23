@@ -1,5 +1,7 @@
-#ifndef __INTERTOOL_INTERANABASE_CXX__
-#define __INTERTOOL_INTERANABASE_CXX__
+#ifndef __INTERANABASE_CXX__
+#define __INTERANABASE_CXX__
+
+#include "InterAnaBase.h"
 
 namespace llcv {
 
