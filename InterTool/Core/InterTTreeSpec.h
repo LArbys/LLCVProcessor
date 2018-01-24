@@ -11,9 +11,9 @@ namespace llcv {
   public:
     void LoadTree(TChain& tc);
 
-    std::map<std::string, int*> _imap;
-    std::map<std::string, double*> _dmap;
-    std::map<std::string, float*> _fmap;
+    std::map<std::string, int> _imap;
+    std::map<std::string, double> _dmap;
+    std::map<std::string, float> _fmap;
     std::map<std::string, std::vector<float>* > _vmap;
     std::map<std::string, std::vector<std::vector<float> >* > _vvmap;
 

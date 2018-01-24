@@ -5,16 +5,16 @@
 
 namespace llcv {
   
-  class InterSelToy : public llcv_base { 
+  class InterSelToy : public InterSelBase { 
 
   public:
 
-  InterSelToy(std::string name="InterSelToy") : llcv_base(name) {}
-    virtual ~InterSelToy(){}
+  InterSelToy(std::string name="InterSelToy") : InterSelBase(name) {}
+    ~InterSelToy(){}
     
-    void Configure (const larcv::PSet &pset) {}
-    float Select() { return 0.0; }
-    void Finalize() {}
+    void Configure (const larcv::PSet &pset);
+    float Select();
+    void Finalize();
     
     
   protected:

@@ -11,8 +11,12 @@
 #include "Base/PSet.h"
 
 namespace llcv {
-  
+
+  class InterDriver;  
+
   class InterSelBase : public llcv_base { 
+
+    friend class InterDriver;
 
   public:
 
@@ -26,11 +30,12 @@ namespace llcv {
     
   protected:
     std::string _name;
-        
+
+
   private:
     
-    const InterTTreeManager* _ttree_mgr_ptr;
-    const InterImageManager* _img_mgr_ptr;
+    const InterTTreeManager* _tree_mgr_ptr;
+    InterImageManager* _img_mgr_ptr;
     const InterDataManager* _data_mgr_ptr;
 
     

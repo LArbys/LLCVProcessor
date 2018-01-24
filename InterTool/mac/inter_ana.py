@@ -42,6 +42,8 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 driver.AttachInterFile(INTER_FILE,"vertex_tree")
+driver.AddSelection(llcv.InterSelToy())
+
 
 # process
 proc.add_llcv_ana(imod)

@@ -6,25 +6,62 @@
 namespace llcv {
 
   void InterDriver::Configure(const larcv::PSet& cfg) {
-    LLCV_DEBUG() << "start" << std::endl;
-
     set_verbosity((msg::Level_t)cfg.get<int>("Verbosity",2));
+    LLCV_DEBUG() << "start" << std::endl;
 
     
     
     LLCV_DEBUG() << "end" << std::endl;
   }
 
+  void InterDriver::Initialize() {
+    LLCV_DEBUG() << "start" << std::endl;
+    
+    
+    LLCV_DEBUG() << "end" << std::endl;
+  }
 
   void InterDriver::Process() {
     LLCV_DEBUG() << "start" << std::endl;
-    //
-    // select best candidate vertex per event
-    //
     
-    
+    LLCV_DEBUG() << "Driver@(r,s,e)=(" << _run << "," << _subrun << "," << _event << ")" << std::endl;
 
+    std::vector<std::vector<float> > score_vv;
+    score_vv.resize(_data_mgr_v.size());
+
+    for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
+
+      assert(_run      == _tree_mgr.Run());
+      assert(_subrun   == _tree_mgr.SubRun());
+      assert(_event    == _tree_mgr.Event());
+      std::cout << vtxid << " <=> " << _tree_mgr.Vertex() << std::endl;
+      assert(vtxid == _tree_mgr.Vertex());
+
+      auto& score_v = score_vv[vtxid];
+      score_v.resize(_sel_base_v.size(),kINVALID_FLOAT);
+      const auto& data_mgr = _data_mgr_v[vtxid];
+
+      for(size_t selid=0; selid<_sel_base_v.size(); ++selid) {
+	auto sel_base = _sel_base_v[selid];
+	sel_base->_data_mgr_ptr = &data_mgr;
+	sel_base->_img_mgr_ptr  = &_img_mgr;
+	sel_base->_tree_mgr_ptr = &_tree_mgr;
+
+	score_v[selid] = sel_base->Select();
+      }
+      
+      _tree_mgr.Next();
+    }
     
+    LLCV_DEBUG() << "end" << std::endl;
+  }
+
+  void InterDriver::Finalize() {
+    LLCV_DEBUG() << "start" << std::endl;
+
+    for(auto selptr : _sel_base_v)
+      selptr->Finalize();
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 

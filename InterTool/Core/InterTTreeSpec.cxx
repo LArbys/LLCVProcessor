@@ -29,11 +29,10 @@ namespace llcv {
       };
     }
     
-    run    = _imap.at("run");
-    subrun = _imap.at("subrun");
-    event  = _imap.at("event");
-    vtxid  = _dmap.at("vtxid");
-    
+    run    = &_imap.at("run");
+    subrun = &_imap.at("subrun");
+    event  = &_imap.at("event");
+    vtxid  = &_dmap.at("vtxid");
   }
 
 }

@@ -47,6 +47,8 @@ namespace llcv {
 
     _driver.Configure(cfg.get<larcv::PSet>(_driver.name()));
 
+    _driver._tree_mgr.Configure(cfg.get<larcv::PSet>(_driver._tree_mgr.name()));
+
     for(auto selptr : _driver._sel_base_v)
       selptr->Configure(cfg.get<larcv::PSet>(selptr->name()));
 

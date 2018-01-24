@@ -26,9 +26,9 @@ namespace llcv {
   public:
 
     void Configure(const larcv::PSet& cfg);
-    void Initialize() {}
+    void Initialize();
     void Process();
-    void Finalize() {}
+    void Finalize();
     
   private:
 
