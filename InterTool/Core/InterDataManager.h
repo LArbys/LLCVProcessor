@@ -19,35 +19,37 @@
 
 namespace llcv {
 
-  class InterDataManager : public llcv_base {
+  class InterDriver;
+
+  class InterDataManager {
     
   public:
-  InterDataManager(std::string name="InterDataManager") : 
-    llcv_base(name),
-      _name(name) {}
+    friend class InterDriver;
     
+    InterDataManager() {}
     ~InterDataManager() {}
     
-    
   private:
-    std::string _name;
-
+    // id
+    size_t _id;
+  
     // larlite
-    larlite::vertex* vertex;
-
-    std::vector<larlite::track*> track_v;
-
-    std::vector<larlite::shower*> shower_v;
-    std::vector<larlite::cluster*> cluster_v;
-    std::vector<larlite::hit*> hit_v;
-
-    std::vector<larlite::opflash*> opflash_v;
-    
+    const larlite::vertex* _vertex;
+  
+    std::vector<const larlite::track*> _track_v;
+    std::vector<const larlite::shower*> _shower_v;
+    std::vector<const larlite::cluster*>  _cluster_v;
+    std::vector<const larlite::hit*> _hit_v;
+  
+    std::vector<const larlite::opflash*> _opflash_v;
+  
     // larcv
-    std::vector<larcv::PGraph*> pgraph_v;
-    std::map<larcv::PlaneID_t, std::vector<larcv::Pixel2DCluster> >* pix_m;
-    std::map<larcv::PlaneID_t, std::vector<larcv::ImageMeta> >* pix_meta_m;
-    
+    const larcv::PGraph* _pgraph;
+    std::map<larcv::PlaneID_t, std::vector<larcv::Pixel2DCluster> >* _pix_m;
+  
+    // asses
+    std::vector<std::vector<size_t> > _ass_shower_to_cluster_v;
+    std::vector<std::vector<size_t> > _ass_cluster_to_hit_v;
 
   };
 

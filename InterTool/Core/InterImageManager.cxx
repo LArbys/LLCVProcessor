@@ -12,13 +12,13 @@ namespace llcv {
 
   void InterImageManager::SetIIT(InterImageType iitype,const std::pair<int,int>& cpair) {
     switch(iitype) {
-    case kADC:
+    case kImageADC:
       _iimg_v = &(_inter_adc_m[cpair]);
       break;
-    case kTRK:
+    case kImageTrack:
       _iimg_v = &(_inter_trk_m[cpair]);
       break;
-    case kSHR:
+    case kImageShower:
       _iimg_v = &(_inter_shr_m[cpair]);
       break;
     default: 
@@ -180,7 +180,7 @@ namespace llcv {
   
   void InterImageManager::SetVertex(float x, float y, float z) {
     
-    SetIIT(kADC,-1,-1);
+    SetIIT(kImageADC,-1,-1);
     
     static double xpixel;
     static double ypixel;

@@ -7,9 +7,9 @@ namespace llcv {
 
   enum InterImageType {
     kINTER_IMAGE_TYPE_UNKNOWN = 0,
-    kADC = 1,
-    kTRK = 2,
-    kSHR = 3,
+    kImageADC = 1,
+    kImageTrack = 2,
+    kImageShower = 3,
     kINTER_IMAGE_TYPE_MAX = 4
   };
 

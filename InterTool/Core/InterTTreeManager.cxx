@@ -11,6 +11,7 @@ namespace llcv {
     _tchain->Add(fname.c_str());
     _nentries = (size_t)_tchain->GetEntries();
     _spec.LoadTree(*_tchain);
+    Next();
   }
 
   bool InterTTreeManager::Next() {

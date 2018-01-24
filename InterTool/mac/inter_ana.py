@@ -1,13 +1,14 @@
 import os,sys,gc
 
-if len(sys.argv) != 6:
+if len(sys.argv) != 7:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
     print "VTX_FILE   = str(sys.argv[2])"
     print "SHR_FILE   = str(sys.argv[3])"
     print "TRK_FILE   = str(sys.argv[4])"
-    print "OUT_DIR    = str(sys.argv[5])"
+    print "INTER_FILE = str(sys.argv[5])"
+    print "OUT_DIR    = str(sys.argv[6])"
     print
     print
     sys.exit(1)
@@ -16,7 +17,8 @@ SSNET_FILE = str(sys.argv[1])
 VTX_FILE   = str(sys.argv[2])
 SHR_FILE   = str(sys.argv[3])
 TRK_FILE   = str(sys.argv[4])
-OUT_DIR    = str(sys.argv[5])
+INTER_FILE = str(sys.argv[5])
+OUT_DIR    = str(sys.argv[6])
 
 # NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
 
@@ -34,20 +36,16 @@ proc = llcv.Processor()
 # attach ssnet
 attach_ssnet(proc)
 
-# run your module
-
+# intermodule
 imod = llcv.InterModule()
 
+# configure the driver
 driver = imod.Driver()
+driver.AttachInterFile(INTER_FILE,"vertex_tree")
 
-print imod,driver
-
+# process
 proc.add_llcv_ana(imod)
 
-
-#
-# process
-#
 proc.configure(os.path.join(BASE_PATH,"cfg","inter_ana.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 

@@ -30,12 +30,22 @@ namespace llcv {
     
     std::string _pgraph_prod;
     std::string _pixel_prod;
-    
-    std::string _shower_vertex_prod;
+
     std::string _track_vertex_prod;
+    std::string _shower_vertex_prod;
+    std::string _shower_shower_prod;
+
     std::string _opflash_prod;
 
+    float _epsilon;
+
     InterDriver _driver;
+
+
+  private:
+
+    void AssertEqual(const larlite::vertex& vtx1,const larlite::vertex& vtx2);
+    void AssertEqual(const larlite::vertex& vtx1,const larcv::PGraph& pgraph);
     
   };
 
