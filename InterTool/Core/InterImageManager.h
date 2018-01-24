@@ -20,7 +20,13 @@
 
 namespace llcv {
 
+  class InterModule;
+  class InterDriver;
+
   class InterImageManager : public llcv_base {
+    
+    friend class InterModule;
+    friend class InterDriver;
 
   public:
   InterImageManager(std::string name="InterImageManager") : 
@@ -30,18 +36,19 @@ namespace llcv {
       { Reset(); }
 
     ~InterImageManager(){}
-    
-    void SetImage(const std::vector<larcv::Image2D>& img_v, llcv::InterImageType iitype);
-    void SetVertex(float x, float y, float z);
-    void SetPixel(int row, int col, size_t plane);
-    void Reset();
 
+  public:
     template <class T>
       std::vector<T*> Image(llcv::InterImageType iitype, int cropx, int cropy);
 
   private:
 
     std::string _name;
+
+    void SetImage(const std::vector<larcv::Image2D>& img_v, llcv::InterImageType iitype);
+    void SetVertex(float x, float y, float z);
+    void SetPixel(int row, int col, size_t plane);
+    void Reset();
 
     void SetIIT(InterImageType iitype,const std::pair<int,int>& cpair);
     void SetIIT(InterImageType iitype,int cropx, int cropy);

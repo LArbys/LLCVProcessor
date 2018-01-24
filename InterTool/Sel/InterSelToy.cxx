@@ -14,7 +14,13 @@ namespace llcv {
 
   float InterSelToy::Select() {
     LLCV_DEBUG() << "start" << std::endl;
-
+    LLCV_DEBUG() << "=======================" << std::endl;
+    
+    
+    LLCV_DEBUG() << "LL_dist=" << Tree().Scalar<double>("LL_dist") << std::endl;
+    
+    
+    LLCV_DEBUG() << "=======================" << std::endl;
     LLCV_DEBUG() << "end" << std::endl;
     return 0.0;
   }

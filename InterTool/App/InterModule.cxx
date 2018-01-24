@@ -122,10 +122,11 @@ namespace llcv {
     if(!_shower_vertex_prod.empty())
       ev_shower_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_shower_vertex_prod);
 
-
     larlite::event_opflash* ev_opflash = nullptr;
-    if(!_opflash_prod.empty())
+    if(!_opflash_prod.empty()) 
       ev_opflash = (larlite::event_opflash*)sto.get_data(larlite::data::kOpFlash,_opflash_prod);
+    
+
     
     
     //
@@ -187,6 +188,11 @@ namespace llcv {
       
       // attach vertex & pgraph
       auto vid  = _driver.AttachVertex(&track_vertex);
+      if(ev_opflash) {
+	for(const auto& opflash : *ev_opflash)
+	  _driver.AttachOpFlash(vid,&opflash);
+      }
+
       auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
       
       // attach tracks
@@ -227,7 +233,7 @@ namespace llcv {
 	      const auto& hit = ev_hit->at(hit_id);
 
 	      // attach hit
-	      auto hid = _driver.AttachHit(vid,sid,cid,&hit);
+	      auto hid = _driver.AttachHit(vid,cid,&hit);
 	    }
 	  }
 	}

@@ -8,7 +8,13 @@
 
 namespace llcv {
 
+  class InterModule;
+  class InterDriver;
+
   class InterTTreeManager : public llcv_base {
+
+    friend class InterModule;
+    friend class InterDriver;
 
   public:
     
@@ -31,6 +37,15 @@ namespace llcv {
     }
     
     ~InterTTreeManager() {}
+
+  public:
+    
+    template <class T> T Scalar(const std::string& str) const;
+    
+    std::vector<float> Vector(const std::string& str) const;
+
+    std::vector<std::vector<float> > VVector(const std::string& str) const;
+    
     
   private:
     std::string _name;
@@ -42,13 +57,11 @@ namespace llcv {
 
     InterTTreeSpec _spec;
 
-  public:
-    const InterTTreeSpec& Spec() { return _spec; }
-
+    
     void Configure(const larcv::PSet& cfg);
     void Initialize(const std::string& fname, const std::string& tname);
-    bool Next();
 
+    bool Next();
 
     size_t Run()    const { return (size_t)(*(_spec.run)); }
     size_t SubRun() const { return (size_t)(*(_spec.subrun)); }

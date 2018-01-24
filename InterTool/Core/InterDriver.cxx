@@ -31,15 +31,21 @@ namespace llcv {
 
     for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
 
-      assert(_run      == _tree_mgr.Run());
-      assert(_subrun   == _tree_mgr.SubRun());
-      assert(_event    == _tree_mgr.Event());
-      std::cout << vtxid << " <=> " << _tree_mgr.Vertex() << std::endl;
-      assert(vtxid == _tree_mgr.Vertex());
-
+      assert(_run    == _tree_mgr.Run());
+      assert(_subrun == _tree_mgr.SubRun());
+      assert(_event  == _tree_mgr.Event());
+      assert(vtxid   == _tree_mgr.Vertex());
+      
       auto& score_v = score_vv[vtxid];
       score_v.resize(_sel_base_v.size(),kINVALID_FLOAT);
-      const auto& data_mgr = _data_mgr_v[vtxid];
+      auto& data_mgr = _data_mgr_v[vtxid];
+
+
+      // prepare the image
+      _img_mgr.SetVertex(data_mgr.Vertex()->X(),
+			 data_mgr.Vertex()->Y(),
+			 data_mgr.Vertex()->Z());
+
 
       for(size_t selid=0; selid<_sel_base_v.size(); ++selid) {
 	auto sel_base = _sel_base_v[selid];
@@ -76,14 +82,33 @@ namespace llcv {
   
   size_t InterDriver::AttachPGraph(size_t vtxid, const larcv::PGraph* pgraph) {
     size_t id = kINVALID_SIZE;
-    if (vtxid>=_data_mgr_v.size()) throw llcv_err("Requested vtxid is out of range");
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
     _data_mgr_v[vtxid]._pgraph = pgraph;
+    return id;
+  }
+
+  size_t InterDriver::AttachOpFlash(size_t vtxid, const larlite::opflash* opflash) {
+    size_t id = kINVALID_SIZE;
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
+    id = _data_mgr_v[vtxid]._opflash_v.size();
+    _data_mgr_v[vtxid]._opflash_v.resize(id+1);
+    _data_mgr_v[vtxid]._opflash_v[id] = opflash;
+
     return id;
   }
   
   size_t InterDriver::AttachTrack(size_t vtxid, const larlite::track* track) {
     size_t id = kINVALID_SIZE;
-    if (vtxid>=_data_mgr_v.size()) throw llcv_err("Requested vtxid is out of range");
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
     id = _data_mgr_v[vtxid]._track_v.size();
     _data_mgr_v[vtxid]._track_v.resize(id+1);
     _data_mgr_v[vtxid]._track_v[id] = track;
@@ -92,36 +117,53 @@ namespace llcv {
 
   size_t InterDriver::AttachShower(size_t vtxid, const larlite::shower* shower) {
     size_t id = kINVALID_SIZE;
-    if (vtxid>=_data_mgr_v.size()) throw llcv_err("Requested vtxid is out of range");
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
     id = _data_mgr_v[vtxid]._shower_v.size();
     _data_mgr_v[vtxid]._shower_v.resize(id+1);
     _data_mgr_v[vtxid]._shower_v[id] = shower;
+    _data_mgr_v[vtxid]._ass_shower_to_cluster_vv.resize(id+1);
     return id;
   }
 
   size_t InterDriver::AttachCluster(size_t vtxid, size_t shrid, const larlite::cluster* cluster) {
     size_t id = kINVALID_SIZE;
+
     if (vtxid>=_data_mgr_v.size()) 
       throw llcv_err("Requested vtxid is out of range");
-    if (shrid>=_data_mgr_v.at(vtxid)._shower_v.size())
+
+    if (shrid>=_data_mgr_v[vtxid]._shower_v.size())
       throw llcv_err("Requested shrid is out of range");
+
+    if (shrid>=_data_mgr_v[vtxid]._ass_shower_to_cluster_vv.size())
+      throw llcv_err("Requested shrid is out of range");
+
     id = _data_mgr_v[vtxid]._cluster_v.size();
     _data_mgr_v[vtxid]._cluster_v.resize(id+1);
     _data_mgr_v[vtxid]._cluster_v[id] = cluster;
+    _data_mgr_v[vtxid]._ass_shower_to_cluster_vv[shrid].push_back(id);
+    _data_mgr_v[vtxid]._ass_cluster_to_hit_vv.resize(id+1);
     return id;
   }
 
-  size_t InterDriver::AttachHit(size_t vtxid, size_t shrid, size_t cluid, const larlite::hit* hit) {
+  size_t InterDriver::AttachHit(size_t vtxid, size_t cluid, const larlite::hit* hit) {
     size_t id = kINVALID_SIZE;
+
     if (vtxid>=_data_mgr_v.size()) 
       throw llcv_err("Requested vtxid is out of range");
-    if (shrid>=_data_mgr_v.at(vtxid)._shower_v.size())
-      throw llcv_err("Requested shrid is out of range");
-    if (cluid>=_data_mgr_v.at(vtxid)._cluster_v.size())
+
+    if (cluid>=_data_mgr_v[vtxid]._cluster_v.size())
       throw llcv_err("Requested cluid is out of range");
+
+    if (cluid>=_data_mgr_v[vtxid]._ass_cluster_to_hit_vv.size())
+      throw llcv_err("Requested cluid is out of range");
+
     id = _data_mgr_v[vtxid]._hit_v.size();
     _data_mgr_v[vtxid]._hit_v.resize(id+1);
     _data_mgr_v[vtxid]._hit_v[id] = hit;
+    _data_mgr_v[vtxid]._ass_cluster_to_hit_vv[cluid].push_back(id);
     return id;
   }
 

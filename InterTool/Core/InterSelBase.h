@@ -31,12 +31,16 @@ namespace llcv {
   protected:
     std::string _name;
 
+    InterImageManager& Image()      { return *_img_mgr_ptr; }
+    const InterDataManager& Data()  { return *_data_mgr_ptr; }
+    const InterTTreeManager& Tree() { return *_tree_mgr_ptr; }
 
   private:
     
-    const InterTTreeManager* _tree_mgr_ptr;
     InterImageManager* _img_mgr_ptr;
     const InterDataManager* _data_mgr_ptr;
+    const InterTTreeManager* _tree_mgr_ptr;
+
 
     
   };

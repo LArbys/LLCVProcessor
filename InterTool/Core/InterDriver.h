@@ -17,9 +17,9 @@ namespace llcv {
   
   class InterDriver : public llcv_base {
 
-  public:
     friend class InterModule;
-    
+
+  public:
   InterDriver(std::string name="InterDriver") : llcv_base(name) {}
     ~InterDriver() {}
 
@@ -65,10 +65,11 @@ namespace llcv {
     
     size_t AttachVertex (const larlite::vertex* vertex);
     size_t AttachPGraph (size_t vtxid, const larcv::PGraph* pgraph);
+    size_t AttachOpFlash(size_t vtxid, const larlite::opflash* opflash);
     size_t AttachTrack  (size_t vtxid, const larlite::track* track);
     size_t AttachShower (size_t vtxid, const larlite::shower* shower);
     size_t AttachCluster(size_t vtxid, size_t shrid, const larlite::cluster* cluster);
-    size_t AttachHit    (size_t vtxid, size_t shrid, size_t cluid, const larlite::hit* hit);
+    size_t AttachHit    (size_t vtxid, size_t cluid, const larlite::hit* hit);
 
     void AttachInterFile(const std::string& fname,const std::string& tname)
     { _tree_mgr.Initialize(fname,tname); }

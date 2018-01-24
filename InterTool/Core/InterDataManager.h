@@ -28,7 +28,7 @@ namespace llcv {
     
     InterDataManager() {}
     ~InterDataManager() {}
-    
+  
   private:
     // id
     size_t _id;
@@ -48,8 +48,19 @@ namespace llcv {
     std::map<larcv::PlaneID_t, std::vector<larcv::Pixel2DCluster> >* _pix_m;
   
     // asses
-    std::vector<std::vector<size_t> > _ass_shower_to_cluster_v;
-    std::vector<std::vector<size_t> > _ass_cluster_to_hit_v;
+    std::vector<std::vector<size_t> > _ass_shower_to_cluster_vv;
+    std::vector<std::vector<size_t> > _ass_cluster_to_hit_vv;
+
+
+  public:
+    const larlite::vertex* Vertex() { return _vertex; }
+    const std::vector<const larlite::shower*  >& Showers()  { return _shower_v; }
+    const std::vector<const larlite::track*   >& Tracks()   { return _track_v;  }
+    const std::vector<const larlite::opflash* >& Flashes()  { return _opflash_v;}
+    const std::vector<const larlite::cluster* >& Clusters() { return _cluster_v;}
+    const std::vector<const larlite::hit*     >& Hits()     { return _hit_v;    }
+
+    
 
   };
 
