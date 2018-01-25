@@ -57,7 +57,6 @@ namespace llcv {
 
     InterTTreeSpec _spec;
 
-    
     void Configure(const larcv::PSet& cfg);
     void Initialize(const std::string& fname, const std::string& tname);
 

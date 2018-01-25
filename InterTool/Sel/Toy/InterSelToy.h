@@ -13,6 +13,7 @@ namespace llcv {
     ~InterSelToy(){}
     
     void Configure (const larcv::PSet &pset);
+    void Initialize() {}
     double Select();
     void Finalize();
     

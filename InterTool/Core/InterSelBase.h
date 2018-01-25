@@ -27,18 +27,23 @@ namespace llcv {
     virtual ~InterSelBase(){}
     
     virtual void Configure (const larcv::PSet &pset) = 0;
+    virtual void Initialize() = 0;
     virtual double Select() = 0;
     virtual void Finalize() = 0;
-    
+
     
   protected:
     std::string _name;
+
+    TFile* _fout;
 
     InterImageManager& Image()      { return *_img_mgr_ptr; }
     const InterDataManager& Data()  { return *_data_mgr_ptr; }
     const InterTTreeManager& Tree() { return *_tree_mgr_ptr; }
 
   private:
+
+    void set_output_file(TFile* fout) { _fout = fout; }
     
     InterImageManager* _img_mgr_ptr;
     const InterDataManager* _data_mgr_ptr;

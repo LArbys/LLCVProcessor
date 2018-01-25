@@ -12,7 +12,6 @@ namespace llcv {
     
   InterSelFlashMatch(std::string name="InterSelFlashMatch") : 
     InterSelBase(name)
-      ,outfile(nullptr)
       ,outtree(nullptr)
       ,genflashmatch(nullptr) 
     {}
@@ -20,14 +19,15 @@ namespace llcv {
     ~InterSelFlashMatch(){}
     
     void Configure (const larcv::PSet &pset);
+    void Initialize();
     double Select();
     void Finalize();
     
     
   private:
     
-    TFile* outfile;
     TTree* outtree;
+
     float best_chi2;
     float best_data_totpe;
     float hypo_totpe;
@@ -36,6 +36,14 @@ namespace llcv {
     float hypo_showerpe[32];  
     float data_pe[32];
     float vtxpos[3];
+
+     float reco_nu_E;
+     float reco_shower_E;
+     float reco_proton_E;
+
+     float true_nu_E;
+     float true_shower_E;
+     float true_proton_E;
 
     larlitecv::GeneralFlashMatchAlgo* genflashmatch;
     float shower_correction_factor;    

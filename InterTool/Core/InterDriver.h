@@ -10,6 +10,8 @@
 
 #include "InterToolTypes.h"
 
+#include "TFile.h"
+
 namespace llcv {
 
   class InterModule;
@@ -22,6 +24,7 @@ namespace llcv {
   
   InterDriver(std::string name="InterDriver")
     :   llcv_base(name)
+      ,_fout(nullptr)
     {}
 
     ~InterDriver() {}
@@ -34,6 +37,8 @@ namespace llcv {
     void Finalize();
     
   private:
+
+    TFile* _fout;
 
     size_t _run;
     size_t _subrun;
@@ -56,15 +61,12 @@ namespace llcv {
     //
     // Algorithm attachment
     //
-    void AddSelection(InterSelBase* sbase) 
-    { _sel_base_v.push_back(sbase); }
-
+    void AddSelection(InterSelBase* sbase);
     
     //
     // InterModule attachments
     //
-    void AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype)
-    { _img_mgr.SetImage(img_v,itype); }
+    void AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype);
     
     size_t AttachVertex (const larlite::vertex* vertex);
     size_t AttachPGraph (size_t vtxid, const larcv::PGraph* pgraph);
@@ -74,9 +76,7 @@ namespace llcv {
     size_t AttachCluster(size_t vtxid, size_t shrid, const larlite::cluster* cluster);
     size_t AttachHit    (size_t vtxid, size_t cluid, const larlite::hit* hit);
 
-    void AttachInterFile(const std::string& fname,const std::string& tname)
-    { _tree_mgr.Initialize(fname,tname); }
-
+    void AttachInterFile(const std::string& fname,const std::string& tname);
 
     //
     //

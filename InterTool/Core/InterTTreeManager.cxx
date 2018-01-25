@@ -45,6 +45,7 @@ namespace llcv {
     return true;
   }
 
+
   template int    InterTTreeManager::Scalar<int   >(const std::string& str) const;
   template float  InterTTreeManager::Scalar<float >(const std::string& str) const;
   template double InterTTreeManager::Scalar<double>(const std::string& str) const;

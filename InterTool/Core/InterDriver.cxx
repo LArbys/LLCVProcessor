@@ -3,6 +3,7 @@
 
 #include "InterDriver.h"
 
+
 namespace llcv {
 
   void InterDriver::Configure(const larcv::PSet& cfg) {
@@ -13,6 +14,13 @@ namespace llcv {
 
   void InterDriver::Initialize() {
     LLCV_DEBUG() << "start" << std::endl;
+
+    _fout = TFile::Open("out.root","RECREATE"); 
+
+    for(auto selptr : _sel_base_v) {
+      selptr->set_output_file(_fout);
+      selptr->Initialize();
+    }
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -63,6 +71,8 @@ namespace llcv {
 
     for(auto selptr : _sel_base_v)
       selptr->Finalize();
+
+    _fout->Close();
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -162,6 +172,15 @@ namespace llcv {
     _data_mgr_v[vtxid]._ass_cluster_to_hit_vv[cluid].push_back(id);
     return id;
   }
+  
+  void InterDriver::AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype)
+    { _img_mgr.SetImage(img_v,itype); }
+
+  void InterDriver::AttachInterFile(const std::string& fname,const std::string& tname)
+  { _tree_mgr.Initialize(fname,tname); }
+
+  void InterDriver::AddSelection(InterSelBase* sbase) 
+  { _sel_base_v.push_back(sbase); }
 
   void InterDriver::Reset() {
     _data_mgr_v.clear();
