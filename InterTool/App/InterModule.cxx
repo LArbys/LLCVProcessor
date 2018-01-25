@@ -251,6 +251,7 @@ namespace llcv {
 
   void InterModule::finalize() {
     LLCV_DEBUG() << "start" << std::endl;
+    _driver.Finalize();
     LLCV_DEBUG() << "end" << std::endl;
   }
 

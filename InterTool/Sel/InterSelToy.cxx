@@ -12,7 +12,7 @@ namespace llcv {
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  float InterSelToy::Select() {
+  double InterSelToy::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "=======================" << std::endl;
     

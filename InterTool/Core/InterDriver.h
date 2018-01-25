@@ -1,7 +1,6 @@
 #ifndef __INTERDRIVER_H__
 #define __INTERDRIVER_H__
 
-
 #include "InterAnaBase.h"
 #include "InterSelBase.h"
 
@@ -20,7 +19,11 @@ namespace llcv {
     friend class InterModule;
 
   public:
-  InterDriver(std::string name="InterDriver") : llcv_base(name) {}
+  
+  InterDriver(std::string name="InterDriver")
+    :   llcv_base(name)
+    {}
+
     ~InterDriver() {}
 
   public:

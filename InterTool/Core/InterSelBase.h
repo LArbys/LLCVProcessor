@@ -10,6 +10,9 @@
 //larcv
 #include "Base/PSet.h"
 
+//ROOT
+#include "TFile.h"
+
 namespace llcv {
 
   class InterDriver;  
@@ -24,7 +27,7 @@ namespace llcv {
     virtual ~InterSelBase(){}
     
     virtual void Configure (const larcv::PSet &pset) = 0;
-    virtual float Select() = 0;
+    virtual double Select() = 0;
     virtual void Finalize() = 0;
     
     

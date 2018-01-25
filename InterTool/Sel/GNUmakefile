@@ -9,6 +9,11 @@ HEADERS = $(filter-out $(FMWK_HEADERS), $(wildcard *.h))
 INCFLAGS  = -I.      
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += -I$(LARLITE_USERDEVDIR)
+
+# flash matching
+INCFLAGS += -I$(LARLITE_USERDEVDIR)/BasicTool
+INCFLAGS += -I$(LARLITE_USERDEVDIR)/SelectionTool
+
 INCFLAGS += $(shell larcv-config --includes)
 INCFLAGS += $(shell geo2d-config --includes)
 INCFLAGS += -I$(LAROPENCV_BASEDIR)
@@ -24,6 +29,14 @@ LDFLAGS += -lLArOpenCV_ImageClusterBase
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoFunction
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoData
 LDFLAGS += -lLArOpenCV_ImageClusterAlgoClass
+
+# flash matching
+LDFLAGS += -lSelectionTool_OpT0FinderBase
+LDFLAGS += -lSelectionTool_OpT0FinderAlgorithms
+LDFLAGS += -lSelectionTool_OpT0FinderAna
+LDFLAGS += -lSelectionTool_OpT0FinderApp
+LDFLAGS += -lSelectionTool_OpT0PhotonLibrary
+
 
 # platform-specific options
 OSNAME          = $(shell uname -s)

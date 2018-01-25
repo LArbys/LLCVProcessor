@@ -53,12 +53,12 @@ namespace llcv {
 
 
   public:
-    const larlite::vertex* Vertex() { return _vertex; }
-    const std::vector<const larlite::shower*  >& Showers()  { return _shower_v; }
-    const std::vector<const larlite::track*   >& Tracks()   { return _track_v;  }
-    const std::vector<const larlite::opflash* >& Flashes()  { return _opflash_v;}
-    const std::vector<const larlite::cluster* >& Clusters() { return _cluster_v;}
-    const std::vector<const larlite::hit*     >& Hits()     { return _hit_v;    }
+    const larlite::vertex* Vertex() const { return _vertex; }
+    const std::vector<const larlite::shower*  >& Showers()  const { return _shower_v; }
+    const std::vector<const larlite::track*   >& Tracks()   const { return _track_v;  }
+    const std::vector<const larlite::opflash* >& Flashes()  const { return _opflash_v;}
+    const std::vector<const larlite::cluster* >& Clusters() const { return _cluster_v;}
+    const std::vector<const larlite::hit*     >& Hits()     const { return _hit_v;    }
 
     
 

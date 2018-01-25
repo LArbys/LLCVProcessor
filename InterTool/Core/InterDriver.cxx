@@ -8,16 +8,12 @@ namespace llcv {
   void InterDriver::Configure(const larcv::PSet& cfg) {
     set_verbosity((msg::Level_t)cfg.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
-
-    
-    
     LLCV_DEBUG() << "end" << std::endl;
   }
 
   void InterDriver::Initialize() {
     LLCV_DEBUG() << "start" << std::endl;
-    
-    
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -26,7 +22,7 @@ namespace llcv {
     
     LLCV_DEBUG() << "Driver@(r,s,e)=(" << _run << "," << _subrun << "," << _event << ")" << std::endl;
 
-    std::vector<std::vector<float> > score_vv;
+    std::vector<std::vector<double> > score_vv;
     score_vv.resize(_data_mgr_v.size());
 
     for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
