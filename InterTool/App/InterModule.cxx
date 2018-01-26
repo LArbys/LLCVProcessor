@@ -84,9 +84,9 @@ namespace llcv {
 		 << ev_adc_img->event()  << "," 
 		 << mgr.current_entry()  << ")" << std::endl;
 
-    _driver._run    = (size_t)sto.run_id();
-    _driver._subrun = (size_t)sto.subrun_id();
-    _driver._event  = (size_t)sto.event_id();
+    _driver._run    = (int)sto.run_id();
+    _driver._subrun = (int)sto.subrun_id();
+    _driver._event  = (int)sto.event_id();
 
     _driver.AttachImage(ev_adc_img->Image2DArray(),kImageADC);
 

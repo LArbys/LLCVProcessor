@@ -25,8 +25,8 @@ namespace llcv {
     if(!_fout) throw llcv_err("No output file?");
 
     _fout->cd();
-
     outtree = new TTree("ffmatch","Final Flash Match result");
+    AttachRSEV(outtree);
     outtree->Branch("vtxpos",vtxpos,"vtxpos[3]/F");
     outtree->Branch("chi2",&best_chi2,"chi2/F");
     outtree->Branch("data_totpe",&best_data_totpe,"data_totpe/F");
@@ -264,7 +264,7 @@ namespace llcv {
       delete phist;
 
     flashhist_data_v.clear();
-
+    
     outtree->Fill();
     
     LLCV_DEBUG() << "end" << std::endl;

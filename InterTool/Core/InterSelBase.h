@@ -36,10 +36,12 @@ namespace llcv {
     std::string _name;
 
     TFile* _fout;
-
+    
     InterImageManager& Image()      { return *_img_mgr_ptr; }
     const InterDataManager& Data()  { return *_data_mgr_ptr; }
     const InterTTreeManager& Tree() { return *_tree_mgr_ptr; }
+
+    void AttachRSEV(TTree* tree);
 
   private:
 
@@ -49,8 +51,13 @@ namespace llcv {
     const InterDataManager* _data_mgr_ptr;
     const InterTTreeManager* _tree_mgr_ptr;
 
+    int* _run;
+    int* _subrun;
+    int* _event;
+    int* _vtxid;
 
-    
+
+
   };
 
 }

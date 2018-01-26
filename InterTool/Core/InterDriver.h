@@ -35,9 +35,10 @@ namespace llcv {
 
     std::string _fout_fname;
 
-    size_t _run;
-    size_t _subrun;
-    size_t _event;
+    int _run;
+    int _subrun;
+    int _event;
+    int _vtxid;
     
     // Next() for next vertex
     InterTTreeManager _tree_mgr;

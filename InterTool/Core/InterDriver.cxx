@@ -19,6 +19,10 @@ namespace llcv {
     _fout = TFile::Open(_fout_fname.c_str(),"RECREATE"); 
 
     for(auto selptr : _sel_base_v) {
+      selptr->_run    = &_run;
+      selptr->_subrun = &_subrun;
+      selptr->_event  = &_event;
+      selptr->_vtxid  = &_vtxid;
       selptr->set_output_file(_fout);
       selptr->Initialize();
     }
@@ -34,36 +38,41 @@ namespace llcv {
     std::vector<std::vector<double> > score_vv;
     score_vv.resize(_data_mgr_v.size());
 
-    for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
+    //
+    // Do selection
+    //
 
-      _tree_mgr.GoTo(_run,_subrun,_event,vtxid);
+    for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
       
-      assert(_run    == _tree_mgr.Run());
-      assert(_subrun == _tree_mgr.SubRun());
-      assert(_event  == _tree_mgr.Event());
-      assert(vtxid   == _tree_mgr.Vertex());
+      _vtxid = (int)_vtxid;
+      _tree_mgr.GoTo(_run,_subrun,_event,vtxid);
       
       auto& score_v = score_vv[vtxid];
       score_v.resize(_sel_base_v.size(),kINVALID_FLOAT);
       auto& data_mgr = _data_mgr_v[vtxid];
 
-
       // prepare the image
       _img_mgr.SetVertex(data_mgr.Vertex()->X(),
 			 data_mgr.Vertex()->Y(),
 			 data_mgr.Vertex()->Z());
-
-
+      
+      
       for(size_t selid=0; selid<_sel_base_v.size(); ++selid) {
 	auto sel_base = _sel_base_v[selid];
 	sel_base->_data_mgr_ptr = &data_mgr;
 	sel_base->_img_mgr_ptr  = &_img_mgr;
 	sel_base->_tree_mgr_ptr = &_tree_mgr;
-
+	
 	score_v[selid] = sel_base->Select();
       }
-      
     }
+
+    //
+    // Store per vertex
+    //
+    
+    
+    
     
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -186,9 +195,9 @@ namespace llcv {
 
   void InterDriver::Reset() {
     _data_mgr_v.clear();
-    _run    = kINVALID_SIZE;
-    _subrun = kINVALID_SIZE;
-    _event  = kINVALID_SIZE;
+    _run    = kINVALID_INT;
+    _subrun = kINVALID_INT;
+    _event  = kINVALID_INT;
   }
 
 
