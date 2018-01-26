@@ -20,36 +20,47 @@ namespace llcv {
     _tchain = new TChain(tname.c_str());
     _tchain->Add(fname.c_str());
     _nentries = (size_t)_tchain->GetEntries();
+    _spec.LoadRSEV(*_tchain);
+
+    LLCV_INFO() << "Initializing RSEV map" << std::endl;
+    for(size_t ientry=0; ientry<_nentries; ++ientry) {
+      _tchain->GetEntry(ientry);
+      RSEVID rsev(this->Run(),this->SubRun(),this->Event(),this->Vertex());
+
+      LLCV_DEBUG() << "insert=(" 
+		   << this->Run()    << "," 
+		   << this->SubRun() << "," 
+		   << this->Event()  << "," 
+		   << this->Vertex() << ") @ centry=" << ientry << std::endl;
+
+      _rsev_m.insert(std::make_pair(rsev,ientry));
+    }
+    LLCV_INFO() << "initialized" << std::endl;
     _spec.LoadTree(*_tchain);
-    Next();
   }
 
-  bool InterTTreeManager::Next() {
-    LLCV_DEBUG() << "now centry=" << _centry << std::endl;
-    if (_centry==kINVALID_SIZE) {
-      _centry = 0;
-      _tchain->GetEntry(_centry);
-      LLCV_DEBUG() << "now centry=" << _centry << std::endl;
-      return true;
-    }
 
-    if (_centry >= _nentries) {
-      LLCV_WARNING() << "Called next too many times..." << std::endl;
-      return false;
-    }
-    
-    _centry++;
+  bool InterTTreeManager::GoTo(size_t run, size_t subrun, size_t event, size_t vtxid) {
+    RSEVID rsev(run,subrun,event,vtxid);
+    return _goto(rsev);
+  }
+
+  bool InterTTreeManager::_goto(const RSEVID& rsev) {
+    LLCV_DEBUG() << "centry=" << _centry << std::endl;
+    _centry = _rsev_m.at(rsev);
+
+    if(_centry>=_nentries) 
+      throw llcv_err("Out of range centry");
 
     _tchain->GetEntry(_centry);
+
     LLCV_DEBUG() << "now centry=" << _centry << std::endl;
     return true;
   }
 
-
   template int    InterTTreeManager::Scalar<int   >(const std::string& str) const;
   template float  InterTTreeManager::Scalar<float >(const std::string& str) const;
   template double InterTTreeManager::Scalar<double>(const std::string& str) const;
-  
   
   std::vector<float> InterTTreeManager::Vector(const std::string& str) const {
     

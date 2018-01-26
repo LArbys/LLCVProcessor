@@ -7,9 +7,25 @@
 #include "TLeafElement.h"
 
 #include <iostream>
+
 namespace llcv {
 
+  void InterTTreeSpec::LoadRSEV(TChain& tc) {
+    tc.SetBranchAddress("run"   ,&_run);
+    tc.SetBranchAddress("subrun",&_subrun);
+    tc.SetBranchAddress("event" ,&_event);
+    tc.SetBranchAddress("vtxid" ,&_vtxid);
+
+    _run_ptr    = &_run;
+    _subrun_ptr = &_subrun;
+    _event_ptr  = &_event;
+    _vtxid_ptr  = &_vtxid;
+  }
+
   void InterTTreeSpec::LoadTree(TChain& tc) {
+
+    tc.ResetBranchAddresses();
+
     auto leaves = tc.GetListOfLeaves();
 
     for(size_t lid=0; lid<(size_t)leaves->GetEntries(); ++lid) {
@@ -29,11 +45,14 @@ namespace llcv {
       };
     }
     
-    run    = &_imap.at("run");
-    subrun = &_imap.at("subrun");
-    event  = &_imap.at("event");
-    vtxid  = &_dmap.at("vtxid");
+    _run_ptr    = &_imap.at("run");
+    _subrun_ptr = &_imap.at("subrun");
+    _event_ptr  = &_imap.at("event");
+    _vtxid_ptr  = &_dmap.at("vtxid");
   }
+
+
+
 
 }
 

@@ -15,7 +15,8 @@ namespace llcv {
   void InterDriver::Initialize() {
     LLCV_DEBUG() << "start" << std::endl;
 
-    _fout = TFile::Open("out.root","RECREATE"); 
+    if(_fout_fname.empty()) throw llcv_err("Must specify output filename");
+    _fout = TFile::Open(_fout_fname.c_str(),"RECREATE"); 
 
     for(auto selptr : _sel_base_v) {
       selptr->set_output_file(_fout);
@@ -35,6 +36,8 @@ namespace llcv {
 
     for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
 
+      _tree_mgr.GoTo(_run,_subrun,_event,vtxid);
+      
       assert(_run    == _tree_mgr.Run());
       assert(_subrun == _tree_mgr.SubRun());
       assert(_event  == _tree_mgr.Event());
@@ -60,7 +63,6 @@ namespace llcv {
 	score_v[selid] = sel_base->Select();
       }
       
-      _tree_mgr.Next();
     }
     
     LLCV_DEBUG() << "end" << std::endl;
@@ -174,7 +176,7 @@ namespace llcv {
   }
   
   void InterDriver::AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype)
-    { _img_mgr.SetImage(img_v,itype); }
+  { _img_mgr.SetImage(img_v,itype); }
 
   void InterDriver::AttachInterFile(const std::string& fname,const std::string& tname)
   { _tree_mgr.Initialize(fname,tname); }
@@ -201,6 +203,10 @@ namespace llcv {
       std::cout << _data_mgr_v[vtxid]._hit_v.size() << " associated hits" << std::endl;
     }
 
+  }
+
+  void InterDriver::SetOutputFilename(std::string fout_fname) {
+    _fout_fname = fout_fname;
   }
 
 }

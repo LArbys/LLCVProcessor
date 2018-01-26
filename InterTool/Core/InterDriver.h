@@ -29,16 +29,11 @@ namespace llcv {
 
     ~InterDriver() {}
 
-  public:
-
-    void Configure(const larcv::PSet& cfg);
-    void Initialize();
-    void Process();
-    void Finalize();
-    
   private:
 
     TFile* _fout;
+
+    std::string _fout_fname;
 
     size_t _run;
     size_t _subrun;
@@ -59,12 +54,25 @@ namespace llcv {
   public:
 
     //
-    // Algorithm attachment
+    // Public configuration
     //
     void AddSelection(InterSelBase* sbase);
+    void SetOutputFilename(std::string fout_fname);
+    void AttachInterFile(const std::string& fname,const std::string& tname);
     
+  private:
+
     //
-    // InterModule attachments
+    // InterModule directives
+    //
+    void Configure(const larcv::PSet& cfg);
+    void Initialize();
+    void Process();
+    void Finalize();
+
+
+    //
+    // InterModule attachments (can change)
     //
     void AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype);
     
@@ -76,11 +84,6 @@ namespace llcv {
     size_t AttachCluster(size_t vtxid, size_t shrid, const larlite::cluster* cluster);
     size_t AttachHit    (size_t vtxid, size_t cluid, const larlite::hit* hit);
 
-    void AttachInterFile(const std::string& fname,const std::string& tname);
-
-    //
-    //
-    //
     void Reset();
     void Dump();
 

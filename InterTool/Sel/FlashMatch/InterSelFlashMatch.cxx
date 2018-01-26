@@ -41,23 +41,23 @@ namespace llcv {
     outtree->Branch("true_nu_E", &true_nu_E, "true_nu_E/F");
     outtree->Branch("true_shower_E", &true_shower_E, "true_shower_E/F");
     outtree->Branch("true_proton_E", &true_proton_E, "true_proton_E/F");
+
+    outtree->Branch("valid", &valid, "valid/I");
+    outtree->Branch("scedr", &scedr, "scedr/F");
   }
 
 
   double InterSelFlashMatch::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     
-
-    // only do this for close vertex
-    if (Tree().Scalar<float>("locv_scedr") > 5.0) {
-      LLCV_INFO() << "Poor reconstruction" << std::endl;
-      return 0;
-    }
+    scedr = Tree().Scalar<float>("locv_scedr");
     
     // get the reconstructed proton energy (from selection)
     auto pproton_energy = Tree().Scalar<float>("reco_LL_proton_energy");
     if (pproton_energy < 0)  {
       LLCV_INFO() << "No reconstructed proton energy" << std::endl;
+      valid = 0;
+      outtree->Fill();
       return 0;
     }
 
@@ -74,6 +74,7 @@ namespace llcv {
     vtxpos[1] = (float)vtx.Y();
     vtxpos[2] = (float)vtx.Z();
 
+    valid = 1;
 
     reco_nu_E     = Tree().Scalar<float>("reco_LL_total_energy");
     reco_shower_E = Tree().Scalar<float>("reco_LL_electron_energy");

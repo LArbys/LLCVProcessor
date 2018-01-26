@@ -43,7 +43,12 @@ namespace llcv {
 
      float true_nu_E;
      float true_shower_E;
+
+
      float true_proton_E;
+
+     int valid;
+     float scedr;
 
     larlitecv::GeneralFlashMatchAlgo* genflashmatch;
     float shower_correction_factor;    
