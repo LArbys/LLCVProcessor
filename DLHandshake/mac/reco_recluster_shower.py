@@ -1,6 +1,6 @@
 import os,sys
 
-if len(sys.argv) != 7:
+if len(sys.argv) != 8:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
@@ -8,6 +8,7 @@ if len(sys.argv) != 7:
     print "OUTPUT_DIR  = str(sys.argv[4])"
     print "REQPDG      = int(sys.argv[5])"
     print "RECLUSTER   = int(sys.argv[6])"
+    print "IS_MC       = int(sys.argv[7])"
     print 
     sys.exit(1)
 
@@ -18,6 +19,7 @@ MCINFO_FILE = str(sys.argv[3])
 OUTPUT_DIR  = str(sys.argv[4])
 REQPDG      = int(sys.argv[5])
 RECLUSTER   = int(sys.argv[6])
+IS_MC       = int(sys.argv[7])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
@@ -76,7 +78,7 @@ else:
 #
 from showerRecoDL import DLShowerReco3D
 print "...set REQPDG=%d" % REQPDG
-dlshr3d = DLShowerReco3D(REQPDG)
+dlshr3d = DLShowerReco3D(REQPDG,IS_MC)
 proc.add_ll_ana(dlshr3d)
 
 #

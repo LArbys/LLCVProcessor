@@ -1,9 +1,10 @@
+import os,sys
 import ROOT
 from larlite import larlite as fmwk
 from recotool import showerreco
 from ROOT import protoshower
 
-def getShowerRecoAlgModular():
+def getShowerRecoAlgModular(is_mc):
     
     alg = showerreco.ShowerRecoAlgModular()
     alg.SetDebug(False)
@@ -33,8 +34,15 @@ def getShowerRecoAlgModular():
 
     energy.SetElectronLifetime(1e6) # in us DATA value
     energy.SetRecombFactor(0.62)
-    #energy.SetElecGain(243.) # MCC8.0 data
-    energy.SetElecGain(200.) # MCC8.0 value
+
+    if is_mc == 1:
+        energy.SetElecGain(200.) # MCC8.3 value
+    elif is_mc == 0:
+        energy.SetElecGain(240.) # MCC8.3 value
+    else:
+        print "BAD IS_MC=%s" % str(is_mc)
+        sys.exit(1)
+
     energy.setVerbosity(False)
     energy.SetFillTree(True)
 
@@ -53,7 +61,7 @@ def getShowerRecoAlgModular():
     
     return alg
 
-def DefaultShowerReco3D(req_pdg):
+def DefaultShowerReco3D(req_pdg,is_mc):
     
     # Create analysis unit
     ana_unit = fmwk.ShowerReco3D()
@@ -62,14 +70,14 @@ def DefaultShowerReco3D(req_pdg):
     ana_unit.SetRequirePDG11(req_pdg)
     
     # Attach shower reco alg
-    sralg = getShowerRecoAlgModular()
+    sralg = getShowerRecoAlgModular(is_mc)
     ana_unit.AddShowerAlgo(sralg)
 
     return ana_unit
 
-def DLShowerReco3D(req_pdg):
+def DLShowerReco3D(req_pdg,is_mc=1):
 
-    shower_ana_unit=DefaultShowerReco3D(req_pdg)
+    shower_ana_unit=DefaultShowerReco3D(req_pdg,is_mc)
     print "Load DefaultShowerReco3D @ ",shower_ana_unit
     print "... with req_pdg=%d" % int(req_pdg)
 
