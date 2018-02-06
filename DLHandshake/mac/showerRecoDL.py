@@ -13,6 +13,9 @@ def getShowerRecoAlgModular(is_mc):
     angle3D = showerreco.Angle3DFromVtxQweighted()
     angle3D.setVerbosity(False)
 
+    trunkangle3D = showerreco.TrunkAngle3DFromVtxQweighted()
+    trunkangle3D.setVerbosity(False)
+
     startPt = showerreco.VertexIsStartPoint3D()
     startPt.setVerbosity(False)
 
@@ -47,11 +50,13 @@ def getShowerRecoAlgModular(is_mc):
     energy.SetFillTree(True)
 
     dqdx = showerreco.dQdxModuleUVY()
-    dqdx.setTrunkLength(3.)
+    dqdx.setTrunkLength(5.)
+    dqdx.setUseTrunkAngle(True)
 
     length = showerreco.FillLengthUVY()
 
     alg.AddShowerRecoModule(angle3D)
+    alg.AddShowerRecoModule(trunkangle3D)
     alg.AddShowerRecoModule(startPt)
     alg.AddShowerRecoModule(dqdx)
     alg.AddShowerRecoModule(energy)
