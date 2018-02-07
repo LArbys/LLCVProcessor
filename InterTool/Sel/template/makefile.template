@@ -1,4 +1,4 @@
-PACKAGE_NAME = InterTool_SelAAA
+PACKAGE_NAME = InterTool_AAA
 
 # specific names for this package
 SOURCES = $(wildcard *.cxx)

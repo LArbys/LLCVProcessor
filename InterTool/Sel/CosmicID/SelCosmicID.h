@@ -1,16 +1,16 @@
-#ifndef __SELAHO_H__
-#define __SELAHO_H__
+#ifndef __SELCOSMICID_H__
+#define __SELCOSMICID_H__
 
 #include "InterTool_Core/InterSelBase.h"
 
 namespace llcv {
   
-  class SelAho : public InterSelBase { 
+  class SelCosmicID : public InterSelBase { 
 
   public:
 
-  SelAho(std::string name="SelAho") : InterSelBase(name) {}
-    ~SelAho(){}
+  SelCosmicID(std::string name="SelCosmicID") : InterSelBase(name) {}
+    ~SelCosmicID(){}
     
     void Configure (const larcv::PSet &pset);
     void Initialize() {}

@@ -16,7 +16,7 @@ print
 print "\tInterTool Selection template"
 print
 NAME = str(sys.argv[1])
-NAME = "Sel%s" % NAME
+SELNAME = "Sel%s" % NAME
 
 BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
@@ -50,24 +50,24 @@ os.system(SS)
 #
 # class header and source file
 #
-with open(os.path.join(OUTDIR,"%s.h" % NAME),"w+") as fout:
+with open(os.path.join(OUTDIR,"%s.h" % SELNAME),"w+") as fout:
 
     data = ""
     with open(CLASS_H,'r') as fin:        
         data = fin.read()
 
-    data = data.replace("AAA",NAME)
-    data = data.replace("BBB",NAME.upper())
+    data = data.replace("AAA",SELNAME)
+    data = data.replace("BBB",SELNAME.upper())
     fout.write(data)
 
-with open(os.path.join(OUTDIR,"%s.cxx" % NAME),"w+") as fout:
+with open(os.path.join(OUTDIR,"%s.cxx" % SELNAME),"w+") as fout:
 
     data = ""
     with open(CLASS_CXX,'r') as fin:        
         data = fin.read()
 
-    data = data.replace("AAA",NAME)
-    data = data.replace("BBB",NAME.upper())
+    data = data.replace("AAA",SELNAME)
+    data = data.replace("BBB",SELNAME.upper())
     fout.write(data)
     
 #
@@ -79,7 +79,7 @@ with open(os.path.join(OUTDIR,"LinkDef.h"),"w+") as fout:
     with open(LINKDEF_H,'r') as fin:        
         data = fin.read()
 
-    data = data.replace("AAA",NAME)
+    data = data.replace("AAA",SELNAME)
     fout.write(data)
 
 #
@@ -91,7 +91,7 @@ with open(os.path.join(OUTDIR,"GNUmakefile"),"w+") as fout:
     with open(MAKEFILE,'r') as fin: 
         data = fin.read()
 
-    data = data.replace("AAA",NAME)
+    data = data.replace("AAA",SELNAME)
     fout.write(data)
 
 

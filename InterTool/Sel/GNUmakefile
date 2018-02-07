@@ -1,4 +1,4 @@
-SUBDIRS := Toy SelAho
+SUBDIRS := Toy CosmicID
 
 .phony: all clean
 

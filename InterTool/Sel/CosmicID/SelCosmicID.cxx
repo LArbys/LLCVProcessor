@@ -1,20 +1,27 @@
-#ifndef __SELAHO_CXX__
-#define __SELAHO_CXX__
+#ifndef __SELCOSMICID_CXX__
+#define __SELCOSMICID_CXX__
 
-#include "SelAho.h"
+#include "SelCosmicID.h"
 
 namespace llcv {
 
-  void SelAho::Configure (const larcv::PSet &pset) {
+  void SelCosmicID::Configure (const larcv::PSet &pset) {
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
 
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  double SelAho::Select() {
+  double SelCosmicID::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "=======================" << std::endl;
+    
+    
+    
+    
+    
+    
+    
     
     
     LLCV_DEBUG() << "=======================" << std::endl;
@@ -22,7 +29,7 @@ namespace llcv {
     return 0.0;
   }
   
-  void SelAho::Finalize() {
+  void SelCosmicID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
     
     LLCV_DEBUG() << "end" << std::endl;

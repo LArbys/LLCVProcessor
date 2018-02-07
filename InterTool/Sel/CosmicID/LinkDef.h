@@ -3,6 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class llcv::SelAho+;
+#pragma link C++ class llcv::SelCosmicID+;
 
 #endif
