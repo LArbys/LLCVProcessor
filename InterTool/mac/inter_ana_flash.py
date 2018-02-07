@@ -48,7 +48,10 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 driver.AttachInterFile(INTER_FILE,"vertex_tree")
-driver.AddSelection(llcv.InterSelFlashMatch())
+driver.SetOutputFilename("fout.root");
+
+selection = llcv.InterSelFlashMatch()
+driver.AddSelection(selection);
 
 # process
 proc.add_llcv_ana(imod)
@@ -65,7 +68,7 @@ proc.add_ll_input_file(TRK_FILE)
 proc.initialize()
 
 # must start from entry=0, support coming soon
-proc.batch_process_lcv_reverse()
+proc.batch_process_lcv_reverse(3,1)
 
 proc.finalize()
 

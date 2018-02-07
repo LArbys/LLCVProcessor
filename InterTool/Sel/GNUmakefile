@@ -1,4 +1,4 @@
-SUBDIRS := Toy FlashMatch
+SUBDIRS := Toy SelAho
 
 .phony: all clean
 
