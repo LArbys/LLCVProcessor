@@ -9,7 +9,6 @@ namespace llcv {
   void InterTTreeManager::Configure(const larcv::PSet& cfg) {
     set_verbosity((msg::Level_t)cfg.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
-
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -19,7 +18,7 @@ namespace llcv {
     LLCV_DEBUG() << "fname=" << fname << std::endl;
     _tchain = new TChain(tname.c_str());
     _tchain->Add(fname.c_str());
-    _nentries = (size_t)_tchain->GetEntries();
+    _nentries = (int)_tchain->GetEntries();
     _spec.LoadRSEV(*_tchain);
 
     LLCV_INFO() << "Initializing RSEV map" << std::endl;
@@ -47,6 +46,12 @@ namespace llcv {
 
   bool InterTTreeManager::_goto(const RSEVID& rsev) {
     LLCV_DEBUG() << "centry=" << _centry << std::endl;
+
+    if(_nentries==-1) {
+      LLCV_WARNING() << "No inter file detected" << std::endl;
+      return true;
+    }
+
     _centry = _rsev_m.at(rsev);
 
     if(_centry>=_nentries) 

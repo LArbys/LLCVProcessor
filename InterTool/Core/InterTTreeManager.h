@@ -58,6 +58,7 @@ namespace llcv {
     :  llcv_base(name)
       , _name(name)
       , _tchain(nullptr)
+      , _nentries(-1)
       , _centry(kINVALID_SIZE)
     {}
     
@@ -67,6 +68,7 @@ namespace llcv {
     :  llcv_base(name)
       , _name(name)
       , _tchain(nullptr)
+      , _nentries(-1)
       , _centry(kINVALID_SIZE)
     {
       Initialize(fname,tname);
@@ -89,7 +91,7 @@ namespace llcv {
 
     TChain* _tchain;
 
-    size_t _nentries;
+    int _nentries;
     size_t _centry;
 
     InterTTreeSpec _spec;

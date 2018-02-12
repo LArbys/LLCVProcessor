@@ -9,17 +9,19 @@ namespace llcv {
 
   public:
 
-  SelCosmicID(std::string name="SelCosmicID") : InterSelBase(name) {}
+  SelCosmicID(std::string name="SelCosmicID")
+    :   InterSelBase(name)
+      , _outtree(nullptr) {}
+    
     ~SelCosmicID(){}
     
     void Configure (const larcv::PSet &pset);
-    void Initialize() {}
+    void Initialize();
     double Select();
     void Finalize();
     
-    
-  protected:
-    
+  private:
+    TTree* _outtree;
     
   };
 

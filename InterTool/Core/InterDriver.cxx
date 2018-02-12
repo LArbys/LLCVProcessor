@@ -33,8 +33,6 @@ namespace llcv {
   void InterDriver::Process() {
     LLCV_DEBUG() << "start" << std::endl;
     
-    LLCV_DEBUG() << "Driver@(r,s,e)=(" << _run << "," << _subrun << "," << _event << ")" << std::endl;
-
     std::vector<std::vector<double> > score_vv;
     score_vv.resize(_data_mgr_v.size());
 
@@ -43,8 +41,11 @@ namespace llcv {
     //
 
     for(size_t vtxid=0; vtxid<_data_mgr_v.size(); ++vtxid) {
+
+      LLCV_DEBUG() << "Driver@(r,s,e,v)=(" << _run << "," << _subrun << "," << _event << "," << vtxid << ")" << std::endl;
       
-      _vtxid = (int)_vtxid;
+      _vtxid = (int)vtxid;
+      
       _tree_mgr.GoTo(_run,_subrun,_event,vtxid);
       
       auto& score_v = score_vv[vtxid];

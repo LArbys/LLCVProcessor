@@ -12,17 +12,29 @@ namespace llcv {
     LLCV_DEBUG() << "end" << std::endl;
   }
 
+  void SelCosmicID::Initialize() {
+    _fout->cd();
+    _outtree = new TTree("CosmicID","");
+
+    AttachRSEV(_outtree);
+    
+    return;
+  }
+
   double SelCosmicID::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "=======================" << std::endl;
     
     
+    //
+    // get the image centered around the vertex
+    //
     
+    auto mat_v = Image().Image<cv::Mat>(kImageADC,20,20);
+ 
+    LLCV_DEBUG() << "(RSEV)=("<< Run() << "," << SubRun() << "," << Event() << "," << VertexID() << ")" << std::endl;
     
-    
-    
-    
-    
+    _outtree->Fill();
     
     LLCV_DEBUG() << "=======================" << std::endl;
     LLCV_DEBUG() << "end" << std::endl;
@@ -31,7 +43,10 @@ namespace llcv {
   
   void SelCosmicID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
-    
+
+    _fout->cd();
+    _outtree->Write();
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 

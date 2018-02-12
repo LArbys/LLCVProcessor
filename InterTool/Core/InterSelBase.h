@@ -43,6 +43,11 @@ namespace llcv {
 
     void AttachRSEV(TTree* tree);
 
+    int Run()      const { return *_run;    }
+    int SubRun()   const { return *_subrun; }
+    int Event()    const { return *_event;  }
+    int VertexID() const { return *_vtxid;  }
+
   private:
 
     void set_output_file(TFile* fout) { _fout = fout; }
