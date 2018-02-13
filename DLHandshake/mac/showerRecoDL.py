@@ -55,6 +55,7 @@ def getShowerRecoAlgModular(is_mc):
     dqdx.setUseTrunkAngle(True)
 
     length = showerreco.FillLengthUVY()
+    length.SetQFraction(0.8)
 
     alg.AddShowerRecoModule(angle3D)
     alg.AddShowerRecoModule(trunkangle3D)
