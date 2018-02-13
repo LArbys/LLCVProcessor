@@ -204,17 +204,24 @@ namespace llcv {
   }
 
   void InterImageManager::Erase() {
-    auto adc_iter = std::begin(_inter_adc_m);
-    std::advance(adc_iter, 1);
+    if (_inter_adc_m.size()>1) {
+      auto adc_iter = std::begin(_inter_adc_m);
+      std::advance(adc_iter, 1);
+      _inter_adc_m.erase(adc_iter,std::end(_inter_adc_m));
+    }
+
+    if (_inter_shr_m.size()>1) {
+      auto shr_iter = std::begin(_inter_shr_m);
+      std::advance(shr_iter, 1);
+      _inter_shr_m.erase(shr_iter,std::end(_inter_shr_m));
+    }
+
+    if (_inter_trk_m.size()>1) {
+      auto trk_iter = std::begin(_inter_trk_m);
+      std::advance(trk_iter, 1);
+      _inter_trk_m.erase(trk_iter,std::end(_inter_trk_m));
+    }
       
-    auto shr_iter = std::begin(_inter_shr_m);
-    std::advance(shr_iter, 1);
-
-    auto trk_iter = std::begin(_inter_trk_m);
-    std::advance(trk_iter, 1);
-
-    _inter_adc_m.erase(adc_iter,std::end(_inter_adc_m));
-
   }
 
   template std::vector<cv::Mat*> InterImageManager::Image<cv::Mat>(llcv::InterImageType iitype, int cropx, int cropy);

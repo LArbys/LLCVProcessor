@@ -39,8 +39,12 @@ namespace llcv {
     // get the image centered around the vertex
     //
     
-    auto mat_v = Image().Image<cv::Mat>(kImageADC,400,400);
-    auto img_v = Image().Image<larcv::Image2D>(kImageADC,400,400);
+    size_t cropx = 400;
+    size_t cropy = 400;
+
+
+    auto mat_v = Image().Image<cv::Mat>(kImageADC,cropx,cropy);
+    auto img_v = Image().Image<larcv::Image2D>(kImageADC,cropx,cropy);
     
     std::vector<cv::Mat> mat3d_v;
     mat3d_v.reserve(3);
@@ -67,15 +71,14 @@ namespace llcv {
 	  ProjectImage2D(img_v.at(plane)->meta(),
 			 pt.X(),pt.Y(),pt.Z(),
 			 px_x, px_y);
-	  std::cout << "@plane=" << plane 
+	  LLCV_DEBUG() << "@plane=" << plane 
 		    << " (" << px_x << "," << px_y << ")=" 
 		    << img_v.at(plane)->pixel(px_y,px_x) << std::endl;
 	  auto& mat3d = mat3d_v[plane];
-	  mat3d.at<cv::Vec3b>(px_y,px_x) = {0,0,255};
+	  mat3d.at<cv::Vec3b>(px_x,cropy-px_y-1) = {0,0,255};
 	}
       }
     }
-
 
     
     for(size_t plane=0; plane<3; ++plane) {
