@@ -4,7 +4,7 @@
 #include "InterImageManager.h"
 #include "InterImageManager.imp.h"
 
-#include "RecoTruthMatch/MatchUtils.h"
+#include "InterTool_Util/InterImageUtils.h"
 
 #include <cassert>
 
@@ -155,7 +155,8 @@ namespace llcv {
 
     SetIIT(iitype,cpair);
 
-    if ((*_iimg_v).size()<3) (*_iimg_v).resize(3);
+    if ((*_iimg_v).size()<3) 
+      (*_iimg_v).resize(3);
 
     for(size_t plane=0; plane<3; ++plane) 
       (*_iimg_v)[plane].img2d = img_v[plane];
@@ -182,24 +183,38 @@ namespace llcv {
     
     SetIIT(kImageADC,-1,-1);
     
-    static double xpixel;
-    static double ypixel;
+    Erase();
+
+    static int xx;
+    static int yy;
+
     for(size_t plane=0; plane<3; ++plane) {
-      xpixel = ypixel = kINVALID_DOUBLE;
+      xx = yy = kINVALID_INT;
       const auto& meta = (*_iimg_v)[plane].img2d.meta();
-      Project3D(meta,x,y,z,0.0,plane,xpixel,ypixel);
-      int xx = (int)(xpixel+0.5);
-      int yy = (int)(ypixel+0.5);
-      yy = meta.rows() - yy - 1;
+      ProjectImage2D(meta,x,y,z,xx,yy);
       SetPixel(yy,xx,plane);
       LLCV_DEBUG() << "@plane=" << plane << " (" << yy << "," << xx << ")" << std::endl;
     }
     
   }
-  
+
   void InterImageManager::SetPixel(int row, int col, size_t plane) {
     if (plane>=_vtx_pixel_v.size()) throw llcv_err("Invalid plane");
     _vtx_pixel_v[plane] = std::make_pair(row,col);
+  }
+
+  void InterImageManager::Erase() {
+    auto adc_iter = std::begin(_inter_adc_m);
+    std::advance(adc_iter, 1);
+      
+    auto shr_iter = std::begin(_inter_shr_m);
+    std::advance(shr_iter, 1);
+
+    auto trk_iter = std::begin(_inter_trk_m);
+    std::advance(trk_iter, 1);
+
+    _inter_adc_m.erase(adc_iter,std::end(_inter_adc_m));
+
   }
 
   template std::vector<cv::Mat*> InterImageManager::Image<cv::Mat>(llcv::InterImageType iitype, int cropx, int cropy);

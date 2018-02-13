@@ -49,6 +49,7 @@ namespace llcv {
     void SetVertex(float x, float y, float z);
     void SetPixel(int row, int col, size_t plane);
     void Reset();
+    void Erase();
 
     void SetIIT(InterImageType iitype,const std::pair<int,int>& cpair);
     void SetIIT(InterImageType iitype,int cropx, int cropy);

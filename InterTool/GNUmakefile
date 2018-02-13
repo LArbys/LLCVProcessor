@@ -1,4 +1,4 @@
-SUBDIRS :=  Core App Sel
+SUBDIRS :=  Core Util App Sel
 
 .phony: all clean
 

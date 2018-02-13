@@ -73,8 +73,6 @@ namespace llcv {
     //
     
     
-    
-    
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -195,6 +193,7 @@ namespace llcv {
   { _sel_base_v.push_back(sbase); }
 
   void InterDriver::Reset() {
+    _img_mgr.Reset();
     _data_mgr_v.clear();
     _run    = kINVALID_INT;
     _subrun = kINVALID_INT;
