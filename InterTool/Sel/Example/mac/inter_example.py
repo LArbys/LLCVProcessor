@@ -22,8 +22,6 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 OUT_DIR    = str(sys.argv[7])
 
-# NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
-
 import ROOT
 
 from larlitecv import larlitecv
@@ -33,7 +31,11 @@ BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
 sys.path.insert(0,BASE_PATH)
 
-#from lib.ssnet_modules import attach_ssnet
+TOP_DIR = os.environ['LARLITECV_BASEDIR']
+TOP_DIR = os.path.join(TOP_DIR,"app","LLCVProcessor","InterTool")
+sys.path.insert(0,os.path.join(TOP_DIR,"Sel"))
+
+from lib.ssnet_modules import attach_ssnet
 
 proc = llcv.Processor()
 
@@ -45,17 +47,21 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
+
+#
+# No TTree available
+#
 #driver.AttachInterFile(INTER_FILE,"vertex_tree")
 driver.SetOutputFilename("fout.root");
 
-selection = llcv.SelCosmicID()
+selection = llcv.SelExample()
 driver.AddSelection(selection);
 
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"inter_cosmic.cfg"))
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
+proc.configure(os.path.join(BASE_PATH,"inter_example.cfg"))
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "example_output.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
@@ -65,8 +71,7 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-# must start from entry=0, support coming soon
-proc.batch_process_lcv_reverse(3,1)
+proc.batch_process_lcv_reverse(0,1)
 
 proc.finalize()
 

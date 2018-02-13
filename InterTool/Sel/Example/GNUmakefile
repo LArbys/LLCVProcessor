@@ -1,4 +1,4 @@
-PACKAGE_NAME = InterTool_SelCosmicID
+PACKAGE_NAME = InterTool_SelExample
 
 # specific names for this package
 SOURCES = $(wildcard *.cxx)

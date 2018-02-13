@@ -1,0 +1,5 @@
+/uboone/data/users/vgenty/inter_example/op_Run005154-SubRun000071-Event003556.root
+/uboone/data/users/vgenty/inter_example/pgraph_Run005154-SubRun000071-Event003556.root
+/uboone/data/users/vgenty/inter_example/shower_Run005154-SubRun000071-Event003556.root
+/uboone/data/users/vgenty/inter_example/ssnet_Run005154-SubRun000071-Event003556.root
+/uboone/data/users/vgenty/inter_example/track_Run005154-SubRun000071-Event003556.root

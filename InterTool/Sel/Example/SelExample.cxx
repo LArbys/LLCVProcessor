@@ -1,7 +1,7 @@
-#ifndef __SELCOSMICID_CXX__
-#define __SELCOSMICID_CXX__
+#ifndef __SELEXAMPLE_CXX__
+#define __SELEXAMPLE_CXX__
 
-#include "SelCosmicID.h"
+#include "SelExample.h"
 
 #include "InterTool_Util/InterImageUtils.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
@@ -10,23 +10,23 @@
 
 namespace llcv {
 
-  void SelCosmicID::Configure (const larcv::PSet &pset) {
+  void SelExample::Configure (const larcv::PSet &pset) {
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
 
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  void SelCosmicID::Initialize() {
+  void SelExample::Initialize() {
     _fout->cd();
-    _outtree = new TTree("CosmicID","");
+    _outtree = new TTree("Example","");
 
     AttachRSEV(_outtree);
     
     return;
   }
 
-  double SelCosmicID::Select() {
+  double SelExample::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "=======================" << std::endl;
     LLCV_DEBUG() << "(RSEV)=("<< Run() << "," << SubRun() << "," << Event() << "," << VertexID() << ")" << std::endl;    
@@ -96,7 +96,7 @@ namespace llcv {
     return 0.0;
   }
   
-  void SelCosmicID::Finalize() {
+  void SelExample::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
 
     _fout->cd();
