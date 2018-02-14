@@ -71,6 +71,13 @@ namespace llcv {
 	  ProjectImage2D(img_v.at(plane)->meta(),
 			 pt.X(),pt.Y(),pt.Z(),
 			 px_x, px_y);
+
+	  if (px_x < 0) continue;
+	  if (px_y < 0) continue;
+
+	  if (px_x >= cropx) continue;
+	  if (px_y >= cropy) continue;
+
 	  LLCV_DEBUG() << "@plane=" << plane 
 		    << " (" << px_x << "," << px_y << ")=" 
 		    << img_v.at(plane)->pixel(px_y,px_x) << std::endl;
