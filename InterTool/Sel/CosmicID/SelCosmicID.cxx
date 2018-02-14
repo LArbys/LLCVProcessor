@@ -16,6 +16,8 @@ namespace llcv {
 
   void SelCosmicID::Configure (const larcv::PSet &pset) {
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
+    llcv::logger::get_shared().set((msg::Level_t)pset.get<int>("Verbosity",2));
+
     LLCV_DEBUG() << "start" << std::endl;
 
     _max_radius = pset.get<float>("MaxRadius");
@@ -86,8 +88,10 @@ namespace llcv {
       LLCV_DEBUG() << "@pt=" << pt << std::endl;
 
       auto ctor_id = larocv::FindContainingContour(ctor_v,pt);
-      if (ctor_id == kINVALID_SIZE)
+      if (ctor_id == kINVALID_SIZE) {
 	LLCV_DEBUG() << "... point not associated with any contour" << std::endl;
+	continue;
+      }
       
       LLCV_DEBUG() << "@ctor_id=" << ctor_id << std::endl;
       
