@@ -47,12 +47,10 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-
-#
-# No TTree available
-#
-#driver.AttachInterFile(INTER_FILE,"vertex_tree")
 driver.SetOutputFilename("fout.root");
+
+if INTER_FILE != "":
+    driver.AttachInterFile(INTER_FILE,"vertex_tree")
 
 selection = llcv.SelExample()
 driver.AddSelection(selection);
@@ -65,7 +63,8 @@ proc.dataco().set_outputfile(os.path.join(OUT_DIR, "example_output.root"),"larcv
 
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
-proc.add_ll_input_file(FLASH_FILE)
+if FLASH_FILE != "":
+    proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
 
