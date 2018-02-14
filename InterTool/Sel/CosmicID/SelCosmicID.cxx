@@ -41,7 +41,7 @@ namespace llcv {
     
     _out_tree->Branch("pt_xing_vv", &_pt_xing_vv);
     _out_tree->Branch("connected_vv", &_connected_vv);
-
+    _out_tree->BRanch("distance_vv",&_distance_vv);
 
     return;
   }
