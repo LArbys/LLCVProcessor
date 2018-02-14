@@ -57,6 +57,28 @@ namespace llcv {
     return ;
   }
 
+  void ProjectMat(const larcv::ImageMeta& meta,
+		  double x,double y,double z,
+		  int& xx, int& yy) {
+
+    auto geohelp = larutil::GeometryHelper::GetME();
+    auto larpro  = larutil::LArProperties::GetME();
+
+    auto plane = meta.plane();
+
+    auto pt2D = geohelp->Point_3Dto2D(x, y, z, plane );
+
+    double x_compression  = (double)meta.width()  / (double)meta.cols();
+    double y_compression  = (double)meta.height() / (double)meta.rows();
+    double xpixel = (pt2D.w/geohelp->WireToCm() - meta.tl().x) / x_compression;
+    double ypixel = (((x/larpro->DriftVelocity())*2+3200)-meta.br().y)/y_compression;
+
+    xx = (int)(xpixel+0.5);
+    yy = (int)(ypixel+0.5);
+
+    return;
+  }
+
 
 }
 

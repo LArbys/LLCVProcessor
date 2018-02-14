@@ -220,7 +220,7 @@ namespace llcv {
 	continue;
       }
 
-      LLCV_DEBUG() << "Track of Shower vertex exists" << std::endl;
+      LLCV_DEBUG() << "Track and Shower vertex exists" << std::endl;
       
       size_t vid = kINVALID_SIZE;
       size_t pgid = kINVALID_SIZE;

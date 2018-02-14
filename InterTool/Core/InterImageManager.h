@@ -38,6 +38,7 @@ namespace llcv {
     ~InterImageManager(){}
 
   public:
+
     template <class T>
       std::vector<T*> Image(llcv::InterImageType iitype, int cropx, int cropy);
 

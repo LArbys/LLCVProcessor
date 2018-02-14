@@ -12,6 +12,10 @@ namespace llcv {
   void ProjectImage2D(const larcv::ImageMeta& meta,
 		      double x,double y,double z,
 		      int& xx, int& yy);
+
+  void ProjectMat(const larcv::ImageMeta& meta,
+		  double x,double y,double z,
+		  int& xx, int& yy);
   
 }
 

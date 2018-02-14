@@ -1,4 +1,4 @@
-SUBDIRS :=  Base DLHandshake RecoTruthMatch DetachedShower
+SUBDIRS :=  Base DLHandshake RecoTruthMatch DetachedShower InterTool
 
 .phony: all clean
 

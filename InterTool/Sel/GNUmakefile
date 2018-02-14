@@ -1,4 +1,4 @@
-SUBDIRS := Toy Example
+SUBDIRS := Toy CosmicID Example
 
 .phony: all clean
 
