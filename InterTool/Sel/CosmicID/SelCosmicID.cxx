@@ -93,6 +93,7 @@ namespace llcv {
 	continue;
       }
       
+      
       LLCV_DEBUG() << "@ctor_id=" << ctor_id << std::endl;
       
       const auto& ctor = ctor_v.at(ctor_id);
@@ -117,6 +118,7 @@ namespace llcv {
 	  auto connected = larocv::Connected(mat,temp_xs_v.front(),temp_xs_v.back(),2);
 	  LLCV_DEBUG() << "Connected=" << connected << std::endl;
 	  _connected_vv[plane][r_idx] = (int)connected;
+	  _distance_vv[plane][r_idx] = geo2d::dist(temp_xs_v.front(),temp_xs_v.back());
 	}
       }
     }    
@@ -140,13 +142,16 @@ namespace llcv {
   void SelCosmicID::ResetTree() {
     _pt_xing_vv.clear();
     _connected_vv.clear();
+    _distance_vv.clear();
 
     _pt_xing_vv.resize(3);
     _connected_vv.resize(3);
+    _distance_vv.resize(3);
 
     for(size_t plane=0; plane<3; ++plane) {
       _pt_xing_vv[plane].resize(_radius_v.size(),-1);
       _connected_vv[plane].resize(_radius_v.size(),-1);
+      _distance_vv[plane].resize(_radius_v.size(),-1);
     }
 
   }

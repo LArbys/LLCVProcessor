@@ -36,7 +36,7 @@ namespace llcv {
     std::vector<float> _radius_v;
     std::vector<std::vector<int> > _pt_xing_vv;
     std::vector<std::vector<int> > _connected_vv;
-    
+    std::vector<std::vector<float> > _distance_vv;
 
   };
 
