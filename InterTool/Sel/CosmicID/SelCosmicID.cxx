@@ -16,7 +16,6 @@ namespace llcv {
 
   void SelCosmicID::Configure (const larcv::PSet &pset) {
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
-    llcv::logger::get_shared().set((msg::Level_t)pset.get<int>("Verbosity",2));
 
     LLCV_DEBUG() << "start" << std::endl;
 
@@ -43,10 +42,13 @@ namespace llcv {
     _out_tree->Branch("pt_xing_vv", &_pt_xing_vv);
     _out_tree->Branch("connected_vv", &_connected_vv);
 
+
     return;
   }
 
   double SelCosmicID::Select() {
+    llcv::logger::get_shared().set((msg::Level_t)2);
+
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "=======================" << std::endl;
     
