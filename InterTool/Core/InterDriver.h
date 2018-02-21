@@ -60,7 +60,8 @@ namespace llcv {
     void AddSelection(InterSelBase* sbase);
     void SetOutputFilename(std::string fout_fname);
     void AttachInterFile(const std::string& fname,const std::string& tname);
-    const std::vector<InterDataManager>& GetEventVertexData() const { return _data_mgr_v; };
+    std::vector<InterDataManager>& GetEventVertexData() { return _data_mgr_v; };
+    InterImageManager& GetEventImageData() { return _img_mgr; };
     
   private:
 
