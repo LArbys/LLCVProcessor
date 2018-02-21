@@ -77,16 +77,17 @@ namespace llcv {
       ev_adc_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_adc_img_prod);
     else 
       throw llcv_err("Must specify ADC image");
-    
+
+
     LLCV_DEBUG() << "@mgr (r,s,e,e)=(" 
 		 << ev_adc_img->run()    << "," 
 		 << ev_adc_img->subrun() << "," 
 		 << ev_adc_img->event()  << "," 
 		 << mgr.current_entry()  << ")" << std::endl;
 
-    _driver._run    = (int)sto.run_id();
-    _driver._subrun = (int)sto.subrun_id();
-    _driver._event  = (int)sto.event_id();
+    _driver._run    = (int)ev_adc_img->run();
+    _driver._subrun = (int)ev_adc_img->subrun();
+    _driver._event  = (int)ev_adc_img->event();
 
     _driver.AttachImage(ev_adc_img->Image2DArray(),kImageADC);
 
@@ -155,7 +156,7 @@ namespace llcv {
       LLCV_DEBUG() << "NO VERTEX... return" << std::endl;
       return true;
     }
-    
+
     LLCV_DEBUG() << "GOT: " << npgraph_vertex << " vertices" << std::endl;
     
     // get tracks
@@ -217,6 +218,7 @@ namespace llcv {
       if (!ev_track_vertex and !ev_shower_vertex) {
 	auto vid  = _driver.AttachVertex(nullptr);
 	auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);	
 	continue;
       }
 
@@ -234,6 +236,9 @@ namespace llcv {
 	// attach vertex & pgraph
 	vid  = _driver.AttachVertex(track_vertex_ptr);
 	pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+
+	// attach particle
+	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash) {
 	  for(const auto& opflash : *ev_opflash) {
@@ -262,6 +267,9 @@ namespace llcv {
 	
 	if (pgid == kINVALID_SIZE)
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+
+	// attach particle
+	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash and !attached_opflash) {
 	  for(const auto& opflash : *ev_opflash)
@@ -308,7 +316,7 @@ namespace llcv {
 
     } // end vertex
 
-    _driver.Dump();
+    //_driver.Dump();
     _driver.Process();
     _driver.Reset();
 
