@@ -22,6 +22,7 @@ namespace llcv {
     void ResetTree();
 
   private:
+
     TTree* _out_tree;
 
     std::vector<std::vector<float> > _ssnet_track_frac_vv;
