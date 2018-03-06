@@ -183,6 +183,18 @@ namespace llcv {
     _data_mgr_v[vtxid]._ass_cluster_to_hit_vv[cluid].push_back(id);
     return id;
   }
+  
+  size_t InterDriver::AttachHit(size_t vtxid, const larlite::hit* hit) {
+    size_t id = kINVALID_SIZE;
+    
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+    
+    id = _data_mgr_v[vtxid]._hit_v.size();
+    _data_mgr_v[vtxid]._hit_v.resize(id+1);
+    _data_mgr_v[vtxid]._hit_v[id] = hit;
+    return id;
+  }
 
   size_t InterDriver::AttachParticles(size_t vtxid,const larcv::PGraph* pgraph, const larcv::EventPixel2D* ev_pix) {
     size_t id = kINVALID_SIZE;

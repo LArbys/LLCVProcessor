@@ -22,7 +22,7 @@ namespace llcv {
     _spec.LoadRSEV(*_tchain);
 
     LLCV_INFO() << "Initializing RSEV map" << std::endl;
-    for(size_t ientry=0; ientry<_nentries; ++ientry) {
+    for(size_t ientry=0; ientry<(size_t)_nentries; ++ientry) {
       _tchain->GetEntry(ientry);
       RSEVID rsev(this->Run(),this->SubRun(),this->Event(),this->Vertex());
 
@@ -54,7 +54,7 @@ namespace llcv {
 
     _centry = _rsev_m.at(rsev);
 
-    if(_centry>=_nentries) 
+    if(_centry>=(size_t)_nentries) 
       throw llcv_err("Out of range centry");
 
     _tchain->GetEntry(_centry);

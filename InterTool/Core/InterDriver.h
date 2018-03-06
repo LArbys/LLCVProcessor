@@ -15,10 +15,12 @@
 namespace llcv {
 
   class InterModule;
+  class InterMichel;
   
   class InterDriver : public llcv_base {
 
     friend class InterModule;
+    friend class InterMichel;
 
   public:
   
@@ -85,6 +87,7 @@ namespace llcv {
     size_t AttachShower   (size_t vtxid, const larlite::shower* shower);
     size_t AttachCluster  (size_t vtxid, size_t shrid, const larlite::cluster* cluster);
     size_t AttachHit      (size_t vtxid, size_t cluid, const larlite::hit* hit);
+    size_t AttachHit      (size_t vtxid, const larlite::hit* hit);
 
     void Reset();
     void Dump();
