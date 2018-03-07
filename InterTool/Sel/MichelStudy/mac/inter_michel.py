@@ -34,17 +34,16 @@ from lib.ssnet_modules import attach_ssnet
 proc = llcv.Processor()
 
 # attach ssnet
-# attach_ssnet(proc)
+attach_ssnet(proc)
 
 # intermichel
 imod = llcv.InterMichel()
 
 # configure the driver
 driver = imod.Driver()
-FOUT = "michel_ana_%d.root"
+FOUT = os.path.join(OUT_DIR,"michel_ana_%d.root")
 
-#num = int(VTX_FILE.split(".")[0].split("_")[-1])
-num = 1
+num = int(SSNET_FILE.split(".")[0].split("_")[-1])
 FOUT = FOUT % num
 
 driver.SetOutputFilename(FOUT)
