@@ -79,13 +79,14 @@ namespace llcv {
     //
     void AttachImage(const std::vector<larcv::Image2D>& img_v, InterImageType itype);
     
-    size_t AttachVertex (const larlite::vertex* vertex);
-    size_t AttachPGraph (size_t vtxid, const larcv::PGraph* pgraph);
-    size_t AttachOpFlash(size_t vtxid, const larlite::opflash* opflash);
-    size_t AttachTrack  (size_t vtxid, const larlite::track* track);
-    size_t AttachShower (size_t vtxid, const larlite::shower* shower);
-    size_t AttachCluster(size_t vtxid, size_t shrid, const larlite::cluster* cluster);
-    size_t AttachHit    (size_t vtxid, size_t cluid, const larlite::hit* hit);
+    size_t AttachVertex   (const larlite::vertex* vertex);
+    size_t AttachPGraph   (size_t vtxid, const larcv::PGraph* pgraph);
+    size_t AttachParticles(size_t vtxid, const larcv::PGraph* pgraph, const larcv::EventPixel2D* ev_pix);
+    size_t AttachOpFlash  (size_t vtxid, const larlite::opflash* opflash);
+    size_t AttachTrack    (size_t vtxid, const larlite::track* track);
+    size_t AttachShower   (size_t vtxid, const larlite::shower* shower);
+    size_t AttachCluster  (size_t vtxid, size_t shrid, const larlite::cluster* cluster);
+    size_t AttachHit      (size_t vtxid, size_t cluid, const larlite::hit* hit);
 
     void Reset();
     void Dump();

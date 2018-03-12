@@ -52,11 +52,12 @@ namespace llcv {
       score_v.resize(_sel_base_v.size(),kINVALID_FLOAT);
       auto& data_mgr = _data_mgr_v[vtxid];
 
-      // prepare the image
-      _img_mgr.SetVertex(data_mgr.Vertex()->X(),
-			 data_mgr.Vertex()->Y(),
-			 data_mgr.Vertex()->Z());
-      
+      if (data_mgr.Vertex())
+	_img_mgr.SetVertex(data_mgr.Vertex()->X(),
+			   data_mgr.Vertex()->Y(),
+			   data_mgr.Vertex()->Z());
+      else
+	LLCV_WARNING() << "PGraph only input w. limited support" << std::endl;
       
       for(size_t selid=0; selid<_sel_base_v.size(); ++selid) {
 	auto sel_base = _sel_base_v[selid];
@@ -180,6 +181,62 @@ namespace llcv {
     _data_mgr_v[vtxid]._hit_v.resize(id+1);
     _data_mgr_v[vtxid]._hit_v[id] = hit;
     _data_mgr_v[vtxid]._ass_cluster_to_hit_vv[cluid].push_back(id);
+    return id;
+  }
+
+  size_t InterDriver::AttachParticles(size_t vtxid,const larcv::PGraph* pgraph, const larcv::EventPixel2D* ev_pix) {
+    size_t id = kINVALID_SIZE;
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
+    const auto& roi_v         = pgraph->ParticleArray();
+    const auto& cluster_idx_v = pgraph->ClusterIndexArray();
+    const auto& pix_m         = ev_pix->Pixel2DClusterArray();
+    const auto& pix_meta_m    = ev_pix->ClusterMetaArray();
+
+    auto npars = roi_v.size();
+
+    auto& pcluster_vv = _data_mgr_v[vtxid]._pcluster_vv;
+    
+    pcluster_vv.resize(npars);
+    for(auto& pcluster_v : pcluster_vv) 
+      pcluster_v.resize(3);
+    
+    for(size_t roid=0; roid < npars; ++roid) {
+      
+      auto& pcluster_v = pcluster_vv[roid];
+      
+      auto cidx = cluster_idx_v.at(roid);
+      
+      for(size_t plane=0; plane<3; ++plane) {
+	
+	auto iter_pix = pix_m.find(plane);
+	if(iter_pix == pix_m.end()) 
+	  continue;
+	
+	auto iter_pix_meta = pix_meta_m.find(plane);
+	if(iter_pix_meta == pix_meta_m.end())
+	  continue;
+	
+	const auto& pix_v      = (*iter_pix).second;
+	const auto& pix_meta_v = (*iter_pix_meta).second;
+	
+	const auto& pix      = pix_v.at(cidx);
+	const auto& pix_meta = pix_meta_v.at(cidx);
+	
+	std::vector<larcv::Pixel2D> px_pos_v;
+	px_pos_v.reserve(pix.size());
+	for(const auto& px : pix) {
+	  auto posx = pix_meta.pos_x(px.Y());
+	  auto posy = pix_meta.pos_y(px.X());
+	  px_pos_v.emplace_back(posx,posy);
+	}
+
+	pcluster_v[plane] = larcv::Pixel2DCluster(std::move(px_pos_v));
+      } // end plane
+    } // end this particle
+    
     return id;
   }
   
