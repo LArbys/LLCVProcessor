@@ -144,6 +144,8 @@ namespace llcv {
     flashana::Flash_t hypo_1e1p   = genflashmatch->GenerateUnfittedFlashHypothesis( qcluster_1e1p );
     flashana::Flash_t hypo_1mu1p  = genflashmatch->GenerateUnfittedFlashHypothesis( qcluster_1mu1p );
 
+    _fout->cd();
+    
     // make flash hist
     // auto run    = Tree().Scalar<int>("run");
     // auto subrun = Tree().Scalar<int>("subrun");
@@ -293,7 +295,7 @@ namespace llcv {
     qinteraction.reserve( 1000 );
     for ( size_t itrack=0; itrack<dedxgen_v.size(); itrack++ ) {
       // we get the dedx track
-      std::vector< std::vector<float> > dedx_track_per_plane;
+      std::vector< std::vector<float> > dedx_track_per_plane(3);
       dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
       const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
 
@@ -302,11 +304,15 @@ namespace llcv {
 	ly = ly_proton;
 
       for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
+	if ( ipt>=bincenter_xyz.size() ) continue;
+	
 	float dedx = dedx_track_per_plane[2].at(ipt);
 	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
-	float numphotons = dedx*(2*0.5)*ly;
-	flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
-	qinteraction.emplace_back( std::move(qpt) );
+	if ( edep_pos.size()==3 ) {
+	  float numphotons = dedx*(2*0.5)*ly;
+	  flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
+	  qinteraction.emplace_back( std::move(qpt) );
+	}
       }
       // we get the 
     }
@@ -330,7 +336,7 @@ namespace llcv {
 
       if ( (int)itrack!=shrid ) {
 	// we get the dedx track
-	std::vector< std::vector<float> > dedx_track_per_plane;
+	std::vector< std::vector<float> > dedx_track_per_plane(3);
 	dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
 	const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
 	
@@ -339,11 +345,14 @@ namespace llcv {
 	  ly = ly_proton;
 
 	for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
+	  if ( ipt>=bincenter_xyz.size() ) continue;
 	  float dedx = dedx_track_per_plane[2].at(ipt);
 	  const std::vector<float>& edep_pos = bincenter_xyz[ipt];
-	  float numphotons = dedx*(2*0.5)*ly;
-	  flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
-	  qinteraction.emplace_back( std::move(qpt) );
+	  if ( edep_pos.size()==3 ) {
+	    float numphotons = dedx*(2*0.5)*ly;
+	    flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
+	    qinteraction.emplace_back( std::move(qpt) );
+	  }
 	}
       }//end of if not-shower
       else {
