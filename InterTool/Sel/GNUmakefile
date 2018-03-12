@@ -1,4 +1,4 @@
-SUBDIRS := Toy SSNetStudy CosmicID Example
+SUBDIRS := Toy MichelStudy SSNetStudy CosmicID Example
 
 .phony: all clean
 

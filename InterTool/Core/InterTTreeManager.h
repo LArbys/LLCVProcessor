@@ -45,11 +45,13 @@ namespace llcv {
   };
 
   class InterModule;
+  class InterMichel;
   class InterDriver;
 
   class InterTTreeManager : public llcv_base {
 
     friend class InterModule;
+    friend class InterMichel;
     friend class InterDriver;
 
   public:
