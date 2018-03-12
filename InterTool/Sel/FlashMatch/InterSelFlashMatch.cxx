@@ -53,16 +53,16 @@ namespace llcv {
     LLCV_DEBUG() << "start" << std::endl;
 
     // get distance between reco vertex and true vertex
-    scedr = Tree().Scalar<float>("locv_scedr");
+    //scedr = Tree().Scalar<float>("locv_scedr");
     
     // get the reconstructed proton energy (from selection)
-    auto pproton_energy = Tree().Scalar<float>("reco_LL_proton_energy");
-    if (pproton_energy < 0)  {
-      LLCV_INFO() << "No reconstructed proton energy" << std::endl;
-      valid = 0;
-      outtree->Fill();
-      return 0;
-    }
+    // auto pproton_energy = Tree().Scalar<float>("reco_LL_proton_energy");
+    // if (pproton_energy < 0)  {
+    //   LLCV_INFO() << "No reconstructed proton energy" << std::endl;
+    //   valid = 0;
+    //   outtree->Fill();
+    //   return 0;
+    // }
 
 
     // 
@@ -70,9 +70,12 @@ namespace llcv {
     // https://goo.gl/8MboZe
     //
 
+    int run    =   Run();
+    int subrun =   SubRun();
+    int event  =   Event();
+    int vertexid = VertexID();    
 
     const larlite::vertex& vtx = *(Data().Vertex());
-    int vertexid = VertexID();
 
     vtxpos[0] = (float)vtx.X();
     vtxpos[1] = (float)vtx.Y();
@@ -80,13 +83,13 @@ namespace llcv {
 
     valid = 1; // if we f-up marker it with this variable
 
-    reco_nu_E     = Tree().Scalar<float>("reco_LL_total_energy");
-    reco_shower_E = Tree().Scalar<float>("reco_LL_electron_energy");
-    reco_proton_E = Tree().Scalar<float>("reco_LL_proton_energy");
+    // reco_nu_E     = Tree().Scalar<float>("reco_LL_total_energy");
+    // reco_shower_E = Tree().Scalar<float>("reco_LL_electron_energy");
+    // reco_proton_E = Tree().Scalar<float>("reco_LL_proton_energy");
     
-    true_nu_E     = Tree().Scalar<float>("locv_energyInit");
-    true_shower_E = Tree().Scalar<float>("anashr1_mc_energy");
-    true_proton_E = Tree().Scalar<float>("locv_dep_sum_proton");
+    // true_nu_E     = Tree().Scalar<float>("locv_energyInit");
+    // true_shower_E = Tree().Scalar<float>("anashr1_mc_energy");
+    // true_proton_E = Tree().Scalar<float>("locv_dep_sum_proton");
     
     // GET DATA
     // --------
@@ -100,8 +103,13 @@ namespace llcv {
     std::vector< int > hitmask_v( hit_v.size(), 1 );
     
     // get prong class
-    auto shrid = Tree().Scalar<int>("reco_LL_electron_id");
-    auto protonid = Tree().Scalar<int>("reco_LL_proton_id");
+    //auto shrid = Tree().Scalar<int>("reco_LL_electron_id");
+    //auto protonid = Tree().Scalar<int>("reco_LL_proton_id");
+    int shrid = 0;
+    int protonid = -1;
+
+    std::cout << "Number of showers: " << Data().Showers().size() << std::endl;
+    std::cout << "Number of tracks: "  << Data().Tracks().size() << std::endl;    
 
     // get shower
     const larlite::shower& shreco = *(Data().Showers().at(shrid));
@@ -137,9 +145,9 @@ namespace llcv {
     flashana::Flash_t hypo_1mu1p  = genflashmatch->GenerateUnfittedFlashHypothesis( qcluster_1mu1p );
 
     // make flash hist
-    auto run    = Tree().Scalar<int>("run");
-    auto subrun = Tree().Scalar<int>("subrun");
-    auto event  = Tree().Scalar<int>("event");
+    // auto run    = Tree().Scalar<int>("run");
+    // auto subrun = Tree().Scalar<int>("subrun");
+    // auto event  = Tree().Scalar<int>("event");
 
     std::stringstream hname_hypo_1mu1p;
     hname_hypo_1mu1p << "hflash_" << run << "_" << event << "_" << subrun << "_vtx" << vertexid << "_1mu1p";
@@ -340,7 +348,8 @@ namespace llcv {
       }//end of if not-shower
       else {
 	// make shower qcluser: each point corresponds to the number of photons
-	float shower_energy = Tree().Scalar<float>("reco_LL_electron_energy");
+	//float shower_energy = Tree().Scalar<float>("reco_LL_electron_energy");
+	float shower_energy = shreco.Energy(); // what's the difference between this and the above?
 	float used_energy = 2.0*shower_energy; // correction factor for under-clustering (HACK)
 	float used_length = used_energy/2.4; // MeV / (MeV/cm)
 
