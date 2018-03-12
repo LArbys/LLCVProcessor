@@ -3,6 +3,11 @@
 
 #include "InterTool_Core/InterSelBase.h"
 #include "FlashMatchInterface/GeneralFlashMatchAlgo.h"
+#include "TrackHitSorter/TrackHitSorter.h"
+
+// larlite
+#include "DataFormat/vertex.h"
+#include "DataFormat/track.h"
 
 namespace llcv {
   
@@ -51,7 +56,14 @@ namespace llcv {
      float scedr;
 
     larlitecv::GeneralFlashMatchAlgo* genflashmatch;
-    float shower_correction_factor;    
+    float shower_correction_factor;
+    float fmax_hit_radius;
+    bool isMC;
+
+    flashana::QCluster_t build1mu1pQCluster( const int protonid, std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
+    flashana::QCluster_t build1e1pQCluster( const int protonid, const int shrid,
+					    const larlite::vertex& vtx, const larlite::shower& shreco,
+					    std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
     
   };
 
