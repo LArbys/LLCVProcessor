@@ -16,7 +16,7 @@ namespace llcv {
     larcv::PSet genflash_pset = pset.get<larcv::PSet>("GeneralFlashMatchAlgo");
     larlitecv::GeneralFlashMatchAlgoConfig genflash_cfg = larlitecv::GeneralFlashMatchAlgoConfig::MakeConfigFromPSet( genflash_pset );
     genflashmatch = new larlitecv::GeneralFlashMatchAlgo( genflash_cfg );
-    shower_correction_factor = pset.get<float>("ShowerCorrectionFactor",50.0);
+    shower_correction_factor = pset.get<float>("ShowerCorrectionFactor",1.0);
     isMC = pset.get<bool>("IsMC");
     fmax_hit_radius = pset.get<float>("MaxHitRadius");
     
@@ -101,6 +101,7 @@ namespace llcv {
     for (auto const& phit : phit_v )
       hit_v.push_back( *phit );
     std::vector< int > hitmask_v( hit_v.size(), 1 );
+    std::cout << "number of hits: " << hit_v.size() << std::endl;
     
     // get prong class
     //auto shrid = Tree().Scalar<int>("reco_LL_electron_id");
@@ -293,12 +294,14 @@ namespace llcv {
     
     flashana::QCluster_t qinteraction; // should reserve
     qinteraction.reserve( 1000 );
+    
     for ( size_t itrack=0; itrack<dedxgen_v.size(); itrack++ ) {
       // we get the dedx track
       std::vector< std::vector<float> > dedx_track_per_plane(3);
       dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
       const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
-
+      //std::cout << "1mu1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+      
       float ly = ly_muon;
       if ( (int)itrack==protonid )
 	ly = ly_proton;
@@ -310,6 +313,7 @@ namespace llcv {
 	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
 	if ( edep_pos.size()==3 ) {
 	  float numphotons = dedx*(2*0.5)*ly;
+	  //std::cout << "1mu1p-track: (" << edep_pos[0] << "," << edep_pos[1] << "," << edep_pos[2] << ") numphotons=" << numphotons << " dedx=" << dedx << std::endl;
 	  flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
 	  qinteraction.emplace_back( std::move(qpt) );
 	}
@@ -328,7 +332,6 @@ namespace llcv {
     const float ly_proton   = 19200;
     const float ly_muon     = 24000;
     const float ly_shower   = 20000;
-    const float shower_correction_factor = 50;
     
     flashana::QCluster_t qinteraction; // should reserve
     qinteraction.reserve( 1000 );
@@ -339,6 +342,7 @@ namespace llcv {
 	std::vector< std::vector<float> > dedx_track_per_plane(3);
 	dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
 	const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
+	//std::cout << "1e1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
 	
 	float ly = ly_muon;
 	if ( (int)itrack==protonid )
@@ -351,6 +355,7 @@ namespace llcv {
 	  if ( edep_pos.size()==3 ) {
 	    float numphotons = dedx*(2*0.5)*ly;
 	    flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
+	    //std::cout << "1e1p-track: (" << edep_pos[0] << "," << edep_pos[1] << "," << edep_pos[2] << ") numphotons=" << numphotons << std::endl;
 	    qinteraction.emplace_back( std::move(qpt) );
 	  }
 	}
@@ -374,6 +379,7 @@ namespace llcv {
 	  pos[2] = vtx.Z() + (step*istep)*shreco.Direction().Z();      
 	  float numphotons = (shower_correction_factor*step)*ly_shower;
 	  flashana::QPoint_t qpt( pos[0], pos[1], pos[2], numphotons );
+	  //std::cout << "1e1p-shower: (" << pos[0] << "," << pos[1] << "," << pos[2] << ") numphotons=" << numphotons << std::endl;
 	  qinteraction.push_back( qpt );
 	}
       }//end of if shower cluster

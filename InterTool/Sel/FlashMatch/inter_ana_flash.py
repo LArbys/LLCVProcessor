@@ -70,7 +70,7 @@ proc.add_ll_input_file(TRK_FILE)
 proc.initialize()
 
 # must start from entry=0, support coming soon
-proc.batch_process_lcv_reverse(0,1)
+proc.batch_process_lcv_reverse(0,10)
 
 proc.finalize()
 

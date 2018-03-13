@@ -33,6 +33,7 @@ namespace llcv {
     _shower_vertex_prod = cfg.get<std::string>("ShowerVertexProducer");
     _shower_shower_prod = cfg.get<std::string>("ShowerShowerProducer");
     _opflash_prod       = cfg.get<std::string>("OpFlashProducer");
+    _rawhit_prod        = cfg.get<std::string>("HitProducer");
 
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
@@ -42,6 +43,7 @@ namespace llcv {
     LLCV_DEBUG() << "track_vertex_prod... " << _track_vertex_prod << std::endl;
     LLCV_DEBUG() << "shower_vertex_prod.. " << _shower_vertex_prod << std::endl;
     LLCV_DEBUG() << "opflash_prod........." << _opflash_prod << std::endl;
+    LLCV_DEBUG() << "rawhit_prod.........." << _rawhit_prod << std::endl;
     
     _epsilon = cfg.get<float>("EPS",1e-5);
 
@@ -128,6 +130,10 @@ namespace llcv {
     larlite::event_opflash* ev_opflash = nullptr;
     if(!_opflash_prod.empty()) 
       ev_opflash = (larlite::event_opflash*)sto.get_data(larlite::data::kOpFlash,_opflash_prod);
+
+    larlite::event_hit* ev_allhits = nullptr;
+    if (!_rawhit_prod.empty())
+      ev_allhits = (larlite::event_hit*)sto.get_data(larlite::data::kHit,_rawhit_prod);
     
     //
     // configure the driver
@@ -277,7 +283,9 @@ namespace llcv {
 	  auto track_id = ass_track_v[trk_id];
 	  auto& track = ev_track->at(track_id);
 	  auto tid = _driver.AttachTrack(vid,&track);
-	} 
+	}
+
+	
       } // end track
 
 
@@ -339,6 +347,14 @@ namespace llcv {
 
       } // end shower
 
+
+      // attach hits
+      if ( vid!=kINVALID_SIZE && ev_allhits!=nullptr) {
+	// attach all the hits
+	for ( auto const& hit : *ev_allhits )
+	  auto hid = _driver.AttachHit(vid,&hit);
+      }
+      
     } // end vertex
 
     //_driver.Dump();
