@@ -41,10 +41,9 @@ imod = llcv.InterMichel()
 
 # configure the driver
 driver = imod.Driver()
-FOUT = "ssnet_ana_%d.root"
+FOUT = os.path.join(OUT_DIR,"michel_ana_%d.root")
 
-#num = int(VTX_FILE.split(".")[0].split("_")[-1])
-num = 1
+num = int(SSNET_FILE.split(".")[0].split("_")[-1])
 FOUT = FOUT % num
 
 driver.SetOutputFilename(FOUT)
@@ -61,10 +60,10 @@ proc.configure(os.path.join(BASE_PATH,"inter_michel.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "michel_trash.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
-proc.add_lcv_input_file(HIT_FILE)
+proc.add_ll_input_file(HIT_FILE)
 
 proc.initialize()
-proc.batch_process_lcv_reverse(0,1)
+proc.batch_process_lcv_reverse()
 proc.finalize()
 
 sys.exit(0)
