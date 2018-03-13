@@ -19,6 +19,7 @@ namespace llcv {
     shower_correction_factor = pset.get<float>("ShowerCorrectionFactor",1.0);
     isMC = pset.get<bool>("IsMC");
     fmax_hit_radius = pset.get<float>("MaxHitRadius");
+    fSaveHistograms = pset.get<bool>("SaveFlashHistograms",false); // for debugging
     
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -29,22 +30,41 @@ namespace llcv {
     _fout->cd();
     outtree = new TTree("ffmatch","Final Flash Match result");
     AttachRSEV(outtree);
+    // rsev
+    outtree->Branch("run", &run, "run/I");
+    outtree->Branch("subrun", &subrun, "subrun/I");
+    outtree->Branch("event", &event, "event/I");
+    outtree->Branch("vertexid", &vertexid, "vertexid/I");
     outtree->Branch("vtxpos",vtxpos,"vtxpos[3]/F");
-    outtree->Branch("chi2",&best_chi2,"chi2/F");
-    outtree->Branch("data_totpe",&best_data_totpe,"data_totpe/F");
-    outtree->Branch("hypo_totpe",&hypo_totpe,"hypo_totpe/F");
-    outtree->Branch("hypo_pe",hypo_pe,"hypo_pe[32]/F");
-    outtree->Branch("data_pe",data_pe,"data_pe[32]/F");
-    outtree->Branch("hypo_protonpe",hypo_protonpe,"hypo_protonpe[32]/F");
-    outtree->Branch("hypo_showerpe",hypo_showerpe,"hypo_showerpe[32]/F");
+    outtree->Branch("valid", &valid, "valid/I");    
+    outtree->Branch("shrid", &shrid, "shrid/I");
+    outtree->Branch("protonid", &protonid, "protonid/I");
+    
+    // data flash
+    outtree->Branch("ndata_flashes", &ndata_flashes, "ndata_flashes/I");
+    outtree->Branch("data_totpe", &data_totpe, "data_totpe/F");
+    outtree->Branch("data_pe", data_pe, "data_pe[32]/F");
+    outtree->Branch("data_flashidx", &data_flashidx, "data_flashidx/I");
+    
+    // 1mu1p hypothesis
+    outtree->Branch("chi2_1mu1p",&best_chi2_1mu1p,"chi2_1mu1p/F");
+    outtree->Branch("hypo_totpe_1mu1p",&hypo_totpe_1mu1p,"hypo_totpe_1mu1p/F");
+    outtree->Branch("hypo_pe_1mu1p",hypo_pe_1mu1p,"hypo_pe_1mu1p[32]/F");
+
+    // 1e1p hypothesis
+    outtree->Branch("chi2_1e1p",&best_chi2_1e1p,"chi2_1e1p/F");
+    outtree->Branch("hypo_totpe_1e1p",&hypo_totpe_1e1p,"hypo_totpe_1e1p/F");
+    outtree->Branch("hypo_pe_1e1p",hypo_pe_1e1p,"hypo_pe_1e1p[32]/F");
+
+    // interfile variables
     outtree->Branch("reco_nu_E", &reco_nu_E, "reco_nu_E/F");
     outtree->Branch("reco_shower_E", &reco_shower_E, "reco_shower_E/F");
     outtree->Branch("reco_proton_E", &reco_proton_E, "reco_proton_E/F");
+
+    // MC variables
     outtree->Branch("true_nu_E", &true_nu_E, "true_nu_E/F");
     outtree->Branch("true_shower_E", &true_shower_E, "true_shower_E/F");
     outtree->Branch("true_proton_E", &true_proton_E, "true_proton_E/F");
-
-    outtree->Branch("valid", &valid, "valid/I");
     outtree->Branch("scedr", &scedr, "scedr/F");
   }
 
@@ -70,10 +90,10 @@ namespace llcv {
     // https://goo.gl/8MboZe
     //
 
-    int run    =   Run();
-    int subrun =   SubRun();
-    int event  =   Event();
-    int vertexid = VertexID();    
+    run      = Run();
+    subrun   = SubRun();
+    event    = Event();
+    vertexid = VertexID();    
 
     const larlite::vertex& vtx = *(Data().Vertex());
 
@@ -83,6 +103,7 @@ namespace llcv {
 
     valid = 1; // if we f-up marker it with this variable
 
+    // no interfile at the moment
     // reco_nu_E     = Tree().Scalar<float>("reco_LL_total_energy");
     // reco_shower_E = Tree().Scalar<float>("reco_LL_electron_energy");
     // reco_proton_E = Tree().Scalar<float>("reco_LL_proton_energy");
@@ -104,10 +125,10 @@ namespace llcv {
     std::cout << "number of hits: " << hit_v.size() << std::endl;
     
     // get prong class
-    //auto shrid = Tree().Scalar<int>("reco_LL_electron_id");
-    //auto protonid = Tree().Scalar<int>("reco_LL_proton_id");
-    int shrid = 0;
-    int protonid = -1;
+    shrid = 0;
+    protonid = -1;    
+    //shrid = Tree().Scalar<int>("reco_LL_electron_id");
+    //protonid = Tree().Scalar<int>("reco_LL_proton_id");
 
     std::cout << "Number of showers: " << Data().Showers().size() << std::endl;
     std::cout << "Number of tracks: "  << Data().Tracks().size() << std::endl;    
@@ -132,10 +153,11 @@ namespace llcv {
     flashana::QCluster_t qcluster_1mu1p = build1mu1pQCluster( protonid, dedxgen_v );
     flashana::QCluster_t qcluster_1e1p  = build1e1pQCluster(  protonid, shrid, vtx, shreco, dedxgen_v );
 
-
+    // Get data flashes
     const auto& opflash_ptr_v = Data().Flashes();
     std::vector<larlite::opflash> ev_opflash;
     ev_opflash.reserve(opflash_ptr_v.size());
+    ndata_flashes = opflash_ptr_v.size();
     for(const auto& opflash_ptr : opflash_ptr_v)
       ev_opflash.emplace_back(*opflash_ptr);
 
@@ -145,139 +167,163 @@ namespace llcv {
     flashana::Flash_t hypo_1e1p   = genflashmatch->GenerateUnfittedFlashHypothesis( qcluster_1e1p );
     flashana::Flash_t hypo_1mu1p  = genflashmatch->GenerateUnfittedFlashHypothesis( qcluster_1mu1p );
 
-    _fout->cd();
-    
-    // make flash hist
-    // auto run    = Tree().Scalar<int>("run");
-    // auto subrun = Tree().Scalar<int>("subrun");
-    // auto event  = Tree().Scalar<int>("event");
-
-    std::stringstream hname_hypo_1mu1p;
-    hname_hypo_1mu1p << "hflash_" << run << "_" << event << "_" << subrun << "_vtx" << vertexid << "_1mu1p";
-    std::stringstream hname_hypo_1e1p;
-    hname_hypo_1e1p << "hflash_" << run << "_" << event << "_" << subrun << "_vtx" << vertexid << "_1e1p";
-    
-    TH1D flashhist_hypo_1mu1p( hname_hypo_1mu1p.str().c_str(),"",32,0,32);
-    TH1D flashhist_hypo_1e1p(  hname_hypo_1e1p.str().c_str(),"",32,0,32);
-
-    //vic
-    flashhist_hypo_1e1p.SetDirectory(_fout);
-    flashhist_hypo_1mu1p.SetDirectory(_fout);
-
+    // record unfit hypotheses into tree
     float maxpe_hypo_1e1p = 0.;
     float maxpe_hypo_1mu1p = 0.;    
     float petot_hypo_1e1p = 0.;
-    float petot_hypo_1mu1p = 0.;
-    for (int i=0; i<32; i++){
-      // 1mu1p
-      flashhist_hypo_1mu1p.SetBinContent(i+1, hypo_1mu1p.pe_v[i] );
-      if ( maxpe_hypo_1mu1p<hypo_1mu1p.pe_v[i] )
-	maxpe_hypo_1mu1p = hypo_1mu1p.pe_v[i];
-      petot_hypo_1mu1p += hypo_1mu1p.pe_v[i];
+    float petot_hypo_1mu1p = 0.;    
+    hypo_totpe_1e1p  = 0;
+    hypo_totpe_1mu1p = 0;
+    for (int ich=0; ich<32; ich++) {
 
-      // 1e1p
-      flashhist_hypo_1e1p.SetBinContent(i+1, hypo_1e1p.pe_v[i] );
-      if ( maxpe_hypo_1e1p<hypo_1e1p.pe_v[i] )
-	maxpe_hypo_1e1p = hypo_1e1p.pe_v[i];
-      petot_hypo_1e1p += hypo_1e1p.pe_v[i];
+      // fill array
+      hypo_pe_1mu1p[ich] = hypo_1mu1p.pe_v[ich];
+      hypo_pe_1e1p[ich] = hypo_1e1p.pe_v[ich];
 
-    }// num of pmts
+      if ( hypo_pe_1mu1p[ich]<1.0e-3 )
+	hypo_pe_1mu1p[ich] = 1.0e-3;
+      if ( hypo_pe_1e1p[ich]<1.0e-3 )
+	hypo_pe_1e1p[ich] = 1.0e-3;	
 
+      // total
+      hypo_totpe_1mu1p += hypo_pe_1mu1p[ich];
+      hypo_totpe_1e1p += hypo_pe_1e1p[ich];
+
+      // max
+      if ( maxpe_hypo_1mu1p<hypo_1mu1p.pe_v[ich] )
+	maxpe_hypo_1mu1p = hypo_1mu1p.pe_v[ich];
+      if ( maxpe_hypo_1e1p<hypo_1e1p.pe_v[ich] )
+	maxpe_hypo_1e1p = hypo_1e1p.pe_v[ich];
+      
+    }
     maxpe_hypo_1e1p /= petot_hypo_1e1p;
     maxpe_hypo_1mu1p /= petot_hypo_1mu1p;
 
-    
-    flashhist_hypo_1e1p.Scale(1.0/petot_hypo_1e1p);
-    flashhist_hypo_1e1p.SetLineColor(kRed);
-    
-    flashhist_hypo_1mu1p.Scale(1.0/petot_hypo_1mu1p);
-    flashhist_hypo_1mu1p.SetLineColor(kRed);    
 
-    
-    std::vector<TH1D*> flashhist_data_v;
-    std::vector<float> petot_data_v;    
-    float maxpe_data = 0.;
-    
-    for ( size_t i=0; i<ev_opflash.size(); i++) {
-      std::stringstream hname_data;
-      hname_data << "hflash_" << run << "_" << event << "_" << subrun << "_flash" << i << "_data";
-      TH1D* flashhist_data = new TH1D( hname_data.str().c_str(),"",32,0,32);
-      flashhist_data->SetDirectory(_fout);
-      float datatot = 0.;
-      for (int ipmt=0; ipmt<32; ipmt++) {
-	flashhist_data->SetBinContent(ipmt+1,dataflash_v[i].pe_v[ipmt]);
-	datatot += dataflash_v[i].pe_v[ipmt];
-	if ( dataflash_v[i].pe_v[ipmt]>maxpe_data )
-	  maxpe_data = dataflash_v[i].pe_v[ipmt];
-	flashhist_data->SetLineColor(kBlack);
-      }
-      flashhist_data->Scale( 1.0/datatot );
-      flashhist_data_v.push_back( flashhist_data );
-      maxpe_data /= datatot;
-      petot_data_v.push_back( datatot );
-      flashhist_data->Write();
-      delete flashhist_data;
-    }// end of flashes
-
-    
     // calculate simple chi2
-    /*
-    best_chi2 = -1;
-    best_data_totpe = -1;
-    int best_data = 0;
-    int idata = -1;
-    for ( auto& phist : flashhist_data_v ) {
-      idata++;
-      float chi2 = 0.;
+
+    best_chi2_1mu1p = -1;  // chi2
+    best_chi2_1e1p = -1;
+    int best_data = -1;
+    data_flashidx = 0; // record which data flash best matched
+    for ( size_t idata=0; idata<dataflash_v.size(); idata++) {
+
+      float chi2_1mu1p = 0.;
+      float chi2_1e1p  = 0.;
+
+      float totpe_data = 0;
+      for (int ipmt=0; ipmt<32; ipmt++)
+	totpe_data += dataflash_v[idata].pe_v[ipmt];
+      
       for (int ipmt=0; ipmt<32; ipmt++) {
-	float pefrac_data = phist->GetBinContent(ipmt+1);
-	float pefrac_hypo = flashhist_hypo.GetBinContent(ipmt+1);
+	float pefrac_data = dataflash_v[idata].pe_v[ipmt]/totpe_data;
+	float pefrac_hypo_1mu1p = hypo_pe_1mu1p[ipmt]/hypo_totpe_1mu1p;
+	float pefrac_hypo_1e1p  = hypo_pe_1e1p[ipmt]/hypo_totpe_1e1p;	
 
-	float pe_data = pefrac_data*petot_data_v[idata];
-	float pefrac_data_err = sqrt(pe_data)/petot_data_v[idata];
+	float pe_data = pefrac_data*totpe_data;
+	float pefrac_data_err = sqrt(pe_data)/pe_data;
 
-	float diff = pefrac_hypo - pefrac_data;
+	float diff_1mu1p = pefrac_hypo_1mu1p - pefrac_data;
+	float diff_1e1p  = pefrac_hypo_1e1p - pefrac_data;	
 	
-	LLCV_DEBUG() << "[" << ipmt << "] diff=" << diff << " hypo=" << pefrac_hypo << " data=" << pefrac_data << std::endl;
+	//LLCV_DEBUG() << "[" << ipmt << "] diff=" << diff << " hypo=" << pefrac_hypo << " data=" << pefrac_data << std::endl;
 	
 	// i know this is all fubar
-	if ( pefrac_data_err>0 )
-	  chi2 += (diff*diff)/pefrac_data;
-	else if (pefrac_data_err==0.0 && pefrac_hypo>0){
-	  chi2 += (diff*diff)/pefrac_hypo;
+	if ( pefrac_data_err>0 ) {
+	  chi2_1mu1p += (diff_1mu1p*diff_1mu1p)/pefrac_data;
+	  chi2_1e1p  += (diff_1e1p*diff_1e1p)/pefrac_data;	  
+	}
+	else if (pefrac_data_err==0.0 ){
+	  if ( pefrac_hypo_1mu1p>0 )
+	    chi2_1mu1p += (diff_1mu1p*diff_1mu1p)/pefrac_hypo_1mu1p;
+	  if ( pefrac_hypo_1e1p>0 )
+	    chi2_1e1p += (diff_1e1p*diff_1e1p)/pefrac_hypo_1e1p;
 	}
 	
       }
-      if ( best_chi2<0 || best_chi2>chi2 ) {
-	best_chi2 = chi2;
-	best_data_totpe = petot_data_v[idata];
+      if ( best_chi2_1mu1p<0 || best_chi2_1mu1p>chi2_1mu1p ) {
+	best_chi2_1mu1p = chi2_1mu1p;
 	best_data = idata;
       }
+      if ( best_chi2_1e1p<0 || best_chi2_1e1p>chi2_1e1p ) {
+	best_chi2_1e1p = chi2_1e1p;
+      }
+
     }
+    data_flashidx = best_data;
 
 
-    hypo_totpe = 0.0;
-    
+    // save data flash info
+    data_totpe = 0.;
     for (int ipmt=0; ipmt<32; ipmt++) {
-      data_pe[ipmt] = 0.0;
-
-      for(auto& phist : flashhist_data_v)
-	data_pe[ipmt] += phist->GetBinContent(ipmt+1);
-
-      hypo_pe[ipmt]       = flashhist_hypo.GetBinContent(ipmt+1);
-      hypo_protonpe[ipmt] = flashhist_hypo_proton.GetBinContent(ipmt+1);
-      hypo_showerpe[ipmt] = flashhist_hypo_shower.GetBinContent(ipmt+1);
-      hypo_totpe += hypo_pe[ipmt];
+      data_pe[ipmt] = dataflash_v[data_flashidx].pe_v[ipmt];
+      data_totpe += data_pe[ipmt];
     }
+    
+    
+    // save histograms
+    if ( fSaveHistograms ) {
 
-    for ( auto& phist : flashhist_data_v )
-      delete phist;
+      _fout->cd();
 
-    flashhist_data_v.clear();
-    */
+      // flash hypo histograms
+      std::stringstream hname_hypo_1mu1p;
+      hname_hypo_1mu1p << "hflash_" << run << "_" << event << "_" << subrun << "_vtx" << vertexid << "_1mu1p";
+      std::stringstream hname_hypo_1e1p;
+      hname_hypo_1e1p << "hflash_" << run << "_" << event << "_" << subrun << "_vtx" << vertexid << "_1e1p";
+      
+      TH1D flashhist_hypo_1mu1p( hname_hypo_1mu1p.str().c_str(),"",32,0,32);
+      TH1D flashhist_hypo_1e1p(  hname_hypo_1e1p.str().c_str(),"",32,0,32);
+      
+      //vic
+      flashhist_hypo_1e1p.SetDirectory(_fout);
+      flashhist_hypo_1mu1p.SetDirectory(_fout);
+      
+      for (int i=0; i<32; i++){
+	// 1mu1p
+	flashhist_hypo_1mu1p.SetBinContent(i+1, hypo_1mu1p.pe_v[i] );
 
-    flashhist_hypo_1mu1p.Write();
-    flashhist_hypo_1e1p.Write();
+	// 1e1p
+	flashhist_hypo_1e1p.SetBinContent(i+1, hypo_1e1p.pe_v[i] );
+
+      }// num of pmts
+    
+      flashhist_hypo_1e1p.Scale(1.0/petot_hypo_1e1p);
+      flashhist_hypo_1e1p.SetLineColor(kRed);
+    
+      flashhist_hypo_1mu1p.Scale(1.0/petot_hypo_1mu1p);
+      flashhist_hypo_1mu1p.SetLineColor(kRed);
+
+      flashhist_hypo_1mu1p.Write();
+      flashhist_hypo_1e1p.Write();
+      
+      // save data histogram
+      std::vector<TH1D*> flashhist_data_v;
+      std::vector<float> petot_data_v;    
+      float maxpe_data = 0.;
+      
+      for ( size_t i=0; i<ev_opflash.size(); i++) {
+	std::stringstream hname_data;
+	hname_data << "hflash_" << run << "_" << event << "_" << subrun << "_flash" << i << "_data";
+	TH1D* flashhist_data = new TH1D( hname_data.str().c_str(),"",32,0,32);
+	flashhist_data->SetDirectory(_fout);
+	float datatot = 0.;
+	for (int ipmt=0; ipmt<32; ipmt++) {
+	  flashhist_data->SetBinContent(ipmt+1,dataflash_v[i].pe_v[ipmt]);
+	  datatot += dataflash_v[i].pe_v[ipmt];
+	  if ( dataflash_v[i].pe_v[ipmt]>maxpe_data )
+	    maxpe_data = dataflash_v[i].pe_v[ipmt];
+	  flashhist_data->SetLineColor(kBlack);
+	}
+	flashhist_data->Scale( 1.0/datatot );
+	flashhist_data_v.push_back( flashhist_data );
+	maxpe_data /= datatot;
+	petot_data_v.push_back( datatot );
+	flashhist_data->Write();
+	delete flashhist_data;
+      }// end of flashes
+
+    }//end of if save histograms
 
     outtree->Fill();
     
