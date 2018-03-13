@@ -37,6 +37,8 @@ namespace llcv {
 
     std::string _opflash_prod;
 
+    std::string _rawhit_prod;
+
     float _epsilon;
 
     InterDriver _driver;

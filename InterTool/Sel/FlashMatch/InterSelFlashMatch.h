@@ -3,6 +3,11 @@
 
 #include "InterTool_Core/InterSelBase.h"
 #include "FlashMatchInterface/GeneralFlashMatchAlgo.h"
+#include "TrackHitSorter/TrackHitSorter.h"
+
+// larlite
+#include "DataFormat/vertex.h"
+#include "DataFormat/track.h"
 
 namespace llcv {
   
@@ -25,33 +30,63 @@ namespace llcv {
     
     
   private:
-    
+
+    // -----------------------------
+    // recorded trees
     TTree* outtree;
 
-    float best_chi2;
-    float best_data_totpe;
-    float hypo_totpe;
-    float hypo_pe[32];
-    float hypo_protonpe[32];
-    float hypo_showerpe[32];  
+
+    // note: pmt values are opchannel-indexed
+    
+    // data flash
     float data_pe[32];
+    float data_totpe;
+    int ndata_flashes;
+    int data_flashidx;
+    
+    // 1mu1p
+    float best_chi2_1mu1p;   
+    float hypo_totpe_1mu1p;  // for global ly constraint
+    float hypo_pe_1mu1p[32]; // for pmt-pmt correction
+
+    // 1e1p
+    float best_chi2_1e1p;
+    float hypo_totpe_1e1p;  // for global ly constraint
+    float hypo_pe_1e1p[32]; // for pmt-pmt correction
+
+    int valid;
+     
+    int run;
+    int subrun;
+    int event;
+    int vertexid;
     float vtxpos[3];
+    int shrid;
+    int protonid;
 
-     float reco_nu_E;
-     float reco_shower_E;
-     float reco_proton_E;
+    // from inter file
+    float reco_nu_E;
+    float reco_shower_E;
+    float reco_proton_E;
 
-     float true_nu_E;
-     float true_shower_E;
+    // from MC
+    float true_nu_E;
+    float true_shower_E;
+    float true_proton_E;
+    float scedr;
 
-
-     float true_proton_E;
-
-     int valid;
-     float scedr;
-
+    // -----------------------------
+    // running parameters
     larlitecv::GeneralFlashMatchAlgo* genflashmatch;
-    float shower_correction_factor;    
+    float shower_correction_factor;
+    float fmax_hit_radius;
+    bool  isMC;
+    bool  fSaveHistograms;
+
+    flashana::QCluster_t build1mu1pQCluster( const int protonid, std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
+    flashana::QCluster_t build1e1pQCluster( const int protonid, const int shrid,
+					    const larlite::vertex& vtx, const larlite::shower& shreco,
+					    std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
     
   };
 
