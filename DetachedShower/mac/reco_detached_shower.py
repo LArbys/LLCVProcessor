@@ -6,8 +6,8 @@ if len(sys.argv) != 7:
     print "HIT_FILE    = str(sys.argv[2])"
     print "MCINFO_FILE = str(sys.argv[3])"
     print "OUTPUT_DIR  = str(sys.argv[4])"
-    print "REQPDG      = int(sys.argv[5])"
-    print "RECLUSTER   = int(sys.argv[6])"
+    print "REQPDG      = int(sys.argv[5]) -- always 0"
+    print "RECLUSTER   = int(sys.argv[6]) -- not supported"
     print 
     sys.exit(1)
 
