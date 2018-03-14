@@ -56,7 +56,7 @@ namespace llcv {
     if ( it_rsev==_rsev_m.end() ) {
       throw llcv_err("Could not find RSEV in the inter file");
     }
-    //_centry = _rsev_m.at(rsev);
+
     _centry = (*it_rsev).second;
 
     if(_centry>=(size_t)_nentries) 
