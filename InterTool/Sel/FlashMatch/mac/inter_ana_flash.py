@@ -52,7 +52,7 @@ imod = llcv.InterModule()
 driver = imod.Driver()
 
 # NUM = 1
-NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
+NUM = int(VTX_FILE.split(".")[0].split("_")[-1])
 driver.SetOutputFilename("flash_ana_%d.root" % NUM);
 
 selection = llcv.InterSelFlashMatch()
