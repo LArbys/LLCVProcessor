@@ -39,6 +39,8 @@ namespace llcv {
     outtree->Branch("valid", &valid, "valid/I");    
     outtree->Branch("shrid", &shrid, "shrid/I");
     outtree->Branch("protonid", &protonid, "protonid/I");
+
+    outtree->Branch("longestdir", longestdir, "longestdir[3]/F");
     
     // data flash
     outtree->Branch("ndata_flashes", &ndata_flashes, "ndata_flashes/I");
@@ -128,7 +130,12 @@ namespace llcv {
     shrid = 0;
     protonid = -1;    
     //shrid = Tree().Scalar<int>("reco_LL_electron_id");
+    shrid = Tree().Scalar<int>("shrid");
     //protonid = Tree().Scalar<int>("reco_LL_proton_id");
+    if ( shrid==0 )
+      protonid = 1;
+    else if (shrid==1)
+      protonid = 0;
 
     std::cout << "Number of showers: " << Data().Showers().size() << std::endl;
     std::cout << "Number of tracks: "  << Data().Tracks().size() << std::endl;    
@@ -139,6 +146,22 @@ namespace llcv {
     // get tracks
     const std::vector<const larlite::track*>& ptrack_v = Data().Tracks(); // vic has already filtered out tracks associated to this vertex?
     std::vector< larlitecv::TrackHitSorter > dedxgen_v(ptrack_v.size()); // this class will generated de/dx per 3d position along the track. will use to set MeV deposited at 3d pos.
+    float longest_len = 0;
+    for ( auto const& ptrack : ptrack_v ) {
+      float len = ptrack->Length();
+      if ( len>longest_len ) {
+	float n = 0;
+	for (int i=0; i<3; i++) {
+	  longestdir[i] = ptrack->End()(i)-ptrack->Vertex()(i);
+	  n += longestdir[i]*longestdir[i];
+	}
+	n = sqrt(n);
+	if ( n>0 ) {
+	  for (int i=0; i<3; i++)
+	    longestdir[i] /= n;
+	}
+      }
+    }
 
     int ithsort=0;
     for ( auto const& ptrack : ptrack_v ) {
@@ -347,15 +370,22 @@ namespace llcv {
       dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
       const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
       //std::cout << "1mu1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+
+      if ( bincenter_xyz.size()!=dedx_track_per_plane[2].size() ) {
+	throw std::runtime_error("InterSelFlashMatch::build1mu1pQCluster: bincenters and dedx points do not match.");
+      }
       
       float ly = ly_muon;
       if ( (int)itrack==protonid )
 	ly = ly_proton;
 
       for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
-	if ( ipt>=bincenter_xyz.size() ) continue;
 	
 	float dedx = dedx_track_per_plane[2].at(ipt);
+
+	if ( dedx<1.0e-2 )
+	  dedx = 2.07; // MeV/cm
+	
 	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
 	if ( edep_pos.size()==3 ) {
 	  float numphotons = dedx*(2*0.5)*ly;
@@ -389,14 +419,21 @@ namespace llcv {
 	dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
 	const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); // todo: use v plane if y plane missing too many pieces
 	//std::cout << "1e1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+
+	if ( bincenter_xyz.size()!=dedx_track_per_plane[2].size() ) {
+	  throw std::runtime_error("InterSelFlashMatch::build1e1pQCluster: bincenters and dedx points do not match.");
+	}
 	
 	float ly = ly_muon;
 	if ( (int)itrack==protonid )
 	  ly = ly_proton;
 
 	for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
-	  if ( ipt>=bincenter_xyz.size() ) continue;
+
 	  float dedx = dedx_track_per_plane[2].at(ipt);
+	  if ( dedx<1.0e-2 )
+	    dedx = 2.07; // MeV/cm
+
 	  const std::vector<float>& edep_pos = bincenter_xyz[ipt];
 	  if ( edep_pos.size()==3 ) {
 	    float numphotons = dedx*(2*0.5)*ly;

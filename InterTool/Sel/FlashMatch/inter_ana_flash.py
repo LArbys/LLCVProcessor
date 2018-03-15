@@ -23,6 +23,7 @@ INTER_FILE = str(sys.argv[6])
 OUT_DIR    = str(sys.argv[7])
 
 # NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
+print INTER_FILE
 
 import ROOT
 
@@ -48,7 +49,7 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-#driver.AttachInterFile(INTER_FILE,"vertex_tree")
+driver.AttachInterFile(INTER_FILE,"vertex_tree")
 driver.SetOutputFilename("fout.root");
 
 selection = llcv.InterSelFlashMatch()
@@ -70,7 +71,7 @@ proc.add_ll_input_file(TRK_FILE)
 proc.initialize()
 
 # must start from entry=0, support coming soon
-#proc.batch_process_lcv_reverse(0,10)
+#proc.batch_process_lcv_reverse(0,1)
 proc.batch_process_lcv_reverse(0)
 
 proc.finalize()

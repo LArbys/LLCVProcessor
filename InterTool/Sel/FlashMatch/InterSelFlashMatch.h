@@ -63,6 +63,7 @@ namespace llcv {
     float vtxpos[3];
     int shrid;
     int protonid;
+    float longestdir[3];
 
     // from inter file
     float reco_nu_E;
@@ -87,6 +88,8 @@ namespace llcv {
     flashana::QCluster_t build1e1pQCluster( const int protonid, const int shrid,
 					    const larlite::vertex& vtx, const larlite::shower& shreco,
 					    std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
+
+    //float calcShapeOnlyChi2( const flashana::
     
   };
 
