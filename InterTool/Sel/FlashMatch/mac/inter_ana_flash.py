@@ -48,7 +48,9 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
+
 # driver.AttachInterFile(INTER_FILE,"vertex_tree")
+
 driver.SetOutputFilename("fout.root");
 
 selection = llcv.InterSelFlashMatch()
@@ -57,8 +59,7 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-#proc.configure(os.path.join(BASE_PATH,"cfg","inter_flash.cfg"))
-proc.configure("inter_flash.cfg")
+proc.configure(os.path.join(BASE_PATH,"inter_flash.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)

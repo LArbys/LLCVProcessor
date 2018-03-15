@@ -38,42 +38,36 @@ namespace llcv {
 
     // note: pmt values are opchannel-indexed
     
-    // data flash
-    float data_pe[32];
-    float data_totpe;
-    int ndata_flashes;
-    int data_flashidx;
+    float vtxpos_x;
+    float vtxpos_y;
+    float vtxpos_z;
     
-    // 1mu1p
-    float best_chi2_1mu1p;   
-    float hypo_totpe_1mu1p;  // for global ly constraint
-    float hypo_pe_1mu1p[32]; // for pmt-pmt correction
+    // data flash
+    int ndata_flashes;
+    std::vector<float> data_totpe_v;
+    std::vector<std::vector<float> > data_pe_vv;
 
-    // 1e1p
-    float best_chi2_1e1p;
-    float hypo_totpe_1e1p;  // for global ly constraint
-    float hypo_pe_1e1p[32]; // for pmt-pmt correction
+    // track and track ID
+    std::vector<std::vector<int> > proton_muon_pair_id_vv;
+    std::vector<float> proton_muon_chi2_1mu1p_v;
+    std::vector<float> proton_muon_hypo_totpe_v;
+    std::vector<std::vector<float> > proton_muon_hypo_pe_vv;
+    std::vector<int> proton_muon_best_data_flash_v;
+    
+    std::vector<std::vector<int> > muon_proton_pair_id_vv;
+    std::vector<float> muon_proton_chi2_1mu1p_v;
+    std::vector<float> muon_proton_hypo_totpe_v;
+    std::vector<std::vector<float> > muon_proton_hypo_pe_vv;
+    std::vector<int> muon_proton_best_data_flash_v;
 
-    int valid;
-     
-    int run;
-    int subrun;
-    int event;
-    int vertexid;
-    float vtxpos[3];
-    int shrid;
-    int protonid;
+    // track and shower ID
+    std::vector<std::vector<int> > proton_shower_pair_id_vv;
+    std::vector<float> proton_shower_chi2_1e1p_v;
+    std::vector<float> proton_shower_hypo_totpe_v;
+    std::vector<std::vector<float> > proton_shower_hypo_pe_vv;
+    std::vector<int> proton_shower_best_data_flash_v;
 
-    // from inter file
-    float reco_nu_E;
-    float reco_shower_E;
-    float reco_proton_E;
-
-    // from MC
-    float true_nu_E;
-    float true_shower_E;
-    float true_proton_E;
-    float scedr;
+    void ResetVertex();
 
     // -----------------------------
     // running parameters
@@ -83,11 +77,22 @@ namespace llcv {
     bool  isMC;
     bool  fSaveHistograms;
 
-    flashana::QCluster_t build1mu1pQCluster( const int protonid, std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
-    flashana::QCluster_t build1e1pQCluster( const int protonid, const int shrid,
-					    const larlite::vertex& vtx, const larlite::shower& shreco,
-					    std::vector<larlitecv::TrackHitSorter>& dedxgen_v );
-    
+    flashana::QCluster_t build1e1pQCluster(const int protonid,
+					   const larlite::vertex& vtx, 
+					   const larlite::shower& shower, 
+					   std::vector<larlitecv::TrackHitSorter>& dedxgen_v);
+
+    flashana::QCluster_t build1mu1pQCluster(const int protonid,
+					    const int muonid,
+					    std::vector<larlitecv::TrackHitSorter>& dedxgen_v);
+
+    void FillChi2(const std::vector<flashana::Flash_t>& dataflash_v,
+		  const flashana::Flash_t& hypo,
+		  float& best_chi2,
+		  float& hypo_totpe,
+		  std::vector<float>& hypo_pe,
+		  int& data_flashidx);    
+
   };
 
 }
