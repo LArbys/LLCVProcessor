@@ -170,7 +170,6 @@ namespace llcv {
     if ( ev_pgraph && ev_shower_vertex )
       assert(nshower_vertex == npgraph_vertex);
 
-
     
     if (!num_vertex) {
       LLCV_DEBUG() << "NO VERTEX... return" << std::endl;
@@ -266,7 +265,7 @@ namespace llcv {
 	vid  = _driver.AttachVertex(track_vertex_ptr);
 
 	// attach particle graph/particles
-	if ( pgraph_vertex ) {
+	if ( ev_pgraph ) {
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
 	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 	}
@@ -304,10 +303,10 @@ namespace llcv {
 	if (vid == kINVALID_SIZE)
 	  vid = _driver.AttachVertex(shower_vertex_ptr);
 	
-	if (pgid == kINVALID_SIZE && pgraph_vertex)
+	if (pgid == kINVALID_SIZE && ev_pgraph)
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
 	  
-	if (pid == kINVALID_SIZE && pgraph_vertex)
+	if (pid == kINVALID_SIZE && ev_pgraph)
 	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash and !attached_opflash) {

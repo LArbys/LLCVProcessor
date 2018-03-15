@@ -65,6 +65,8 @@ namespace llcv {
     std::vector<std::vector<float> > muon_proton_hypo_pe_vv;
     std::vector<int> muon_proton_best_data_flash_v;
 
+    float longestdir[3];
+
     // track and shower ID
     std::vector<std::vector<int> > proton_shower_pair_id_vv;
     std::vector<float> proton_shower_chi2_1e1p_v;
