@@ -22,7 +22,6 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 OUT_DIR    = str(sys.argv[7])
 
-
 import ROOT
 
 # hen...
@@ -53,7 +52,7 @@ driver = imod.Driver()
 
 # NUM = 1
 NUM = int(VTX_FILE.split(".")[0].split("_")[-1])
-driver.SetOutputFilename("flash_ana_%d.root" % NUM);
+#driver.AttachInterFile(INTER_FILE,"vertex_tree")
 
 selection = llcv.InterSelFlashMatch()
 driver.AddSelection(selection);
@@ -73,6 +72,8 @@ proc.add_ll_input_file(TRK_FILE)
 proc.initialize()
 
 proc.batch_process_lcv_reverse()
+# must start from entry=0, support coming soon
+#proc.batch_process_lcv_reverse(0,1)
 
 proc.finalize()
 

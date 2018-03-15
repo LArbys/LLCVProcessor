@@ -22,20 +22,22 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 OUT_DIR    = str(sys.argv[7])
 
-# NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
-
 import ROOT
 
-# weird
+# hen...
+from larlite import larlite
 from ROOT import flashana
 flashana.LightPath()
+# ...hen
+
 from ROOT import llcv
 
 BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
+print "Base path at: ",BASE_PATH
 sys.path.insert(0,BASE_PATH)
 
-from lib.ssnet_modules import attach_ssnet
+#from lib.ssnet_modules import attach_ssnet
 
 proc = llcv.Processor()
 
@@ -47,8 +49,10 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-driver.AttachInterFile(INTER_FILE,"vertex_tree")
-driver.SetOutputFilename("fout.root");
+
+# NUM = 1
+NUM = int(VTX_FILE.split(".")[0].split("_")[-1])
+#driver.AttachInterFile(INTER_FILE,"vertex_tree")
 
 selection = llcv.InterSelFlashMatch()
 driver.AddSelection(selection);
@@ -56,7 +60,7 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"cfg","inter_flash.cfg"))
+proc.configure(os.path.join(BASE_PATH,"inter_flash.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
@@ -67,8 +71,9 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
+proc.batch_process_lcv_reverse()
 # must start from entry=0, support coming soon
-proc.batch_process_lcv_reverse(3,1)
+#proc.batch_process_lcv_reverse(0,1)
 
 proc.finalize()
 

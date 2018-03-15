@@ -158,6 +158,8 @@ namespace llcv {
       assert(nshower_vertex == npgraph_vertex);
     }
 
+    LLCV_DEBUG() << "GOT VERTICES: pgraph=" << npgraph_vertex << " track=" << ntrack_vertex << " shower=" << nshower_vertex << std::endl;
+    
     // check self-consistency
     if (ev_track_vertex && ev_shower_vertex)
       assert(ntrack_vertex == nshower_vertex);
@@ -168,7 +170,7 @@ namespace llcv {
     if ( ev_pgraph && ev_shower_vertex )
       assert(nshower_vertex == npgraph_vertex);
 
-    LLCV_DEBUG() << "GOT VERTICES: pgraph=" << npgraph_vertex << " track=" << ntrack_vertex << " shower=" << nshower_vertex << std::endl;
+
     
     if (!num_vertex) {
       LLCV_DEBUG() << "NO VERTEX... return" << std::endl;
@@ -233,7 +235,7 @@ namespace llcv {
       //
       // only pgraph exists
       //
-      if (!ev_track_vertex and !ev_shower_vertex) {
+      if (!ev_track_vertex && !ev_shower_vertex ) {
 	auto vid  = _driver.AttachVertex(nullptr);
 	auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
 	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
@@ -262,11 +264,13 @@ namespace llcv {
       if (ev_track_vertex) {
 	// attach vertex & pgraph
 	vid  = _driver.AttachVertex(track_vertex_ptr);
-	pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-	
-	// attach particle
-	pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
+	// attach particle graph/particles
+	if ( pgraph_vertex ) {
+	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+	}
+	
 	if(ev_opflash) {
 	  for(const auto& opflash : *ev_opflash) {
 	    _driver.AttachOpFlash(vid,&opflash);
@@ -300,10 +304,10 @@ namespace llcv {
 	if (vid == kINVALID_SIZE)
 	  vid = _driver.AttachVertex(shower_vertex_ptr);
 	
-	if (pgid == kINVALID_SIZE)
+	if (pgid == kINVALID_SIZE && pgraph_vertex)
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
 	  
-	if (pid == kINVALID_SIZE)
+	if (pid == kINVALID_SIZE && pgraph_vertex)
 	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash and !attached_opflash) {

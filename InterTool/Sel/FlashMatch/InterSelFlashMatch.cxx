@@ -39,6 +39,7 @@ namespace llcv {
 
     outtree->Branch("number_tracks",&number_tracks,"number_tracks/I");
     outtree->Branch("number_showers",&number_showers,"number_showers/I");
+    outtree->Branch("longestdir", longestdir, "longestdir[3]/F");
     
     // data flash
     outtree->Branch("ndata_flashes", &ndata_flashes, "ndata_flashes/I");
@@ -89,6 +90,15 @@ namespace llcv {
     std::vector< larlite::hit > hit_v;
     hit_v.reserve(phit_v.size());
     for (auto const& phit : phit_v ) hit_v.push_back(*phit);
+    
+    // // get prong class
+    // shrid = 0;
+    // protonid = -1;    
+    // shrid = Tree().Scalar<int>("shrid");
+    // if ( shrid==0 )
+    //   protonid = 1;
+    // else if (shrid==1)
+    //   protonid = 0;
 
     std::vector<int> hitmask_v(hit_v.size(),1);
     LLCV_DEBUG() << "number of hits: " << hit_v.size() << std::endl;
@@ -108,9 +118,25 @@ namespace llcv {
     // this class will generated de/dx per 3d position along the track. will use to set MeV deposited at 3d pos.
     std::vector<larlitecv::TrackHitSorter> dedxgen_v(trk_v.size());
 
+    // build track-hit associations for this vertex. also find longest track. fill longestdir.
+    float longest_len = 0;
     for(int ithsort=0; ithsort<(int)trk_v.size(); ++ithsort) { 
       const auto& lltrack = *(trk_v[ithsort]);
       dedxgen_v[ithsort].buildSortedHitList(vtx, lltrack, hit_v, fmax_hit_radius, hitmask_v);
+
+      float len = lltrack.Length();
+      if ( len>longest_len ) {
+	float n = 0;
+	for (int i=0; i<3; i++) {
+	  longestdir[i] = lltrack.End()(i)-lltrack.Vertex()(i);
+	  n += longestdir[i]*longestdir[i];
+	}
+	n = sqrt(n);
+	if ( n>0 ) {
+	  for (int i=0; i<3; i++)
+	    longestdir[i] /= n;
+	}
+      }
     }
 
     // ok, we now have dedx 3d tracks for all tracks and shower
@@ -394,11 +420,18 @@ namespace llcv {
       // todo: use v plane if y plane missing too many pieces
       const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ(2); 
       LLCV_DEBUG() << "1mu1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+      if ( bincenter_xyz.size()!=dedx_track_per_plane[2].size() ) {
+	throw std::runtime_error("InterSelFlashMatch::build1mu1pQCluster: bincenters and dedx points do not match.");
+      }
+      
       
       for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
-	if ( ipt>=(int)bincenter_xyz.size() ) continue;
 	
 	float dedx = dedx_track_per_plane[2].at(ipt);
+
+	if ( dedx<1.0e-2 )
+	  dedx = 2.07; // MeV/cm
+	
 	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
 	if ( edep_pos.size()==3 ) {
 	  float numphotons = dedx*(2*0.5)*ly;
@@ -424,6 +457,8 @@ namespace llcv {
     const float ly_proton = 19200;
     //const float ly_muon   = 24000;
     const float ly_shower = 20000;
+    const float bin_stride = 0.5; // cm
+    const float bin_width  = 0.5; // cm
     
     flashana::QCluster_t qinteraction; // should reserve
     qinteraction.reserve(1000);
@@ -431,20 +466,22 @@ namespace llcv {
     
     // we get the dedx track
     std::vector< std::vector<float> > dedx_track_per_plane(3);
-    dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
+    dedxgen_v[itrack].getPathBinneddEdx( bin_stride, bin_width, dedx_track_per_plane );
     // todo: use v plane if y plane missing too many pieces
     
     const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); 
     LLCV_DEBUG() << "1e1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+    if ( bincenter_xyz.size()!=dedx_track_per_plane[2].size() ) {
+      throw std::runtime_error("InterSelFlashMatch::build1e1pQCluster: bincenters and dedx points do not match.");
+    }
     
     float ly = ly_proton;
     
     for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
-      if ( ipt>=(int)bincenter_xyz.size() ) continue;
       float dedx = dedx_track_per_plane[2].at(ipt);
       const std::vector<float>& edep_pos = bincenter_xyz[ipt];
       if ( edep_pos.size()==3 ) {
-	float numphotons = dedx*(2*0.5)*ly;
+	float numphotons = dedx*(2*bin_width)*ly;
 	flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
 	LLCV_DEBUG() << "1e1p-track: (" << edep_pos[0] << "," << edep_pos[1] << "," << edep_pos[2] << ") numphotons=" << numphotons << std::endl;
 	qinteraction.emplace_back( std::move(qpt) );
