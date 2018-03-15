@@ -51,9 +51,9 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 
-# NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
-NUM = 1
-driver.SetOutputFilename("inter_ana_flash_%d.root" % NUM);
+# NUM = 1
+NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
+driver.SetOutputFilename("flash_ana_%d.root" % NUM);
 
 selection = llcv.InterSelFlashMatch()
 driver.AddSelection(selection);
