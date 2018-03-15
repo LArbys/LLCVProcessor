@@ -36,6 +36,9 @@ namespace llcv {
     outtree->Branch("vtxpos_x",&vtxpos_x,"vtxpos_x/F");
     outtree->Branch("vtxpos_y",&vtxpos_y,"vtxpos_y/F");
     outtree->Branch("vtxpos_z",&vtxpos_z,"vtxpos_z/F");
+
+    outtree->Branch("number_tracks",&number_tracks,"number_tracks/I");
+    outtree->Branch("number_showers",&number_showers,"number_showers/I");
     
     // data flash
     outtree->Branch("ndata_flashes", &ndata_flashes, "ndata_flashes/I");
@@ -45,12 +48,14 @@ namespace llcv {
     // track and track ID
     outtree->Branch("proton_muon_pair_id_vv",&proton_muon_pair_id_vv);
     outtree->Branch("proton_muon_chi2_1mu1p_v",&proton_muon_chi2_1mu1p_v);
+    outtree->Branch("proton_muon_chi2_shape_1mu1p_v",&proton_muon_chi2_shape_1mu1p_v);
     outtree->Branch("proton_muon_hypo_totpe_v",&proton_muon_hypo_totpe_v); // per pair
     outtree->Branch("proton_muon_hypo_pe_vv",&proton_muon_hypo_pe_vv); // per pair per channel
     outtree->Branch("proton_muon_best_data_flash_v",&proton_muon_best_data_flash_v); // per flash
 
     outtree->Branch("muon_proton_pair_id_vv",&muon_proton_pair_id_vv);
     outtree->Branch("muon_proton_chi2_1mu1p_v",&muon_proton_chi2_1mu1p_v);
+    outtree->Branch("muon_proton_chi2_shape_1mu1p_v",&muon_proton_chi2_shape_1mu1p_v);
     outtree->Branch("muon_proton_hypo_totpe_v",&muon_proton_hypo_totpe_v); // per pair
     outtree->Branch("muon_proton_hypo_pe_vv",&muon_proton_hypo_pe_vv); // per pair per channel
     outtree->Branch("muon_proton_best_data_flash_v",&muon_proton_best_data_flash_v); // per flash
@@ -58,6 +63,7 @@ namespace llcv {
     // track and shower ID
     outtree->Branch("proton_shower_pair_vv",&proton_shower_pair_id_vv); // per pair it's a pair
     outtree->Branch("proton_shower_chi2_1e1p_v",&proton_shower_chi2_1e1p_v); // per pair
+    outtree->Branch("proton_shower_chi2_shape_1e1p_v",&proton_shower_chi2_shape_1e1p_v);
     outtree->Branch("proton_shower_hypo_totpe_v",&proton_shower_hypo_totpe_v); // per pair
     outtree->Branch("proton_shower_hypo_pe_vv",&proton_shower_hypo_pe_vv); // per pair per channel
     outtree->Branch("proton_shower_best_data_flash_v",&proton_shower_best_data_flash_v); // per flash
@@ -95,6 +101,9 @@ namespace llcv {
 
     // get tracks
     const auto& trk_v = Data().Tracks();
+
+    number_tracks = (int)trk_v.size();
+    number_showers= (int)shr_v.size();
 
     // this class will generated de/dx per 3d position along the track. will use to set MeV deposited at 3d pos.
     std::vector<larlitecv::TrackHitSorter> dedxgen_v(trk_v.size());
@@ -187,6 +196,9 @@ namespace llcv {
       proton_muon_chi2_1mu1p_v.resize(proton_muon_chi2_1mu1p_v.size()+1);
       auto& proton_muon_chi2_1mu1p = proton_muon_chi2_1mu1p_v.back();
 
+      proton_muon_chi2_shape_1mu1p_v.resize(proton_muon_chi2_shape_1mu1p_v.size()+1);
+      auto& proton_muon_chi2_shape_1mu1p = proton_muon_chi2_shape_1mu1p_v.back();
+
       proton_muon_hypo_totpe_v.resize(proton_muon_hypo_totpe_v.size()+1);
       auto& proton_muon_hypo_totpe = proton_muon_hypo_totpe_v.back();
 
@@ -201,6 +213,7 @@ namespace llcv {
       FillChi2(dataflash_v,
 	       hypo_1mu1p,
 	       proton_muon_chi2_1mu1p,
+	       proton_muon_chi2_shape_1mu1p,
 	       proton_muon_hypo_totpe,
 	       proton_muon_hypo_pe_v,
 	       proton_muon_best_data_flash);
@@ -214,6 +227,9 @@ namespace llcv {
       
       muon_proton_chi2_1mu1p_v.resize(muon_proton_chi2_1mu1p_v.size()+1);
       auto& muon_proton_chi2_1mu1p = muon_proton_chi2_1mu1p_v.back();
+
+      muon_proton_chi2_shape_1mu1p_v.resize(muon_proton_chi2_shape_1mu1p_v.size()+1);
+      auto& muon_proton_chi2_shape_1mu1p = muon_proton_chi2_shape_1mu1p_v.back();
 
       muon_proton_hypo_totpe_v.resize(muon_proton_hypo_totpe_v.size()+1);
       auto& muon_proton_hypo_totpe = muon_proton_hypo_totpe_v.back();
@@ -229,6 +245,7 @@ namespace llcv {
       FillChi2(dataflash_v,
 	       hypo_1mu1p,
 	       muon_proton_chi2_1mu1p,
+	       muon_proton_chi2_shape_1mu1p,
 	       muon_proton_hypo_totpe,
 	       muon_proton_hypo_pe_v,
 	       muon_proton_best_data_flash);
@@ -242,6 +259,9 @@ namespace llcv {
 
       proton_shower_chi2_1e1p_v.resize(proton_shower_chi2_1e1p_v.size()+1);
       auto& proton_shower_chi2_1e1p = proton_shower_chi2_1e1p_v.back();
+
+      proton_shower_chi2_shape_1e1p_v.resize(proton_shower_chi2_shape_1e1p_v.size()+1);
+      auto& proton_shower_chi2_shape_1e1p = proton_shower_chi2_shape_1e1p_v.back();
 
       proton_shower_hypo_totpe_v.resize(proton_shower_hypo_totpe_v.size()+1);
       auto& proton_shower_hypo_totpe = proton_shower_hypo_totpe_v.back();
@@ -257,6 +277,7 @@ namespace llcv {
       FillChi2(dataflash_v,
 	       hypo_1e1p,
 	       proton_shower_chi2_1e1p,
+	       proton_shower_chi2_shape_1e1p,
 	       proton_shower_hypo_totpe,
 	       proton_shower_hypo_pe_v,
 	       proton_shower_best_data_flash);
@@ -271,10 +292,11 @@ namespace llcv {
   void InterSelFlashMatch::FillChi2(const std::vector<flashana::Flash_t>& dataflash_v,
 				    const flashana::Flash_t& hypo,
 				    float& best_chi2,
+				    float& best_chi2_shape,
 				    float& hypo_totpe,
 				    std::vector<float>& hypo_pe,
 				    int& data_flashidx) {
-
+    
     float maxpe_hypo = -1.0*kINVALID_FLOAT;    
     float petot_hypo = 0;
 
@@ -285,19 +307,20 @@ namespace llcv {
       // fill array
       hypo_pe[ich] = hypo.pe_v[ich];
     
-      if (hypo_pe[ich]<1.0e-3) 
+      if (hypo_pe[ich] < 1.0e-3) 
 	hypo_pe[ich] = 1.0e-3;
     
       // total
       hypo_totpe += hypo_pe[ich];
 
       // max
-      if (maxpe_hypo<hypo.pe_v[ich] )
+      if (maxpe_hypo < hypo.pe_v[ich])
+
 	maxpe_hypo = hypo.pe_v[ich];
       
     }
     maxpe_hypo /= petot_hypo;
-
+    
     best_chi2 = -1*kINVALID_FLOAT; 
 
     // record which data flash best matched
@@ -471,6 +494,9 @@ namespace llcv {
     vtxpos_x = kINVALID_FLOAT;
     vtxpos_y = kINVALID_FLOAT;
     vtxpos_z = kINVALID_FLOAT;
+
+    number_tracks = -1*kINVALID_INT;
+    number_showers= -1*kINVALID_INT;
     
     // data flash
     ndata_flashes = -1.0*kINVALID_INT;
@@ -480,12 +506,14 @@ namespace llcv {
     // track and track ID
     proton_muon_pair_id_vv.clear();
     proton_muon_chi2_1mu1p_v.clear();
+    proton_muon_chi2_shape_1mu1p_v.clear();
     proton_muon_hypo_totpe_v.clear();
     proton_muon_hypo_pe_vv.clear();
     proton_muon_best_data_flash_v.clear();
 
     muon_proton_pair_id_vv.clear();
     muon_proton_chi2_1mu1p_v.clear();
+    muon_proton_chi2_shape_1mu1p_v.clear();
     muon_proton_hypo_totpe_v.clear();
     muon_proton_hypo_pe_vv.clear();
     muon_proton_best_data_flash_v.clear();
@@ -493,6 +521,7 @@ namespace llcv {
     // track and shower ID
     proton_shower_pair_id_vv.clear();
     proton_shower_chi2_1e1p_v.clear();
+    proton_shower_chi2_shape_1e1p_v.clear();
     proton_shower_hypo_totpe_v.clear();
     proton_shower_hypo_pe_vv.clear();
     proton_shower_best_data_flash_v.clear();

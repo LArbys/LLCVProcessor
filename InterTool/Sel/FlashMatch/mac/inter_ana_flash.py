@@ -22,13 +22,15 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 OUT_DIR    = str(sys.argv[7])
 
-# NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
 
 import ROOT
 
-# weird
+# hen...
+from larlite import larlite
 from ROOT import flashana
 flashana.LightPath()
+# ...hen
+
 from ROOT import llcv
 
 BASE_PATH = os.path.realpath(__file__)
@@ -49,9 +51,9 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 
-# driver.AttachInterFile(INTER_FILE,"vertex_tree")
-
-driver.SetOutputFilename("fout.root");
+# NUM = int(SSNET_FILE.split(".")[0].split("_")[-1])
+NUM = 1
+driver.SetOutputFilename("inter_ana_flash_%d.root" % NUM);
 
 selection = llcv.InterSelFlashMatch()
 driver.AddSelection(selection);
@@ -70,9 +72,7 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-# must start from entry=0, support coming soon
-#proc.batch_process_lcv_reverse(0,10)
-proc.batch_process_lcv_reverse(0)
+proc.batch_process_lcv_reverse(0,1)
 
 proc.finalize()
 

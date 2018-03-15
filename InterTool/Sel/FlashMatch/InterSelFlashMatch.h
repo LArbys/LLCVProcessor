@@ -42,6 +42,9 @@ namespace llcv {
     float vtxpos_y;
     float vtxpos_z;
     
+    int number_tracks;
+    int number_showers;
+
     // data flash
     int ndata_flashes;
     std::vector<float> data_totpe_v;
@@ -50,12 +53,14 @@ namespace llcv {
     // track and track ID
     std::vector<std::vector<int> > proton_muon_pair_id_vv;
     std::vector<float> proton_muon_chi2_1mu1p_v;
+    std::vector<float> proton_muon_chi2_shape_1mu1p_v;
     std::vector<float> proton_muon_hypo_totpe_v;
     std::vector<std::vector<float> > proton_muon_hypo_pe_vv;
     std::vector<int> proton_muon_best_data_flash_v;
     
     std::vector<std::vector<int> > muon_proton_pair_id_vv;
     std::vector<float> muon_proton_chi2_1mu1p_v;
+    std::vector<float> muon_proton_chi2_shape_1mu1p_v;
     std::vector<float> muon_proton_hypo_totpe_v;
     std::vector<std::vector<float> > muon_proton_hypo_pe_vv;
     std::vector<int> muon_proton_best_data_flash_v;
@@ -63,6 +68,7 @@ namespace llcv {
     // track and shower ID
     std::vector<std::vector<int> > proton_shower_pair_id_vv;
     std::vector<float> proton_shower_chi2_1e1p_v;
+    std::vector<float> proton_shower_chi2_shape_1e1p_v;
     std::vector<float> proton_shower_hypo_totpe_v;
     std::vector<std::vector<float> > proton_shower_hypo_pe_vv;
     std::vector<int> proton_shower_best_data_flash_v;
@@ -89,6 +95,7 @@ namespace llcv {
     void FillChi2(const std::vector<flashana::Flash_t>& dataflash_v,
 		  const flashana::Flash_t& hypo,
 		  float& best_chi2,
+		  float& best_chi2_shape,
 		  float& hypo_totpe,
 		  std::vector<float>& hypo_pe,
 		  int& data_flashidx);    
