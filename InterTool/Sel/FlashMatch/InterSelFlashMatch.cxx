@@ -363,6 +363,7 @@ namespace llcv {
       
       for (int ipmt=0; ipmt<32; ipmt++) {
 
+	// we removed the total to calc shape-only match
 	float pefrac_data = dataflash_v[idata].pe_v[ipmt] / totpe_data;
 	float pefrac_hypo = hypo_pe[ipmt] / hypo_totpe;
 
