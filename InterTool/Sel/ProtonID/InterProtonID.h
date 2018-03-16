@@ -44,6 +44,9 @@ namespace llcv {
     int number_tracks;
     int number_showers;
 
+    std::vector< std::vector<float> > m_track_dedx_vv;
+    std::vector< std::vector<float> > m_track_bincenters_vv[3];
+
     void ResetVertex();
 
     // -----------------------------

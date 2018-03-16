@@ -38,7 +38,14 @@ namespace llcv {
 
     outtree->Branch("number_tracks",&number_tracks,"number_tracks/I");
     outtree->Branch("number_showers",&number_showers,"number_showers/I");
-    
+
+    // track data
+    outtree->Branch("track_dedx_vv",&m_track_dedx_vv);
+    outtree->Branch("track_x_vv",&m_track_bincenters_vv[0]);
+    outtree->Branch("track_y_vv",&m_track_bincenters_vv[1]);
+    outtree->Branch("track_z_vv",&m_track_bincenters_vv[2]);    
+
+    // per point data, good idea?
     
   }
 
@@ -92,6 +99,29 @@ namespace llcv {
     // ok, we now have dedx 3d tracks for all tracks and shower
     // we want to build 1mu1p and 1e1p hypothesis
 
+    m_track_dedx_vv.resize(trk_v.size());
+    for (int i=0; i<3; i++)
+      m_track_bincenters_vv[i].resize(trk_v.size());
+    
+    for ( size_t itrack=0; itrack<trk_v.size(); itrack++) {
+      const larlite::track& track        = *(trk_v[itrack]);
+      larlitecv::TrackHitSorter& dedxgen = dedxgen_v[itrack];
+      dedxgen.buildSortedHitList( vtx, track, hit_v, fmax_hit_radius_cm, hitmask_v );
+      std::vector< std::vector<float> > dedx_track_per_plane(3);
+      dedxgen.getPathBinneddEdx( fbinstride_cm, fbinwidth_cm, dedx_track_per_plane );
+      const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ(2); // get plane 2 bin centers
+
+      m_track_dedx_vv[itrack].resize(dedx_track_per_plane[2].size());
+      for (int i=0; i<3; i++)
+	m_track_bincenters_vv[i].resize(dedx_track_per_plane[2].size());
+
+      for (size_t ibin=0; ibin<dedx_track_per_plane[2].size(); ibin++) {
+	m_track_dedx_vv[itrack][ibin] = dedx_track_per_plane[2][ibin];
+	for (int i=0; i<3; i++)
+	  m_track_bincenters_vv[i][itrack][ibin] = bincenter_xyz[ibin][i];
+      }
+      
+    }
 
     outtree->Fill();
     
@@ -108,7 +138,10 @@ namespace llcv {
 
     number_tracks = -1*kINVALID_INT;
     number_showers= -1*kINVALID_INT;
-    
+
+    m_track_dedx_vv.clear();
+    for (int i=0; i<3; i++)
+      m_track_bincenters_vv[i].clear();
 
   }
 
