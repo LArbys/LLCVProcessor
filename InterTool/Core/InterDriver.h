@@ -73,7 +73,6 @@ namespace llcv {
     void Process();
     void Finalize();
 
-
     //
     // InterModule attachments (can change)
     //
@@ -91,7 +90,6 @@ namespace llcv {
 
     void Reset();
     void Dump();
-
 
   };
   

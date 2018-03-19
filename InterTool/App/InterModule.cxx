@@ -145,7 +145,6 @@ namespace llcv {
     size_t ntrack_vertex  = kINVALID_SIZE;
     size_t nshower_vertex = kINVALID_SIZE;
 
-    
     if (ev_track_vertex) {
       ntrack_vertex = ev_track_vertex->size();
       num_vertex = ntrack_vertex;
@@ -287,6 +286,7 @@ namespace llcv {
 	    auto hid = _driver.AttachHit(vid,&hit);
 	  }
 	  attached_hits = true;
+	  LLCV_DEBUG() << "Attached hits" << std::endl;
 	}
 	
       } // end track

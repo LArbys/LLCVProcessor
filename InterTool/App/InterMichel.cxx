@@ -91,10 +91,6 @@ namespace llcv {
     larlite::event_hit* ev_hit = nullptr;
     if(!_hit_prod.empty()) 
       ev_hit = (larlite::event_hit*)sto.get_data(larlite::data::kHit,_hit_prod);
-
-    // larlite::event_opflash* ev_opflash = nullptr;
-    // if(!_opflash_prod.empty()) 
-    //   ev_opflash = (larlite::event_opflash*)sto.get_data(larlite::data::kOpFlash,_opflash_prod);
     
     //
     // configure the driver
