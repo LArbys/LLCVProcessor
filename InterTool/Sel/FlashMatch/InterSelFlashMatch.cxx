@@ -340,19 +340,21 @@ namespace llcv {
 	float pefrac_data = dataflash_v[idata].pe_v[ipmt] / totpe_data;
 	float pefrac_hypo = hypo_pe[ipmt] / hypo_totpe;
 
-	float pe_data = pefrac_data * totpe_data;
-	float pefrac_data_err = std::sqrt(pe_data)/pe_data;
+	//float pe_data = pefrac_data * totpe_data;
+	//float pefrac_data_err = std::sqrt(pe_data)/pe_data;
 
 	float diff = pefrac_hypo - pefrac_data;
 	
-	if ( pefrac_data_err>0 ) {
-	  chi2 += (diff*diff)/pefrac_data;
-	}
-	else if (pefrac_data_err==0.0 ){
-	  if ( pefrac_hypo>0 ) {
-	    chi2 += (diff*diff)/pefrac_hypo;
-	  }
-	}
+	// if ( pefrac_data_err>0 ) {
+	//  chi2 += (diff*diff)/pefrac_data;
+	// }
+	// else if (pefrac_data_err==0.0 ){
+	//  if ( pefrac_hypo>0 ) {
+	//    chi2 += (diff*diff)/pefrac_hypo;
+	//  }
+	// }
+
+	chi2 += (diff*diff)/pefrac_hypo;
 	
       } // end pmt
 
@@ -362,6 +364,8 @@ namespace llcv {
       }
 
     }
+
+    best_chi2_shape = best_chi2;
 
   }
 
@@ -399,6 +403,11 @@ namespace llcv {
 	if ( ipt>=(int)bincenter_xyz.size() ) continue;
 	
 	float dedx = dedx_track_per_plane[2].at(ipt);
+
+        if ( dedx<1.0e-2 )
+ 	  dedx = 2.07; // MeV/cm
+
+
 	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
 	if ( edep_pos.size()==3 ) {
 	  float numphotons = dedx*(2*0.5)*ly;
