@@ -48,10 +48,7 @@ imod = llcv.InterModule()
 driver = imod.Driver()
 
 # NUM = 1
-try:
-    NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-except ValueError:
-    NUM = 1
+NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
 driver.SetOutputFilename("track_dir_ana_%d.root" % NUM);
 
 selection = llcv.SelTrackDir()
