@@ -3,6 +3,7 @@
 
 #include "SelTrackDir.h"
 #include "TrackHitSorter/TrackHitSorter.h"
+#include "InterTool_Util/TruncMean.h"
 
 namespace llcv {
 
@@ -20,7 +21,11 @@ namespace llcv {
 
     fouttree = new TTree("trackdir","");
     AttachRSEV(fouttree);
+
     fouttree->Branch("track_dedx_vv",&trk_dedx_vv);
+    fouttree->Branch("track_dedx_lin_vv",&trk_dedx_lin_vv);
+    // fouttree->Branch("track_avg_dedx_v", &trk_avg_dedx_v);
+    // fouttree->Branch("track_tavg_dedx_v", &trk_tavg_dedx_v);
 
     LLCV_DEBUG() << "end" << std::endl;
     return;
@@ -67,11 +72,17 @@ namespace llcv {
       
       auto& trk_dedx_v = trk_dedx_vv[ithsort];
       trk_dedx_v.resize(dedx_track.size(),0.0);
-      
+
       for (size_t ipt=0; ipt<dedx_track.size(); ipt++) {
 	if (ipt >= bincenter_xyz.size()) continue;
 	trk_dedx_v[ipt] = dedx_track.at(ipt);
       }
+
+      auto& trk_dedx_lin_v = trk_dedx_lin_vv[ithsort];
+      trk_dedx_lin_v.resize(dedx_track.size(),-1);
+
+      //linearize zero entries
+      _TruncMean.Linearize(trk_dedx_v, trk_dedx_lin_v);
 
     }
     
@@ -91,6 +102,7 @@ namespace llcv {
 
   void SelTrackDir::ResetTree() {
     trk_dedx_vv.clear();
+    trk_dedx_lin_vv.clear();
     return;
   }
 
