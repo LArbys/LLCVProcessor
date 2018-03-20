@@ -92,12 +92,13 @@ namespace llcv {
     //
     void Linearize(const std::vector<float>& v1, std::vector<float>& v2);
 
-  private:
-
     float Mean  (const std::vector<float>& v);
     float Median(const std::vector<float>& v);
     float RMS   (const std::vector<float>& v);
+    float Slope (const std::vector<float>& x,
+		 const std::vector<float>& y);
 
+  private:
     /**
        Smearing radius over which charge from neighboring hits is scanned to calculate local
        truncated mean

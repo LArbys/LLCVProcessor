@@ -139,6 +139,21 @@ namespace llcv {
 
     return rms;
   }
+  
+  float TruncMean::Slope(const std::vector<float>& x,
+			 const std::vector<float>& y)
+  {
+    assert (x.size() == y.size());
+
+    float n     = x.size();
+    float s_x   = std::accumulate(x.begin(), x.end(), 0.0);
+    float s_y   = std::accumulate(y.begin(), y.end(), 0.0);
+    float s_xx  = std::inner_product(x.begin(), x.end(), x.begin(), 0.0);
+    float s_xy  = std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+    float slope = (n * s_xy - s_x * s_y) / (n * s_xx - s_x * s_x);
+
+    return slope;
+  }
 
   void TruncMean::Linearize(const std::vector<float>& v1, std::vector<float>& v2) {
     assert (v1.size() == v2.size());
