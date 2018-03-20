@@ -182,7 +182,12 @@ namespace llcv {
       float fedge_sz  = fedge_length / 0.5;
       float fedge_half= fedge_sz / 2.0;
 
+      LLCV_DEBUG() << "range_sz=" << range_sz << " range_half=" << range_half << std::endl;
+      LLCV_DEBUG() << "range=" << range << " fedge_sz=" << fedge_sz << std::endl;
+      LLCV_DEBUG() << "fedge_half=" << fedge_half << " fedge_length=" << fedge_length << std::endl;
+
       if (range >= (3 * fedge_length)) {
+	LLCV_DEBUG() << "case0" << std::endl;
 	// 50 cm edges & middle
 	s0 = 0;
 	s1 = (size_t) (fedge_sz - 1);
@@ -192,6 +197,7 @@ namespace llcv {
 	e1 = dedx_v.size() - 1;
       }
       else {
+	LLCV_DEBUG() << "case1" << std::endl;
 	// just chop it into 3 parts
 	float range_sz_3 = range_sz / 3.0;
 	s0 = 0;
@@ -201,6 +207,10 @@ namespace llcv {
 	e0 = m1 + 1;
 	e1 = dedx_v.size() - 1;
       }
+
+      LLCV_DEBUG() << " s0=" << s0 << " s1=" << s1 
+		   << " m0=" << m0 << " m1=" << m1 
+		   << " e0=" << e0 << " e1=" << e1 << std::endl;
 
       static std::vector<float> start_dedx_v;
       static std::vector<float> start_tdedx_v;
