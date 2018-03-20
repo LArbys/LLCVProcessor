@@ -193,8 +193,8 @@ namespace llcv {
 	s1 = (size_t) (fedge_sz - 1);
 	m0 = (size_t) (range_half) - (size_t)(fedge_half);
 	m1 = (size_t) (range_half) + (size_t)(fedge_half) - 1;
-	e0 = e1 - (size_t)(fedge_sz + 1);
 	e1 = dedx_v.size() - 1;
+	e0 = e1 - (size_t)(fedge_sz + 1);
       }
       else {
 	LLCV_DEBUG() << "case1" << std::endl;
