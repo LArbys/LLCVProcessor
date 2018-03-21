@@ -120,6 +120,8 @@ namespace llcv {
 	auto dedx = dedx_track.at(ipt);
 	auto dx = 0.5*(float)(ipt+1);
 	
+	if (dedx==0) continue;
+	
 	trk_dedx_v[ipt] = dedx;
 
 	dedx_v.push_back(dedx);
