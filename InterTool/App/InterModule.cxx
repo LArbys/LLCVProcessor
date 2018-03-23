@@ -34,7 +34,7 @@ namespace llcv {
     
     _shower_shower_prod = cfg.get<std::string>("ShowerShowerProducer");
     _opflash_prod       = cfg.get<std::string>("OpFlashProducer");
-    _rawhit_prod        = cfg.get<std::string>("HitProducer");
+    _rawhit_prod        = cfg.get<std::string>("HitProducer","");
 
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
