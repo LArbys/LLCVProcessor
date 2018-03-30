@@ -3,6 +3,7 @@
 
 #include "TruncMean.h"
 #include <cassert>
+#include <stdexcept>
 
 namespace llcv {
 
@@ -52,8 +53,8 @@ namespace llcv {
     dq_trunc_v.clear();
     dq_trunc_v.reserve( rr_v.size() );
 
-    int Nmax = dq_v.size()-1;
-  
+    int Nmax = dq_v.size() - 1;
+
     for (size_t n=0; n < dq_v.size(); n++) {
 
       // current residual range
@@ -97,7 +98,9 @@ namespace llcv {
 	}
       }
 
-      dq_trunc_v.push_back( truncated_dq / npts );
+      float ratio = truncated_dq / (float) npts;
+
+      dq_trunc_v.push_back(ratio);
     }// for all values
 
     return;
@@ -105,24 +108,38 @@ namespace llcv {
 
   float TruncMean::Mean(const std::vector<float>& v)
   {
+    if (v.empty())
+      throw std::runtime_error("Empty input to Median");
+
+    if (v.size() == 1) 
+      return v.front();
 
     float mean = 0.;
     for (auto const& n : v) mean += n;
-    mean /= v.size();
+    mean /= (float) v.size();
   
     return mean;
   }
 
   float TruncMean::Median(const std::vector<float>& v)
   {
+    if (v.empty())
+      throw std::runtime_error("Empty input to Median");
 
-    if (v.size() == 1) return v[0];
+    if (v.size() == 1) 
+      return v.front();
   
     std::vector<float> vcpy = v;
 
     std::sort(vcpy.begin(), vcpy.end());
 
-    float median = vcpy[ vcpy.size() / 2 ];
+    float index = (float)(vcpy.size()) / 2.0;
+    int idx = (size_t) index;
+
+    if ((idx < 0) or (idx >= (int)vcpy.size()))
+      throw std::runtime_error("Median index is outside of v range");
+    
+    float median = vcpy[(size_t)index];
 
     return median;
   }
@@ -130,12 +147,24 @@ namespace llcv {
   float TruncMean::RMS(const std::vector<float>& v)
   {
 
+    if (v.empty())
+      throw std::runtime_error("Empty input to RMS");
+
+    if (v.size()==1) 
+      return 0.0;
+    
     float avg = 0.;
     for (auto const& val : v) avg += val;
-    avg /= v.size();
+
+    avg /= (float) v.size();
+
     float rms = 0.;
+
     for (auto const& val : v) rms += (val-avg)*(val-avg);
-    rms = sqrt( rms / ( v.size() -  1 ) );
+
+    float denom = (float)v.size() - 1;
+
+    rms = sqrt( rms / denom );
 
     return rms;
   }

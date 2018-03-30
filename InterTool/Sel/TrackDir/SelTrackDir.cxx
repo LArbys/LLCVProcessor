@@ -85,6 +85,8 @@ namespace llcv {
 
     ResizeTree(trk_v.size());
     
+    float stride = 0.5;
+
     for(size_t ithsort=0; ithsort<trk_v.size(); ++ithsort) { 
 
       const auto& lltrack = *(trk_v[ithsort]);
@@ -94,7 +96,7 @@ namespace llcv {
       dedx_track_per_plane.clear();
       dedx_track_per_plane.resize(3);
       
-      trackhitsort.getPathBinneddEdx(0.5,0.5,dedx_track_per_plane);
+      trackhitsort.getPathBinneddEdx(stride,stride,dedx_track_per_plane);
       
      const auto& bincenter_xyz = trackhitsort.getBinCentersXYZ(fplane); 
      const auto& dedx_track = dedx_track_per_plane.at(fplane);
@@ -112,20 +114,24 @@ namespace llcv {
       auto& length = trk_length_v[ithsort];
       auto& npts   = trk_npts_v[ithsort];
 
-
       for (size_t ipt=0; ipt<dedx_track.size(); ipt++) {
 	if (ipt >= bincenter_xyz.size()) continue;
 	auto dedx = dedx_track.at(ipt);
-	auto dx = 0.5*(float)(ipt+1);
+	auto dx = stride*(float)(ipt+1);
+	
+	if (dedx == 0) continue;
 	
 	trk_dedx_v[ipt] = dedx;
 
 	dedx_v.push_back(dedx);
 	range_v.push_back(dx);
+	
 	length += dx;
       }
 
-      npts = (int)range_v.size();
+      if (dedx_v.size()<3) continue;
+
+      npts = (int) range_v.size();
 
       static std::vector<float> tdedx_v;
       tdedx_v.clear();
@@ -135,6 +141,7 @@ namespace llcv {
 
       auto& trk_tdedx_v = trk_tdedx_vv[ithsort];
       auto& trk_range_v = trk_range_vv[ithsort];
+
       trk_tdedx_v = tdedx_v;
       trk_range_v = range_v;
 
@@ -158,7 +165,6 @@ namespace llcv {
       trk_tslope_dedx  = _TruncMean.Slope(range_v,tdedx_v);
       trk_tmedian_dedx = _TruncMean.Median(tdedx_v);
 
-
       //
       // start, middle, end 
       //
@@ -172,28 +178,33 @@ namespace llcv {
       e0 = e1 = kINVALID_SIZE;
 
       // indexed range
-      float range_sz   = (float)range_v.size();
-      float range_half = range_sz / 2.0;
-
-      // physical range
-      float range = range_sz * 0.5;
+      float range_sz      = (float)range_v.size();
+      float range_sz_half = range_sz / 2.0;
 
       // indexed edge
-      float fedge_sz  = fedge_length / 0.5;
-      float fedge_half= fedge_sz / 2.0;
+      float fedge_sz      = fedge_length / stride;
+      float fedge_sz_half = fedge_sz / 2.0;
 
-      LLCV_DEBUG() << "range_sz=" << range_sz << " range_half=" << range_half << std::endl;
-      LLCV_DEBUG() << "range=" << range << " fedge_sz=" << fedge_sz << std::endl;
-      LLCV_DEBUG() << "fedge_half=" << fedge_half << " fedge_length=" << fedge_length << std::endl;
+      // physical range
+      float range = range_sz * stride;
 
-      if (range >= (3 * fedge_length)) {
+      LLCV_DEBUG() << "range_sz=" << range_sz << " range_sz_half=" << range_sz_half << std::endl;
+      LLCV_DEBUG() << "fedge_sz=" << fedge_sz << " fedge_sz_half=" << fedge_sz_half << std::endl;
+      LLCV_DEBUG() << "range   =" << range    << " fedge_length =" << fedge_length  << std::endl;
+
+      bool case0 = false;
+
+      if (range >= (3 * fedge_length) and range_sz >= (3 * fedge_sz))
+	case0 = true;
+      
+      if (case0) {
 	LLCV_DEBUG() << "case0" << std::endl;
 	// 50 cm edges & middle
 	s0 = 0;
 	s1 = (size_t) (fedge_sz - 1);
-	m0 = (size_t) (range_half) - (size_t)(fedge_half);
-	m1 = (size_t) (range_half) + (size_t)(fedge_half) - 1;
-	e1 = dedx_v.size() - 1;
+	m0 = (size_t) (range_sz_half) - (size_t)(fedge_sz_half);
+	m1 = (size_t) (range_sz_half) + (size_t)(fedge_sz_half) - 1;
+	e1 = range_sz - 1;
 	e0 = e1 - (size_t)(fedge_sz + 1);
       }
       else {
@@ -205,7 +216,7 @@ namespace llcv {
 	m0 = s1 + 1;
 	m1 = m0 + (size_t) range_sz_3 - 1;
 	e0 = m1 + 1;
-	e1 = dedx_v.size() - 1;
+	e1 = range_sz - 1;
       }
 
       LLCV_DEBUG() << " s0=" << s0 << " s1=" << s1 
@@ -311,8 +322,7 @@ namespace llcv {
       trk_end_tslope_dedx  = _TruncMean.Slope(end_range_v,end_tdedx_v);
       trk_end_tmedian_dedx = _TruncMean.Median(end_tdedx_v);
 
-
-    }
+    } // end this track
     
     fouttree->Fill();
 
