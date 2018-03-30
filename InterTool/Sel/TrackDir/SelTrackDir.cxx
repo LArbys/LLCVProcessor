@@ -114,12 +114,15 @@ namespace llcv {
       auto& length = trk_length_v[ithsort];
       auto& npts   = trk_npts_v[ithsort];
 
+      length = 0;
+      npts = 0;
+
       for (size_t ipt=0; ipt<dedx_track.size(); ipt++) {
 	if (ipt >= bincenter_xyz.size()) continue;
 	auto dedx = dedx_track.at(ipt);
 	auto dx = stride*(float)(ipt+1);
 	
-	if (dedx == 0) continue;
+	if (dedx==0) continue;
 	
 	trk_dedx_v[ipt] = dedx;
 
