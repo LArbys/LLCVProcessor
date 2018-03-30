@@ -3,6 +3,7 @@
 
 #include "InterTool_Core/InterSelBase.h"
 #include "InterTool_Util/TruncMean.h"
+
 namespace llcv {
   
   class SelTrackDir : public InterSelBase { 
@@ -10,7 +11,9 @@ namespace llcv {
   public:
 
   SelTrackDir(std::string name="SelTrackDir") : 
-    InterSelBase(name), fouttree(nullptr) {}
+    InterSelBase(name), 
+    fouttree(nullptr)
+    {}
 
     ~SelTrackDir(){}
     
@@ -28,6 +31,7 @@ namespace llcv {
     size_t fplane;
     size_t fedge_length;
     float ftsigma;
+    float ffit_exclusion;
 
     std::vector<std::vector<float> > trk_dedx_vv;
     std::vector<std::vector<float> > trk_tdedx_vv;
@@ -80,8 +84,35 @@ namespace llcv {
     std::vector<float> trk_end_tslope_dedx_v;
     std::vector<float> trk_end_tmedian_dedx_v;
 
+
+    //
+    // dEdx = AR^(-d)
+    //
+    
+    static Double_t ftf_float_model(Double_t *x, Double_t *par);
+    static Double_t ftf_fixed_model(Double_t *x, Double_t *par);
+
+    std::vector<float> trk_forward_chi_v;
+    std::vector<float> trk_backward_chi_v;
+
+    std::vector<float> trk_forward_A_v;
+    std::vector<float> trk_backward_A_v;
+
+    std::vector<float> trk_forward_d_v;
+    std::vector<float> trk_backward_d_v;
+
+    std::vector<float> trk_forward_fixed_chi_v;
+    std::vector<float> trk_backward_fixed_chi_v;
+
+    std::vector<float> trk_forward_fixed_A_v;
+    std::vector<float> trk_backward_fixed_A_v;
+
+    std::vector<float> trk_forward_fixed_d_v;
+    std::vector<float> trk_backward_fixed_d_v;
+    
     void ResetTree();
     void ResizeTree(size_t ntracks);
+
   };
 
 }

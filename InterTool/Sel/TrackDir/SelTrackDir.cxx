@@ -3,7 +3,10 @@
 
 #include "SelTrackDir.h"
 #include "TrackHitSorter/TrackHitSorter.h"
-
+#include "TGraph.h"
+#include "TMath.h"
+#include "TF1.h"
+#include "TFitResult.h"
 
 namespace llcv {
 
@@ -17,6 +20,8 @@ namespace llcv {
     
     auto tradius = pset.get<float>("TruncatedRadius",3);
     ftsigma  = pset.get<float>("TruncatedSigma",0.5);
+
+    ffit_exclusion = pset.get<float>("FitStartExclusion",8.0);
 
     _TruncMean.setRadius(tradius);
 
@@ -57,6 +62,20 @@ namespace llcv {
     fouttree->Branch("trk_end_tmean_dedx_v"     , &trk_end_tmean_dedx_v);
     fouttree->Branch("trk_end_tslope_dedx_v"    , &trk_end_tslope_dedx_v);
     fouttree->Branch("trk_end_tmedian_dedx_v"   , &trk_end_tmedian_dedx_v);
+
+    fouttree->Branch("trk_forward_chi_v" , &trk_forward_chi_v);
+    fouttree->Branch("trk_backward_chi_v", &trk_backward_chi_v);
+    fouttree->Branch("trk_forward_A_v"   , &trk_forward_A_v);
+    fouttree->Branch("trk_backward_A_v"  , &trk_backward_A_v);
+    fouttree->Branch("trk_forward_d_v"   , &trk_forward_d_v);
+    fouttree->Branch("trk_backward_d_v"  , &trk_backward_d_v);
+
+    fouttree->Branch("trk_forward_fixed_chi_v" , &trk_forward_fixed_chi_v);
+    fouttree->Branch("trk_backward_fixed_chi_v", &trk_backward_fixed_chi_v);
+    fouttree->Branch("trk_forward_fixed_A_v"   , &trk_forward_fixed_A_v);
+    fouttree->Branch("trk_backward_fixed_A_v"  , &trk_backward_fixed_A_v);
+    fouttree->Branch("trk_forward_fixed_d_v"   , &trk_forward_fixed_d_v);
+    fouttree->Branch("trk_backward_fixed_d_v"  , &trk_backward_fixed_d_v);
 
     LLCV_DEBUG() << "end" << std::endl;
     return;
@@ -325,6 +344,68 @@ namespace llcv {
       trk_end_tslope_dedx  = _TruncMean.Slope(end_range_v,end_tdedx_v);
       trk_end_tmedian_dedx = _TruncMean.Median(end_tdedx_v);
 
+
+      std::vector<float> tdedx_rev_v;
+      tdedx_rev_v.resize(tdedx_v.size());
+      for(size_t rid=0; rid<tdedx_v.size(); ++rid)
+	tdedx_rev_v[rid] = tdedx_v.at(tdedx_v.size() - rid - 1);
+      
+      //
+      // Do the fit
+      //
+      TGraph tg_forward((Int_t)tdedx_v.size(),range_v.data(),tdedx_rev_v.data());
+      TGraph tg_backward((Int_t)tdedx_v.size(),range_v.data(),tdedx_v.data());
+      
+      TF1 ftf_float("ftf_float",ftf_float_model,range_v.front(),range_v.back(),2);
+      TF1 ftf_fixed("ftf_fixed",ftf_fixed_model,range_v.front(),range_v.back(),1);
+      
+      // Fit forward
+      ftf_float.SetParameter(0,10);
+      ftf_float.SetParameter(1,-0.42);
+      ftf_fixed.SetParameter(0,10);
+      
+      TFitResultPtr ftf_forward_float_ptr = tg_forward.Fit(&ftf_float,"SQN0");
+      TFitResultPtr ftf_forward_fixed_ptr = tg_forward.Fit(&ftf_fixed,"SQN0");
+
+      auto& trk_forward_chi = trk_forward_chi_v[ithsort];
+      auto& trk_forward_A = trk_forward_A_v[ithsort];
+      auto& trk_forward_d = trk_forward_d_v[ithsort];
+      auto& trk_forward_fixed_chi = trk_forward_fixed_chi_v[ithsort];
+      auto& trk_forward_fixed_A = trk_forward_fixed_A_v[ithsort];
+      auto& trk_forward_fixed_d = trk_forward_fixed_d_v[ithsort];
+      
+      trk_forward_chi = ftf_forward_float_ptr->Chi2();
+      trk_forward_A   = ftf_forward_float_ptr->Value(0);
+      trk_forward_d   = ftf_forward_float_ptr->Value(1);
+
+      trk_forward_fixed_chi = ftf_forward_fixed_ptr->Chi2();
+      trk_forward_fixed_A   = ftf_forward_fixed_ptr->Value(0);
+      trk_forward_fixed_d   = -0.42;
+     
+      // Fit backward
+      ftf_float.SetParameter(0,10);
+      ftf_float.SetParameter(1,-0.42);
+      ftf_fixed.SetParameter(0,10);
+
+      TFitResultPtr ftf_backward_float_ptr = tg_backward.Fit(&ftf_float,"SQN0");
+      TFitResultPtr ftf_backward_fixed_ptr = tg_backward.Fit(&ftf_fixed,"SQN0");
+
+      auto& trk_backward_chi = trk_backward_chi_v[ithsort];
+      auto& trk_backward_A = trk_backward_A_v[ithsort];
+      auto& trk_backward_d = trk_backward_d_v[ithsort];
+      auto& trk_backward_fixed_chi = trk_backward_fixed_chi_v[ithsort];
+      auto& trk_backward_fixed_A = trk_backward_fixed_A_v[ithsort];
+      auto& trk_backward_fixed_d = trk_backward_fixed_d_v[ithsort];
+      
+      trk_backward_chi = ftf_backward_float_ptr->Chi2();
+      trk_backward_A   = ftf_backward_float_ptr->Value(0);
+      trk_backward_d   = ftf_backward_float_ptr->Value(1);
+
+      trk_backward_fixed_chi = ftf_backward_fixed_ptr->Chi2();
+      trk_backward_fixed_A   = ftf_backward_fixed_ptr->Value(0);
+      trk_backward_fixed_d   = -0.42;
+
+      
     } // end this track
     
     fouttree->Fill();
@@ -382,6 +463,23 @@ namespace llcv {
     trk_end_tslope_dedx_v.resize(ntracks);
     trk_end_tmedian_dedx_v.resize(ntracks);
 
+    trk_forward_chi_v.resize(ntracks);
+    trk_backward_chi_v.resize(ntracks);
+    
+    trk_forward_A_v.resize(ntracks);
+    trk_backward_A_v.resize(ntracks);
+    
+    trk_forward_d_v.resize(ntracks);
+    trk_backward_d_v.resize(ntracks);
+
+    trk_forward_fixed_chi_v.resize(ntracks);
+    trk_backward_fixed_chi_v.resize(ntracks);
+    
+    trk_forward_fixed_A_v.resize(ntracks);
+    trk_backward_fixed_A_v.resize(ntracks);
+    
+    trk_forward_fixed_d_v.resize(ntracks);
+    trk_backward_fixed_d_v.resize(ntracks);
   }
 
   void SelTrackDir::ResetTree() {
@@ -425,7 +523,37 @@ namespace llcv {
     trk_end_tslope_dedx_v.clear();
     trk_end_tmedian_dedx_v.clear();
 
+    trk_forward_chi_v.clear();
+    trk_backward_chi_v.clear();
+    
+    trk_forward_A_v.clear();
+    trk_backward_A_v.clear();
+    
+    trk_forward_d_v.clear();
+    trk_backward_d_v.clear();
+
+    trk_forward_fixed_chi_v.clear();
+    trk_backward_fixed_chi_v.clear();
+    
+    trk_forward_fixed_A_v.clear();
+    trk_backward_fixed_A_v.clear();
+    
+    trk_forward_fixed_d_v.clear();
+    trk_backward_fixed_d_v.clear();
+    
     return;
+  }
+  
+  Double_t SelTrackDir::ftf_float_model(Double_t *x, Double_t *par) {
+    static Double_t fitval = 0;
+    fitval = par[0]*TMath::Power(x[0],par[1]);
+    return fitval;
+  }
+  
+  Double_t SelTrackDir::ftf_fixed_model(Double_t *x, Double_t *par) {
+    static Double_t fitval = 0;
+    fitval = par[0]*TMath::Power(x[0],-0.42);
+    return fitval;
   }
 
 }
