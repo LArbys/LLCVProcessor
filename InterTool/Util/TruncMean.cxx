@@ -98,7 +98,10 @@ namespace llcv {
 	}
       }
 
-      float ratio = truncated_dq / (float) npts;
+      float ratio = truncated_dq;
+	
+      if (npts != 0)
+	ratio /= (float) npts;
 
       dq_trunc_v.push_back(ratio);
     }// for all values
