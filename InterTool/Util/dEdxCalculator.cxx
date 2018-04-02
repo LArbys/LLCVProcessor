@@ -11,8 +11,11 @@ namespace llcv {
     //
     // https://goo.gl/oXkRQU
     //
-    
-    // fill muon
+
+    //
+    // fill muon 
+    // this curve matches MC expectation very well
+    //
     _muon_m[90.50] = 2.07;
     _muon_m[90.00] = 2.07;
     _muon_m[89.50] = 2.07;
@@ -196,7 +199,10 @@ namespace llcv {
     _muon_m[0.50] = 8.92;
     _muon_m[0.00] = 16.29;;
     
+    //
     // fill proton
+    // this MC curve sucks
+    //
     _proton_m[84.5] = 3.00;
     _proton_m[84.0] = 3.01;
     _proton_m[83.5] = 3.01;
@@ -367,21 +373,387 @@ namespace llcv {
     _proton_m[1.00] = 19.72;
     _proton_m[0.50] = 28.53;
     _proton_m[0.00] = 129.59;
+    
+    //
+    // fill proton fit from MC
+    // this is from vic
+    //
+    _proton_fit_m[    0] =   3.45;
+    _proton_fit_m[  0.5] =   7.8 ;
+    _proton_fit_m[  1. ] =   7.4 ;
+    _proton_fit_m[  1.5] =   7.4 ;
+    _proton_fit_m[  2. ] =   7.4 ;
+    _proton_fit_m[  2.5] =   6.95;
+    _proton_fit_m[  3. ] =   6.8 ;
+    _proton_fit_m[  3.5] =   6.75;
+    _proton_fit_m[  4. ] =   6.55;
+    _proton_fit_m[  4.5] =   6.25;
+    _proton_fit_m[  5. ] =   6.4 ;
+    _proton_fit_m[  5.5] =   5.95;
+    _proton_fit_m[  6. ] =   5.9 ;
+    _proton_fit_m[  6.5] =   5.8 ;
+    _proton_fit_m[  7. ] =   5.6 ;
+    _proton_fit_m[  7.5] =   5.7 ;
+    _proton_fit_m[  8. ] =   5.6 ;
+    _proton_fit_m[  8.5] =   5.45;
+    _proton_fit_m[  9. ] =   5.15;
+    _proton_fit_m[  9.5] =   5.15;
+    _proton_fit_m[ 10. ] =   5.15;
+    _proton_fit_m[ 10.5] =   5.15;
+    _proton_fit_m[ 11. ] =   4.8 ;
+    _proton_fit_m[ 11.5] =   4.75;
+    _proton_fit_m[ 12. ] =   5.1 ;
+    _proton_fit_m[ 12.5] =   5.05;
+    _proton_fit_m[ 13. ] =   5.  ;
+    _proton_fit_m[ 13.5] =   4.65;
+    _proton_fit_m[ 14. ] =   4.7 ;
+    _proton_fit_m[ 14.5] =   4.6 ;
+    _proton_fit_m[ 15. ] =   4.6 ;
+    _proton_fit_m[ 15.5] =   4.45;
+    _proton_fit_m[ 16. ] =   4.55;
+    _proton_fit_m[ 16.5] =   4.4 ;
+    _proton_fit_m[ 17. ] =   4.35;
+    _proton_fit_m[ 17.5] =   4.5 ;
+    _proton_fit_m[ 18. ] =   4.3 ;
+    _proton_fit_m[ 18.5] =   4.3 ;
+    _proton_fit_m[ 19. ] =   4.3 ;
+    _proton_fit_m[ 19.5] =   4.5 ;
+    _proton_fit_m[ 20. ] =   4.25;
+    _proton_fit_m[ 20.5] =   4.55;
+    _proton_fit_m[ 21. ] =   4.25;
+    _proton_fit_m[ 21.5] =   4.2 ;
+    _proton_fit_m[ 22. ] =   4.2 ;
+    _proton_fit_m[ 22.5] =   4.15;
+    _proton_fit_m[ 23. ] =   4.55;
+    _proton_fit_m[ 23.5] =   4.05;
+    _proton_fit_m[ 24. ] =   4.1 ;
+    _proton_fit_m[ 24.5] =   4.  ;
+    _proton_fit_m[ 25. ] =   4.  ;
+    _proton_fit_m[ 25.5] =   4.15;
+    _proton_fit_m[ 26. ] =   4.1 ;
+    _proton_fit_m[ 26.5] =   4.1 ;
+    _proton_fit_m[ 27. ] =   4.1 ;
+    _proton_fit_m[ 27.5] =   4.1 ;
+    _proton_fit_m[ 28. ] =   4.1 ;
+    _proton_fit_m[ 28.5] =   4.1 ;
+    _proton_fit_m[ 29. ] =   4.1 ;
+    _proton_fit_m[ 29.5] =   4.1 ;
+    _proton_fit_m[ 30. ] =   4.2 ;
+    _proton_fit_m[ 30.5] =   4.2 ;
+    _proton_fit_m[ 31. ] =   3.95;
+    _proton_fit_m[ 31.5] =   3.95;
+    _proton_fit_m[ 32. ] =   3.95;
+    _proton_fit_m[ 32.5] =   3.85;
+    _proton_fit_m[ 33. ] =   4.  ;
+    _proton_fit_m[ 33.5] =   3.85;
+    _proton_fit_m[ 34. ] =   3.95;
+    _proton_fit_m[ 34.5] =   3.9 ;
+    _proton_fit_m[ 35. ] =   3.9 ;
+    _proton_fit_m[ 35.5] =   3.9 ;
+    _proton_fit_m[ 36. ] =   3.9 ;
+    _proton_fit_m[ 36.5] =   3.8 ;
+    _proton_fit_m[ 37. ] =   3.6 ;
+    _proton_fit_m[ 37.5] =   3.6 ;
+    _proton_fit_m[ 38. ] =   3.75;
+    _proton_fit_m[ 38.5] =   3.85;
+    _proton_fit_m[ 39. ] =   3.75;
+    _proton_fit_m[ 39.5] =   3.75;
+    _proton_fit_m[ 40. ] =   3.7 ;
+    _proton_fit_m[ 40.5] =   3.7 ;
+    _proton_fit_m[ 41. ] =   3.6 ;
+    _proton_fit_m[ 41.5] =   3.65;
+    _proton_fit_m[ 42. ] =   3.6 ;
+    _proton_fit_m[ 42.5] =   3.6 ;
+    _proton_fit_m[ 43. ] =   3.65;
+    _proton_fit_m[ 43.5] =   3.65;
+    _proton_fit_m[ 44. ] =   3.65;
+    _proton_fit_m[ 44.5] =   3.65;
+    _proton_fit_m[ 45. ] =   3.4 ;
+    _proton_fit_m[ 45.5] =   3.4 ;
+    _proton_fit_m[ 46. ] =   3.45;
+    _proton_fit_m[ 46.5] =   3.7 ;
+    _proton_fit_m[ 47. ] =   3.35;
+    _proton_fit_m[ 47.5] =   3.35;
+    _proton_fit_m[ 48. ] =   3.45;
+    _proton_fit_m[ 48.5] =   3.45;
+    _proton_fit_m[ 49. ] =   3.45;
+    _proton_fit_m[ 49.5] =   3.45;
+    _proton_fit_m[ 50. ] =   3.5 ;
+    _proton_fit_m[ 50.5] =   3.5 ;
+    _proton_fit_m[ 51. ] =   3.35;
+    _proton_fit_m[ 51.5] =   3.3 ;
+    _proton_fit_m[ 52. ] =   3.55;
+    _proton_fit_m[ 52.5] =   3.5 ;
+    _proton_fit_m[ 53. ] =   3.5 ;
+    _proton_fit_m[ 53.5] =   3.55;
+    _proton_fit_m[ 54. ] =   3.3 ;
+    _proton_fit_m[ 54.5] =   3.25;
+    _proton_fit_m[ 55. ] =   3.55;
+    _proton_fit_m[ 55.5] =   3.25;
+    _proton_fit_m[ 56. ] =   3.6 ;
+    _proton_fit_m[ 56.5] =   3.2 ;
+    _proton_fit_m[ 57. ] =   3.1 ;
+    _proton_fit_m[ 57.5] =   3.15;
+    _proton_fit_m[ 58. ] =   3.1 ;
+    _proton_fit_m[ 58.5] =   3.25;
+    _proton_fit_m[ 59. ] =   3.2 ;
+    _proton_fit_m[ 59.5] =   3.25;
+    _proton_fit_m[ 60. ] =   3.1 ;
+    _proton_fit_m[ 60.5] =   3.25;
+    _proton_fit_m[ 61. ] =   3.2 ;
+    _proton_fit_m[ 61.5] =   3.2 ;
+    _proton_fit_m[ 62. ] =   3.2 ;
+    _proton_fit_m[ 62.5] =   3.2 ;
+    _proton_fit_m[ 63. ] =   3.15;
+    _proton_fit_m[ 63.5] =   3.1 ;
+    _proton_fit_m[ 64. ] =   3.1 ;
+    _proton_fit_m[ 64.5] =   3.1 ;
+    _proton_fit_m[ 65. ] =   3.1 ;
+    _proton_fit_m[ 65.5] =   3.1 ;
+    _proton_fit_m[ 66. ] =   3.25;
+    _proton_fit_m[ 66.5] =   3.05;
+    _proton_fit_m[ 67. ] =   3.1 ;
+    _proton_fit_m[ 67.5] =   3.  ;
+    _proton_fit_m[ 68. ] =   3.35;
+    _proton_fit_m[ 68.5] =   3.1 ;
+    _proton_fit_m[ 69. ] =   3.1 ;
+    _proton_fit_m[ 69.5] =   3.15;
+    _proton_fit_m[ 70. ] =   3.1 ;
+    _proton_fit_m[ 70.5] =   3.1 ;
+    _proton_fit_m[ 71. ] =   3.2 ;
+    _proton_fit_m[ 71.5] =   3.2 ;
+    _proton_fit_m[ 72. ] =   3.  ;
+    _proton_fit_m[ 72.5] =   3.  ;
+    _proton_fit_m[ 73. ] =   2.95;
+    _proton_fit_m[ 73.5] =   3.  ;
+    _proton_fit_m[ 74. ] =   3.  ;
+    _proton_fit_m[ 74.5] =   3.  ;
+    _proton_fit_m[ 75. ] =   3.25;
+    _proton_fit_m[ 75.5] =   3.  ;
+    _proton_fit_m[ 76. ] =   3.  ;
+    _proton_fit_m[ 76.5] =   3.  ;
+    _proton_fit_m[ 77. ] =   3.25;
+    _proton_fit_m[ 77.5] =   2.95;
+    _proton_fit_m[ 78. ] =   2.65;
+    _proton_fit_m[ 78.5] =   2.65;
+    _proton_fit_m[ 79. ] =   3.  ;
+    _proton_fit_m[ 79.5] =   3.3 ;
+    _proton_fit_m[ 80. ] =   3.  ;
+    _proton_fit_m[ 80.5] =   3.  ;
+    _proton_fit_m[ 81. ] =   3.  ;
+    _proton_fit_m[ 81.5] =   3.5 ;
+    _proton_fit_m[ 82. ] =   3.1 ;
+    _proton_fit_m[ 82.5] =   2.85;
+    _proton_fit_m[ 83. ] =   2.65;
+    _proton_fit_m[ 83.5] =   3.15;
+    _proton_fit_m[ 84. ] =   2.8 ;
+    _proton_fit_m[ 84.5] =   2.7 ;
+    _proton_fit_m[ 85. ] =   2.9 ;
+    _proton_fit_m[ 85.5] =   2.9 ;
+    _proton_fit_m[ 86. ] =   2.95;
+    _proton_fit_m[ 86.5] =   2.8 ;
+    _proton_fit_m[ 87. ] =   2.95;
+    _proton_fit_m[ 87.5] =   2.9 ;
+    _proton_fit_m[ 88. ] =   2.9 ;
+    _proton_fit_m[ 88.5] =   2.9 ;
+    _proton_fit_m[ 89. ] =   2.9 ;
+    _proton_fit_m[ 89.5] =   2.9 ;
+    _proton_fit_m[ 90. ] =   2.85;
+    _proton_fit_m[ 90.5] =   3.  ;
+    _proton_fit_m[ 91. ] =   3.  ;
+    _proton_fit_m[ 91.5] =   2.85;
+    _proton_fit_m[ 92. ] =   3.  ;
+    _proton_fit_m[ 92.5] =   3.  ;
+    _proton_fit_m[ 93. ] =   3.  ;
+    _proton_fit_m[ 93.5] =   3.  ;
+    _proton_fit_m[ 94. ] =   2.85;
+    _proton_fit_m[ 94.5] =   3.  ;
+    _proton_fit_m[ 95. ] =   3.05;
+    _proton_fit_m[ 95.5] =   3.05;
+    _proton_fit_m[ 96. ] =   3.1 ;
+    _proton_fit_m[ 96.5] =   2.9 ;
+    _proton_fit_m[ 97. ] =   3.  ;
+    _proton_fit_m[ 97.5] =   3.  ;
+    _proton_fit_m[ 98. ] =   3.  ;
+    _proton_fit_m[ 98.5] =   3.  ;
+    _proton_fit_m[ 99. ] =   3.  ;
+    _proton_fit_m[ 99.5] =   3.  ;
+    _proton_fit_m[100. ] =   2.75;
+    _proton_fit_m[100.5] =   3.05;
+    _proton_fit_m[101. ] =   3.05;
+    _proton_fit_m[101.5] =   2.85;
+    _proton_fit_m[102. ] =   2.6 ;
+    _proton_fit_m[102.5] =   3.05;
+    _proton_fit_m[103. ] =   2.85;
+    _proton_fit_m[103.5] =   2.85;
+    _proton_fit_m[104. ] =   2.85;
+    _proton_fit_m[104.5] =   2.8 ;
+    _proton_fit_m[105. ] =   2.85;
+    _proton_fit_m[105.5] =   2.9 ;
+    _proton_fit_m[106. ] =   2.85;
+    _proton_fit_m[106.5] =   2.8 ;
+    _proton_fit_m[107. ] =   2.95;
+    _proton_fit_m[107.5] =   2.85;
+    _proton_fit_m[108. ] =   2.65;
+    _proton_fit_m[108.5] =   2.65;
+    _proton_fit_m[109. ] =   2.9 ;
+    _proton_fit_m[109.5] =   2.8 ;
+    _proton_fit_m[110. ] =   2.95;
+    _proton_fit_m[110.5] =   2.85;
+    _proton_fit_m[111. ] =   2.95;
+    _proton_fit_m[111.5] =   2.7 ;
+    _proton_fit_m[112. ] =   2.85;
+    _proton_fit_m[112.5] =   2.8 ;
+    _proton_fit_m[113. ] =   2.8 ;
+    _proton_fit_m[113.5] =   2.8 ;
+    _proton_fit_m[114. ] =   2.75;
+    _proton_fit_m[114.5] =   2.65;
+    _proton_fit_m[115. ] =   2.65;
+    _proton_fit_m[115.5] =   2.65;
+    _proton_fit_m[116. ] =   2.65;
+    _proton_fit_m[116.5] =   2.65;
+    _proton_fit_m[117. ] =   2.65;
+    _proton_fit_m[117.5] =   2.65;
+    _proton_fit_m[118. ] =   2.7 ;
+    _proton_fit_m[118.5] =   2.7 ;
+    _proton_fit_m[119. ] =   2.75;
+    _proton_fit_m[119.5] =   2.7 ;
+    _proton_fit_m[120. ] =   2.7 ;
+    _proton_fit_m[120.5] =   2.75;
+    _proton_fit_m[121. ] =   2.75;
+    _proton_fit_m[121.5] =   2.7 ;
+    _proton_fit_m[122. ] =   2.6 ;
+    _proton_fit_m[122.5] =   2.7 ;
+    _proton_fit_m[123. ] =   2.7 ;
+    _proton_fit_m[123.5] =   2.6 ;
+    _proton_fit_m[124. ] =   2.8 ;
+    _proton_fit_m[124.5] =   2.75;
+    _proton_fit_m[125. ] =   2.5 ;
+    _proton_fit_m[125.5] =   2.7 ;
+    _proton_fit_m[126. ] =   2.7 ;
+    _proton_fit_m[126.5] =   2.7 ;
+    _proton_fit_m[127. ] =   2.65;
+    _proton_fit_m[127.5] =   2.6 ;
+    _proton_fit_m[128. ] =   2.6 ;
+    _proton_fit_m[128.5] =   2.65;
+    _proton_fit_m[129. ] =   2.65;
+    _proton_fit_m[129.5] =   2.6 ;
+    _proton_fit_m[130. ] =   2.6 ;
+    _proton_fit_m[130.5] =   2.65;
+    _proton_fit_m[131. ] =   2.65;
+    _proton_fit_m[131.5] =   2.75;
+    _proton_fit_m[132. ] =   2.7 ;
+    _proton_fit_m[132.5] =   2.2 ;
+    _proton_fit_m[133. ] =   2.2 ;
+    _proton_fit_m[133.5] =   2.7 ;
+    _proton_fit_m[134. ] =   2.6 ;
+    _proton_fit_m[134.5] =   2.8 ;
+    _proton_fit_m[135. ] =   2.7 ;
+    _proton_fit_m[135.5] =   2.85;
+    _proton_fit_m[136. ] =   2.65;
+    _proton_fit_m[136.5] =   2.65;
+    _proton_fit_m[137. ] =   2.65;
+    _proton_fit_m[137.5] =   2.6 ;
+    _proton_fit_m[138. ] =   2.8 ;
+    _proton_fit_m[138.5] =   2.6 ;
+    _proton_fit_m[139. ] =   2.6 ;
+    _proton_fit_m[139.5] =   2.65;
+    _proton_fit_m[140. ] =   2.7 ;
+    _proton_fit_m[140.5] =   2.75;
+    _proton_fit_m[141. ] =   2.7 ;
+    _proton_fit_m[141.5] =   2.7 ;
+    _proton_fit_m[142. ] =   2.65;
+    _proton_fit_m[142.5] =   2.65;
+    _proton_fit_m[143. ] =   2.65;
+    _proton_fit_m[143.5] =   2.65;
+    _proton_fit_m[144. ] =   2.55;
+    _proton_fit_m[144.5] =   2.55;
+    _proton_fit_m[145. ] =   2.55;
+    _proton_fit_m[145.5] =   2.65;
+    _proton_fit_m[146. ] =   2.75;
+    _proton_fit_m[146.5] =   2.5 ;
+    _proton_fit_m[147. ] =   2.7 ;
+    _proton_fit_m[147.5] =   2.75;
+    _proton_fit_m[148. ] =   2.75;
+    _proton_fit_m[148.5] =   2.4 ;
+    _proton_fit_m[149. ] =   2.7 ;
+    _proton_fit_m[149.5] =   2.45;
+    _proton_fit_m[150. ] =   2.65;
+    _proton_fit_m[150.5] =   2.6 ;
+    _proton_fit_m[151. ] =   2.6 ;
+    _proton_fit_m[151.5] =   2.8 ;
+    _proton_fit_m[152. ] =   2.55;
+    _proton_fit_m[152.5] =   2.4 ;
+    _proton_fit_m[153. ] =   2.35;
+    _proton_fit_m[153.5] =   2.35;
+    _proton_fit_m[154. ] =   2.4 ;
+    _proton_fit_m[154.5] =   2.5 ;
+    _proton_fit_m[155. ] =   2.5 ;
+    _proton_fit_m[155.5] =   2.45;
+    _proton_fit_m[156. ] =   2.35;
+    _proton_fit_m[156.5] =   2.35;
+    _proton_fit_m[157. ] =   2.6 ;
+    _proton_fit_m[157.5] =   2.35;
+    _proton_fit_m[158. ] =   2.65;
+    _proton_fit_m[158.5] =   2.65;
+    _proton_fit_m[159. ] =   2.65;
+    _proton_fit_m[159.5] =   2.65;
+    _proton_fit_m[160. ] =   2.6 ;
+    _proton_fit_m[160.5] =   2.6 ;
+    _proton_fit_m[161. ] =   2.6 ;
+    _proton_fit_m[161.5] =   2.6 ;
+    _proton_fit_m[162. ] =   2.6 ;
+    _proton_fit_m[162.5] =   2.6 ;
+    _proton_fit_m[163. ] =   2.6 ;
+    _proton_fit_m[163.5] =   2.55;
+    _proton_fit_m[164. ] =   2.5 ;
+    _proton_fit_m[164.5] =   2.5 ;
+    _proton_fit_m[165. ] =   2.5 ;
+    _proton_fit_m[165.5] =   2.5 ;
+    _proton_fit_m[166. ] =   2.55;
+    _proton_fit_m[166.5] =   2.55;
+    _proton_fit_m[167. ] =   2.55;
+    _proton_fit_m[167.5] =   2.55;
+    _proton_fit_m[168. ] =   2.55;
+    _proton_fit_m[168.5] =   2.55;
+    _proton_fit_m[169. ] =   2.5 ;
+    _proton_fit_m[169.5] =   2.5 ;
+    _proton_fit_m[170. ] =   2.55;
+    _proton_fit_m[170.5] =   2.55;
+    _proton_fit_m[171. ] =   2.5 ;
+    _proton_fit_m[171.5] =   2.65;
+    _proton_fit_m[172. ] =   2.6 ;
+    _proton_fit_m[172.5] =   2.45;
+    _proton_fit_m[173. ] =   2.25;
+    _proton_fit_m[173.5] =   2.1 ;
+    _proton_fit_m[174. ] =   2.25;
+    _proton_fit_m[174.5] =   2.95;
+    _proton_fit_m[175. ] =   2.65;
   }
 
   float dEdxCalculator::ProtonEstimate(float rr) {
-    if (rr>84.5) return 3.0;
     float r = std::round(2.0*rr)/2.0;
+    if (rr>84.5) r = 84.5;
+    if (r<0.5)   r = 0.5; // hard cut off
     return _proton_m[r];
   }
-  float dEdxCalculator::MuonEstimate(float rr) {
-    if (rr>90.50) return 2.07;
+
+  float dEdxCalculator::ProtonEstimateFit(float rr) {
     float r = std::round(2.0*rr)/2.0;
+    if (r>175) r = 175;
+    if (r<0.5) r = 0.5;
+    return _proton_fit_m[r];
+  }
+  
+  float dEdxCalculator::MuonEstimate(float rr) {
+    float r = std::round(2.0*rr)/2.0;
+    if (r>90.50) r = 90.50;
+    if (r<1.50)  r = 1.50; // hard cut off
     return _muon_m[r];
   }
-
 
 }
 
 
 #endif
+  

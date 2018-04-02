@@ -126,15 +126,19 @@ namespace llcv {
     // chi2 against Theoretical
     //
     std::vector<float> trk_proton_hypo_chi_v;
+    std::vector<float> trk_proton_hypo_fit_chi_v;
     std::vector<float> trk_muon_hypo_chi_v;
 
     std::vector<float> trk_proton_hypo_start_chi_v;
+    std::vector<float> trk_proton_hypo_fit_start_chi_v;
     std::vector<float> trk_muon_hypo_start_chi_v;
 
     std::vector<float> trk_proton_hypo_middle_chi_v;
+    std::vector<float> trk_proton_hypo_fit_middle_chi_v;
     std::vector<float> trk_muon_hypo_middle_chi_v;
 
     std::vector<float> trk_proton_hypo_end_chi_v;
+    std::vector<float> trk_proton_hypo_fit_end_chi_v;
     std::vector<float> trk_muon_hypo_end_chi_v;
     
     void ResetTree();
@@ -142,6 +146,7 @@ namespace llcv {
 
     float MuonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
     float ProtonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
+    float ProtonFitPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
 
   };
 

@@ -85,15 +85,19 @@ namespace llcv {
     fouttree->Branch("trk_backward_fixed_m_d_v"  , &trk_backward_fixed_m_d_v);
 
     fouttree->Branch("trk_proton_hypo_chi_v" , &trk_proton_hypo_chi_v);
+    fouttree->Branch("trk_proton_hypo_fit_chi_v" , &trk_proton_hypo_fit_chi_v);
     fouttree->Branch("trk_muon_hypo_chi_v"   , &trk_muon_hypo_chi_v);
 
     fouttree->Branch("trk_proton_hypo_start_chi_v" , &trk_proton_hypo_start_chi_v);
+    fouttree->Branch("trk_proton_hypo_fit_start_chi_v" , &trk_proton_hypo_fit_start_chi_v);
     fouttree->Branch("trk_muon_hypo_start_chi_v"   , &trk_muon_hypo_start_chi_v);
 
     fouttree->Branch("trk_proton_hypo_middle_chi_v" , &trk_proton_hypo_middle_chi_v);
+    fouttree->Branch("trk_proton_hypo_fit_middle_chi_v" , &trk_proton_hypo_fit_middle_chi_v);
     fouttree->Branch("trk_muon_hypo_middle_chi_v"   , &trk_muon_hypo_middle_chi_v);
 
     fouttree->Branch("trk_proton_hypo_end_chi_v" , &trk_proton_hypo_end_chi_v);
+    fouttree->Branch("trk_proton_hypo_fit_end_chi_v" , &trk_proton_hypo_fit_end_chi_v);
     fouttree->Branch("trk_muon_hypo_end_chi_v"   , &trk_muon_hypo_end_chi_v);
 
     LLCV_DEBUG() << "end" << std::endl;
@@ -475,11 +479,15 @@ namespace llcv {
       // calculate the chi2
       //
       
-      //overall
       trk_proton_hypo_chi_v[ithsort]        = ProtonPIDChi2(tdedx_v,rrange_v);
       trk_proton_hypo_start_chi_v[ithsort]  = ProtonPIDChi2(start_tdedx_v,start_rrange_v);
       trk_proton_hypo_middle_chi_v[ithsort] = ProtonPIDChi2(middle_tdedx_v,middle_rrange_v);
       trk_proton_hypo_end_chi_v[ithsort]    = ProtonPIDChi2(end_tdedx_v,end_rrange_v);
+
+      trk_proton_hypo_fit_chi_v[ithsort]        = ProtonFitPIDChi2(tdedx_v,rrange_v);
+      trk_proton_hypo_fit_start_chi_v[ithsort]  = ProtonFitPIDChi2(start_tdedx_v,start_rrange_v);
+      trk_proton_hypo_fit_middle_chi_v[ithsort] = ProtonFitPIDChi2(middle_tdedx_v,middle_rrange_v);
+      trk_proton_hypo_fit_end_chi_v[ithsort]    = ProtonFitPIDChi2(end_tdedx_v,end_rrange_v);
 
       trk_muon_hypo_chi_v[ithsort]        = MuonPIDChi2(tdedx_v,rrange_v);
       trk_muon_hypo_start_chi_v[ithsort]  = MuonPIDChi2(start_tdedx_v,start_rrange_v);
@@ -572,15 +580,19 @@ namespace llcv {
     trk_backward_fixed_m_d_v.resize(ntracks);
 
     trk_proton_hypo_chi_v.resize(ntracks);
+    trk_proton_hypo_fit_chi_v.resize(ntracks);
     trk_muon_hypo_chi_v.resize(ntracks);
 
     trk_proton_hypo_start_chi_v.resize(ntracks);
+    trk_proton_hypo_fit_start_chi_v.resize(ntracks);
     trk_muon_hypo_start_chi_v.resize(ntracks);
 
     trk_proton_hypo_middle_chi_v.resize(ntracks);
+    trk_proton_hypo_fit_middle_chi_v.resize(ntracks);
     trk_muon_hypo_middle_chi_v.resize(ntracks);
 
     trk_proton_hypo_end_chi_v.resize(ntracks);
+    trk_proton_hypo_fit_end_chi_v.resize(ntracks);
     trk_muon_hypo_end_chi_v.resize(ntracks);
   }
 
@@ -653,15 +665,19 @@ namespace llcv {
     trk_backward_fixed_m_d_v.clear();
 
     trk_proton_hypo_chi_v.clear();
+    trk_proton_hypo_fit_chi_v.clear();
     trk_muon_hypo_chi_v.clear();
 
     trk_proton_hypo_start_chi_v.clear();
+    trk_proton_hypo_fit_start_chi_v.clear();
     trk_muon_hypo_start_chi_v.clear();
 
     trk_proton_hypo_middle_chi_v.clear();
+    trk_proton_hypo_fit_middle_chi_v.clear();
     trk_muon_hypo_middle_chi_v.clear();
 
     trk_proton_hypo_end_chi_v.clear();
+    trk_proton_hypo_fit_end_chi_v.clear();
     trk_muon_hypo_end_chi_v.clear();
     
     return;
@@ -702,6 +718,25 @@ namespace llcv {
 
     return chi2;
   }
+
+  float SelTrackDir::ProtonFitPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v) {
+    float chi2 = 0.0;
+    
+    assert (obs_v.size() == rr_v.size());
+    
+    for(size_t id=0; id<obs_v.size(); ++id) {
+      float est = _dEdxCalculator.ProtonEstimateFit(rr_v[id]);
+      float local_chi2 = obs_v[id] - est;
+      local_chi2 *= local_chi2;
+      local_chi2 /= est;
+      chi2 += local_chi2;
+    }
+    
+    chi2 /= (float)obs_v.size();
+
+    return chi2;
+  }
+
   
   float SelTrackDir::MuonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v) {
     float chi2 = 0.0;
