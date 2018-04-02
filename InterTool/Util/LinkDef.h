@@ -4,5 +4,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class llcv::TruncMean+;
+#pragma link C++ class llcv::dEdxCalculator+;
 
 #endif

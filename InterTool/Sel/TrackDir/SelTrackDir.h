@@ -3,6 +3,7 @@
 
 #include "InterTool_Core/InterSelBase.h"
 #include "InterTool_Util/TruncMean.h"
+#include "InterTool_Util/dEdxCalculator.h"
 
 namespace llcv {
   
@@ -25,6 +26,7 @@ namespace llcv {
   private:
 
     TruncMean _TruncMean;
+    dEdxCalculator _dEdxCalculator;
 
     TTree* fouttree;
     float fmax_hit_radius;
@@ -90,31 +92,60 @@ namespace llcv {
     //
     
     static Double_t ftf_float_model(Double_t *x, Double_t *par);
-    static Double_t ftf_fixed_model(Double_t *x, Double_t *par);
+    static Double_t ftf_fixed_model_p(Double_t *x, Double_t *par);
+    static Double_t ftf_fixed_model_m(Double_t *x, Double_t *par);
 
-    std::vector<float> trk_forward_chi_v;
-    std::vector<float> trk_backward_chi_v;
+    std::vector<float> trk_forward_float_chi_v;
+    std::vector<float> trk_backward_float_chi_v;
 
-    std::vector<float> trk_forward_A_v;
-    std::vector<float> trk_backward_A_v;
+    std::vector<float> trk_forward_float_A_v;
+    std::vector<float> trk_backward_float_A_v;
 
-    std::vector<float> trk_forward_d_v;
-    std::vector<float> trk_backward_d_v;
+    std::vector<float> trk_forward_float_d_v;
+    std::vector<float> trk_backward_float_d_v;
 
-    std::vector<float> trk_forward_fixed_chi_v;
-    std::vector<float> trk_backward_fixed_chi_v;
+    std::vector<float> trk_forward_fixed_p_chi_v;
+    std::vector<float> trk_backward_fixed_p_chi_v;
 
-    std::vector<float> trk_forward_fixed_A_v;
-    std::vector<float> trk_backward_fixed_A_v;
+    std::vector<float> trk_forward_fixed_p_A_v;
+    std::vector<float> trk_backward_fixed_p_A_v;
 
-    std::vector<float> trk_forward_fixed_d_v;
-    std::vector<float> trk_backward_fixed_d_v;
+    std::vector<float> trk_forward_fixed_p_d_v;
+    std::vector<float> trk_backward_fixed_p_d_v;
+
+    std::vector<float> trk_forward_fixed_m_chi_v;
+    std::vector<float> trk_backward_fixed_m_chi_v;
+
+    std::vector<float> trk_forward_fixed_m_A_v;
+    std::vector<float> trk_backward_fixed_m_A_v;
+
+    std::vector<float> trk_forward_fixed_m_d_v;
+    std::vector<float> trk_backward_fixed_m_d_v;
+    
+    //
+    // chi2 against Theoretical
+    //
+    std::vector<float> trk_proton_hypo_chi_v;
+    std::vector<float> trk_muon_hypo_chi_v;
+
+    std::vector<float> trk_proton_hypo_start_chi_v;
+    std::vector<float> trk_muon_hypo_start_chi_v;
+
+    std::vector<float> trk_proton_hypo_middle_chi_v;
+    std::vector<float> trk_muon_hypo_middle_chi_v;
+
+    std::vector<float> trk_proton_hypo_end_chi_v;
+    std::vector<float> trk_muon_hypo_end_chi_v;
     
     void ResetTree();
     void ResizeTree(size_t ntracks);
+
+    float MuonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
+    float ProtonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
 
   };
 
 }
 
 #endif
+
