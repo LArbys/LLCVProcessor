@@ -4,3 +4,5 @@
 example_data
 *.png
 *.pdf
+*.log
+*.err

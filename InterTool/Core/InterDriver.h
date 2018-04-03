@@ -16,11 +16,13 @@ namespace llcv {
 
   class InterModule;
   class InterMichel;
+  class InterPMT;
   
   class InterDriver : public llcv_base {
 
     friend class InterModule;
     friend class InterMichel;
+    friend class InterPMT;
 
   public:
   
@@ -87,6 +89,7 @@ namespace llcv {
     size_t AttachCluster  (size_t vtxid, size_t shrid, const larlite::cluster* cluster);
     size_t AttachHit      (size_t vtxid, size_t cluid, const larlite::hit* hit);
     size_t AttachHit      (size_t vtxid, const larlite::hit* hit);
+    size_t AttachOpDigit  (size_t vtxid, const larlite::opdetwaveform* opdigit);
 
     void Reset();
     void Dump();

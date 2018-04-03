@@ -5,5 +5,6 @@
 
 #pragma link C++ class llcv::InterModule+;
 #pragma link C++ class llcv::InterMichel+;
+#pragma link C++ class llcv::InterPMT+;
 
 #endif

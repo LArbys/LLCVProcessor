@@ -3,13 +3,6 @@
 
 #include "InterDataManager.h"
 
-
-namespace llcv {
-
-
-
-
-
-}
+namespace llcv { }
 
 #endif
