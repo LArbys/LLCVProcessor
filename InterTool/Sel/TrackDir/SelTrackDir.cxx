@@ -2,7 +2,6 @@
 #define __SELTRACKDIR_CXX__
 
 #include "SelTrackDir.h"
-#include "TrackHitSorter/TrackHitSorter.h"
 #include "TGraph.h"
 #include "TMath.h"
 #include "TF1.h"
@@ -132,15 +131,15 @@ namespace llcv {
     for(size_t ithsort=0; ithsort<trk_v.size(); ++ithsort) { 
 
       const auto& lltrack = *(trk_v[ithsort]);
-      larlitecv::TrackHitSorter trackhitsort;
-      trackhitsort.buildSortedHitList(vtx, lltrack, hit_v, fmax_hit_radius, hitmask_v);
+      _trackhitsort.clear();
+      _trackhitsort.buildSortedHitList(vtx, lltrack, hit_v, fmax_hit_radius, hitmask_v);
 
       dedx_track_per_plane.clear();
       dedx_track_per_plane.resize(3);
       
-      trackhitsort.getPathBinneddEdx(stride,stride,dedx_track_per_plane);
+      _trackhitsort.getPathBinneddEdx(stride,stride,dedx_track_per_plane);
       
-     const auto& bincenter_xyz = trackhitsort.getBinCentersXYZ(fplane); 
+     const auto& bincenter_xyz = _trackhitsort.getBinCentersXYZ(fplane); 
      const auto& dedx_track = dedx_track_per_plane.at(fplane);
       
      auto& trk_dedx_v = trk_dedx_vv[ithsort];

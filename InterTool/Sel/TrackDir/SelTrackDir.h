@@ -4,6 +4,8 @@
 #include "InterTool_Core/InterSelBase.h"
 #include "InterTool_Util/TruncMean.h"
 #include "InterTool_Util/dEdxCalculator.h"
+#include "TrackHitSorter/TrackHitSorter.h"
+
 
 namespace llcv {
   
@@ -22,11 +24,14 @@ namespace llcv {
     void Initialize();
     double Select();
     void Finalize();
+    void SetIsMC(int ismc)
+    { bool ismc_b = (bool) ismc; _trackhitsort.SetIsMC(ismc_b); }
     
   private:
 
     TruncMean _TruncMean;
     dEdxCalculator _dEdxCalculator;
+    larlitecv::TrackHitSorter _trackhitsort;
 
     TTree* fouttree;
     float fmax_hit_radius;
