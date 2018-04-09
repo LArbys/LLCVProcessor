@@ -1,6 +1,6 @@
 import os,sys,gc
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 9:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
@@ -9,7 +9,8 @@ if len(sys.argv) != 8:
     print "SHR_FILE   = str(sys.argv[4])"
     print "TRK_FILE   = str(sys.argv[5])"
     print "INTER_FILE = str(sys.argv[6])"
-    print "OUT_DIR    = str(sys.argv[7])"
+    print "IS_MC      = int(str(sys.argv[7]))"
+    print "OUT_DIR    = str(sys.argv[8])"
     print
     print
     sys.exit(1)
@@ -20,10 +21,10 @@ FLASH_FILE = str(sys.argv[3])
 SHR_FILE   = str(sys.argv[4])
 TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
-OUT_DIR    = str(sys.argv[7])
+IS_MC      = int(str(sys.argv[7]))
+OUT_DIR    = str(sys.argv[8])
 
 import ROOT
-
 from larlitecv import larlitecv
 from ROOT import llcv
 
@@ -49,7 +50,7 @@ imod = llcv.InterModule()
 driver = imod.Driver()
 FOUT = "cosmic_ana_%d.root"
 
-num = int(VTX_FILE.split(".")[0].split("_")[-1])
+num = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
 FOUT = FOUT % num
 
 driver.SetOutputFilename(FOUT)

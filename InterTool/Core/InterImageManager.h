@@ -21,11 +21,17 @@
 namespace llcv {
 
   class InterModule;
+  class InterMichel;
+  class InterPMT;
+
   class InterDriver;
 
   class InterImageManager : public llcv_base {
     
     friend class InterModule;
+    friend class InterMichel;
+    friend class InterPMT;
+
     friend class InterDriver;
 
   public:
