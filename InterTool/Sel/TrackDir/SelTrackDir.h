@@ -118,6 +118,15 @@ namespace llcv {
     std::vector<float> trk_forward_fixed_p_d_v;
     std::vector<float> trk_backward_fixed_p_d_v;
 
+    std::vector<float> trk_forward_fixed_p_start_chi_v;
+    std::vector<float> trk_backward_fixed_p_start_chi_v;
+
+    std::vector<float> trk_forward_fixed_p_middle_chi_v;
+    std::vector<float> trk_backward_fixed_p_middle_chi_v;
+
+    std::vector<float> trk_forward_fixed_p_end_chi_v;
+    std::vector<float> trk_backward_fixed_p_end_chi_v;    
+
     std::vector<float> trk_forward_fixed_m_chi_v;
     std::vector<float> trk_backward_fixed_m_chi_v;
 
@@ -126,6 +135,16 @@ namespace llcv {
 
     std::vector<float> trk_forward_fixed_m_d_v;
     std::vector<float> trk_backward_fixed_m_d_v;
+
+    std::vector<float> trk_forward_fixed_m_start_chi_v;
+    std::vector<float> trk_backward_fixed_m_start_chi_v;
+
+    std::vector<float> trk_forward_fixed_m_middle_chi_v;
+    std::vector<float> trk_backward_fixed_m_middle_chi_v;
+
+    std::vector<float> trk_forward_fixed_m_end_chi_v;
+    std::vector<float> trk_backward_fixed_m_end_chi_v;    
+
     
     //
     // chi2 against Theoretical
@@ -148,6 +167,13 @@ namespace llcv {
     
     void ResetTree();
     void ResizeTree(size_t ntracks);
+    
+    float RChi2WithFixedFit(const std::vector<float>& range_v,
+			    const std::vector<float>& obs_v,
+			    size_t start,
+			    size_t end,
+			    float A,
+			    float d);
 
     float MuonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);
     float ProtonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v);

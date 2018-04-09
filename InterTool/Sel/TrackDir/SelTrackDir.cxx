@@ -37,24 +37,28 @@ namespace llcv {
     fouttree->Branch("trk_range_vv"             , &trk_range_vv);
     fouttree->Branch("trk_length_v"             , &trk_length_v);
     fouttree->Branch("trk_npts_v"               , &trk_npts_v);
+
     fouttree->Branch("trk_mean_dedx_v"          , &trk_mean_dedx_v);
     fouttree->Branch("trk_slope_dedx_v"         , &trk_slope_dedx_v);
     fouttree->Branch("trk_median_dedx_v"        , &trk_median_dedx_v);
     fouttree->Branch("trk_tmean_dedx_v"         , &trk_tmean_dedx_v);
     fouttree->Branch("trk_tslope_dedx_v"        , &trk_tslope_dedx_v);
     fouttree->Branch("trk_tmedian_dedx_v"       , &trk_tmedian_dedx_v);
+
     fouttree->Branch("trk_start_mean_dedx_v"    , &trk_start_mean_dedx_v);
     fouttree->Branch("trk_start_slope_dedx_v"   , &trk_start_slope_dedx_v);
     fouttree->Branch("trk_start_median_dedx_v"  , &trk_start_median_dedx_v);
     fouttree->Branch("trk_start_tmean_dedx_v"   , &trk_start_tmean_dedx_v);
     fouttree->Branch("trk_start_tslope_dedx_v"  , &trk_start_tslope_dedx_v);
     fouttree->Branch("trk_start_tmedian_dedx_v" , &trk_start_tmedian_dedx_v);
+
     fouttree->Branch("trk_middle_mean_dedx_v"   , &trk_middle_mean_dedx_v);
     fouttree->Branch("trk_middle_slope_dedx_v"  , &trk_middle_slope_dedx_v);
     fouttree->Branch("trk_middle_median_dedx_v" , &trk_middle_median_dedx_v);
     fouttree->Branch("trk_middle_tmean_dedx_v"  , &trk_middle_tmean_dedx_v);
     fouttree->Branch("trk_middle_tslope_dedx_v" , &trk_middle_tslope_dedx_v);
     fouttree->Branch("trk_middle_tmedian_dedx_v", &trk_middle_tmedian_dedx_v);
+    
     fouttree->Branch("trk_end_mean_dedx_v"      , &trk_end_mean_dedx_v);
     fouttree->Branch("trk_end_slope_dedx_v"     , &trk_end_slope_dedx_v);
     fouttree->Branch("trk_end_median_dedx_v"    , &trk_end_median_dedx_v);
@@ -71,17 +75,39 @@ namespace llcv {
     
     fouttree->Branch("trk_forward_fixed_p_chi_v" , &trk_forward_fixed_p_chi_v);
     fouttree->Branch("trk_backward_fixed_p_chi_v", &trk_backward_fixed_p_chi_v);
+
     fouttree->Branch("trk_forward_fixed_p_A_v"   , &trk_forward_fixed_p_A_v);
     fouttree->Branch("trk_backward_fixed_p_A_v"  , &trk_backward_fixed_p_A_v);
+
     fouttree->Branch("trk_forward_fixed_p_d_v"   , &trk_forward_fixed_p_d_v);
     fouttree->Branch("trk_backward_fixed_p_d_v"  , &trk_backward_fixed_p_d_v);
     
+    fouttree->Branch("trk_forward_fixed_p_start_chi_v" , &trk_forward_fixed_p_start_chi_v);
+    fouttree->Branch("trk_backward_fixed_p_start_chi_v", &trk_backward_fixed_p_start_chi_v);
+
+    fouttree->Branch("trk_forward_fixed_p_middle_chi_v" , &trk_forward_fixed_p_middle_chi_v);
+    fouttree->Branch("trk_backward_fixed_p_middle_chi_v", &trk_backward_fixed_p_middle_chi_v);
+
+    fouttree->Branch("trk_forward_fixed_p_end_chi_v" , &trk_forward_fixed_p_end_chi_v);
+    fouttree->Branch("trk_backward_fixed_p_end_chi_v", &trk_backward_fixed_p_end_chi_v);
+
     fouttree->Branch("trk_forward_fixed_m_chi_v" , &trk_forward_fixed_m_chi_v);
     fouttree->Branch("trk_backward_fixed_m_chi_v", &trk_backward_fixed_m_chi_v);
+
     fouttree->Branch("trk_forward_fixed_m_A_v"   , &trk_forward_fixed_m_A_v);
     fouttree->Branch("trk_backward_fixed_m_A_v"  , &trk_backward_fixed_m_A_v);
+
     fouttree->Branch("trk_forward_fixed_m_d_v"   , &trk_forward_fixed_m_d_v);
     fouttree->Branch("trk_backward_fixed_m_d_v"  , &trk_backward_fixed_m_d_v);
+
+    fouttree->Branch("trk_forward_fixed_m_start_chi_v" , &trk_forward_fixed_m_start_chi_v);
+    fouttree->Branch("trk_backward_fixed_m_start_chi_v", &trk_backward_fixed_m_start_chi_v);
+
+    fouttree->Branch("trk_forward_fixed_m_middle_chi_v" , &trk_forward_fixed_m_middle_chi_v);
+    fouttree->Branch("trk_backward_fixed_m_middle_chi_v", &trk_backward_fixed_m_middle_chi_v);
+
+    fouttree->Branch("trk_forward_fixed_m_end_chi_v" , &trk_forward_fixed_m_end_chi_v);
+    fouttree->Branch("trk_backward_fixed_m_end_chi_v", &trk_backward_fixed_m_end_chi_v);
 
     fouttree->Branch("trk_proton_hypo_chi_v" , &trk_proton_hypo_chi_v);
     fouttree->Branch("trk_proton_hypo_fit_chi_v" , &trk_proton_hypo_fit_chi_v);
@@ -129,9 +155,9 @@ namespace llcv {
     float stride = 0.5;
 
     for(size_t ithsort=0; ithsort<trk_v.size(); ++ithsort) { 
+      _trackhitsort.clear();
 
       const auto& lltrack = *(trk_v[ithsort]);
-      _trackhitsort.clear();
       _trackhitsort.buildSortedHitList(vtx, lltrack, hit_v, fmax_hit_radius, hitmask_v);
 
       dedx_track_per_plane.clear();
@@ -473,9 +499,36 @@ namespace llcv {
       trk_backward_fixed_m_A   = ftf_backward_fixed_m_ptr->Value(0);
       trk_backward_fixed_m_d   = -0.37;
       
+      auto& trk_forward_fixed_p_start_chi   = trk_forward_fixed_p_start_chi_v[ithsort];
+      auto& trk_backward_fixed_p_start_chi  = trk_backward_fixed_p_start_chi_v[ithsort];
+      auto& trk_forward_fixed_p_middle_chi  = trk_forward_fixed_p_middle_chi_v[ithsort];
+      auto& trk_backward_fixed_p_middle_chi = trk_backward_fixed_p_middle_chi_v[ithsort];
+      auto& trk_forward_fixed_p_end_chi     = trk_forward_fixed_p_end_chi_v[ithsort];
+      auto& trk_backward_fixed_p_end_chi     = trk_backward_fixed_p_end_chi_v[ithsort];
+
+      trk_forward_fixed_p_start_chi   = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_start_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      trk_forward_fixed_p_middle_chi  = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_middle_chi = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      trk_forward_fixed_p_end_chi     = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_end_chi    = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      
+      auto& trk_forward_fixed_m_start_chi   = trk_forward_fixed_m_start_chi_v[ithsort];
+      auto& trk_backward_fixed_m_start_chi  = trk_backward_fixed_m_start_chi_v[ithsort];
+      auto& trk_forward_fixed_m_middle_chi  = trk_forward_fixed_m_middle_chi_v[ithsort];
+      auto& trk_backward_fixed_m_middle_chi = trk_backward_fixed_m_middle_chi_v[ithsort];
+      auto& trk_forward_fixed_m_end_chi     = trk_forward_fixed_m_end_chi_v[ithsort];
+      auto& trk_backward_fixed_m_end_chi    = trk_backward_fixed_m_end_chi_v[ithsort];
+      
+      trk_forward_fixed_m_start_chi   = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_start_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
+      trk_forward_fixed_m_middle_chi  = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_middle_chi = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
+      trk_forward_fixed_m_end_chi     = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_end_chi    = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
       
       //
-      // calculate the chi2
+      // calculate the chi2 w.r.t theoretical
       //
       
       trk_proton_hypo_chi_v[ithsort]        = ProtonPIDChi2(tdedx_v,rrange_v);
@@ -569,6 +622,13 @@ namespace llcv {
     trk_forward_fixed_p_d_v.resize(ntracks);
     trk_backward_fixed_p_d_v.resize(ntracks);
 
+    trk_forward_fixed_p_start_chi_v.resize(ntracks);
+    trk_backward_fixed_p_start_chi_v.resize(ntracks);
+    trk_forward_fixed_p_middle_chi_v.resize(ntracks);
+    trk_backward_fixed_p_middle_chi_v.resize(ntracks);
+    trk_forward_fixed_p_end_chi_v.resize(ntracks);
+    trk_backward_fixed_p_end_chi_v.resize(ntracks);
+
     trk_forward_fixed_m_chi_v.resize(ntracks);
     trk_backward_fixed_m_chi_v.resize(ntracks);
     
@@ -577,6 +637,13 @@ namespace llcv {
     
     trk_forward_fixed_m_d_v.resize(ntracks);
     trk_backward_fixed_m_d_v.resize(ntracks);
+
+    trk_forward_fixed_m_start_chi_v.resize(ntracks);
+    trk_backward_fixed_m_start_chi_v.resize(ntracks);
+    trk_forward_fixed_m_middle_chi_v.resize(ntracks);
+    trk_backward_fixed_m_middle_chi_v.resize(ntracks);
+    trk_forward_fixed_m_end_chi_v.resize(ntracks);
+    trk_backward_fixed_m_end_chi_v.resize(ntracks);
 
     trk_proton_hypo_chi_v.resize(ntracks);
     trk_proton_hypo_fit_chi_v.resize(ntracks);
@@ -654,6 +721,13 @@ namespace llcv {
     trk_forward_fixed_p_d_v.clear();
     trk_backward_fixed_p_d_v.clear();
 
+    trk_forward_fixed_p_start_chi_v.clear();
+    trk_backward_fixed_p_start_chi_v.clear();
+    trk_forward_fixed_p_middle_chi_v.clear();
+    trk_backward_fixed_p_middle_chi_v.clear();
+    trk_forward_fixed_p_end_chi_v.clear();
+    trk_backward_fixed_p_end_chi_v.clear();
+
     trk_forward_fixed_m_chi_v.clear();
     trk_backward_fixed_m_chi_v.clear();
     
@@ -662,6 +736,13 @@ namespace llcv {
     
     trk_forward_fixed_m_d_v.clear();
     trk_backward_fixed_m_d_v.clear();
+
+    trk_forward_fixed_m_start_chi_v.clear();
+    trk_backward_fixed_m_start_chi_v.clear();
+    trk_forward_fixed_m_middle_chi_v.clear();
+    trk_backward_fixed_m_middle_chi_v.clear();
+    trk_forward_fixed_m_end_chi_v.clear();
+    trk_backward_fixed_m_end_chi_v.clear();
 
     trk_proton_hypo_chi_v.clear();
     trk_proton_hypo_fit_chi_v.clear();
@@ -699,6 +780,40 @@ namespace llcv {
     fitval = par[0]*TMath::Power(x[0],-0.37);
     return fitval;
   }
+
+  float SelTrackDir::RChi2WithFixedFit(const std::vector<float>& range_v,
+				       const std::vector<float>& obs_v,
+				       size_t start,
+				       size_t end,
+				       float A,
+				       float d) {
+
+    //rchi2 -- reduced chi2
+
+    float chi2 = 0.0;
+
+    Double_t range[1];
+    Double_t par[2];
+    par[0] = (Double_t) A;
+    par[1] = (Double_t) d;
+
+    assert(start <= end);
+    assert(end   <  range_v.size());
+
+    for(size_t id=start; id<end; ++id) {
+      range[0] = (Double_t) range_v[id];
+      float est = ftf_float_model(range,par);
+      float local_chi2 = obs_v[id] - est;
+      local_chi2 *= local_chi2;
+      local_chi2 /= est;
+      chi2 += local_chi2;
+    }
+
+    chi2 /= ((float) (end-start));
+    
+    return chi2;
+  }
+
 
   float SelTrackDir::ProtonPIDChi2(const std::vector<float>& obs_v, const std::vector<float>& rr_v) {
     float chi2 = 0.0;
