@@ -12,6 +12,7 @@
 #include "DataFormat/cluster.h"
 #include "DataFormat/hit.h"
 #include "DataFormat/opflash.h"
+#include "DataFormat/opdetwaveform.h"
 
 //lcv
 #include "DataFormat/PGraph.h"
@@ -41,6 +42,7 @@ namespace llcv {
     std::vector<const larlite::cluster*>  _cluster_v;
     std::vector<const larlite::hit*> _hit_v;
     std::vector<const larlite::opflash*> _opflash_v;
+    std::vector<const larlite::opdetwaveform*> _opdigit_v;
   
     // larcv
     const larcv::PGraph* _pgraph;
@@ -50,22 +52,22 @@ namespace llcv {
     std::vector<std::vector<size_t> > _ass_shower_to_cluster_vv;
     std::vector<std::vector<size_t> > _ass_cluster_to_hit_vv;
 
-
   public:
+
     // larlite
     const larlite::vertex* Vertex() const { return _vertex; }
 
-    const std::vector<const larlite::shower*  >& Showers()  const { return _shower_v; }
-    const std::vector<const larlite::track*   >& Tracks()   const { return _track_v;  }
-    const std::vector<const larlite::opflash* >& Flashes()  const { return _opflash_v;}
-    const std::vector<const larlite::cluster* >& Clusters() const { return _cluster_v;}
-    const std::vector<const larlite::hit*     >& Hits()     const { return _hit_v;    }
+    const std::vector<const larlite::shower*       >& Showers()  const { return _shower_v;  }
+    const std::vector<const larlite::track*        >& Tracks()   const { return _track_v;   }
+    const std::vector<const larlite::opflash*      >& Flashes()  const { return _opflash_v; }
+    const std::vector<const larlite::cluster*      >& Clusters() const { return _cluster_v; }
+    const std::vector<const larlite::hit*          >& Hits()     const { return _hit_v;     }
+    const std::vector<const larlite::opdetwaveform*>& Digits()   const { return _opdigit_v; }
 
     //larcv
     const larcv::PGraph* PGraph() const { return _pgraph; }
 
     const std::vector<std::vector<larcv::Pixel2DCluster> >& Particles() const { return _pcluster_vv; }
-    
 
   };
 

@@ -196,6 +196,18 @@ namespace llcv {
     return id;
   }
 
+  size_t InterDriver::AttachOpDigit(size_t vtxid, const larlite::opdetwaveform* opdigit) {
+    size_t id = kINVALID_SIZE;
+
+    if (vtxid>=_data_mgr_v.size()) 
+      throw llcv_err("Requested vtxid is out of range");
+
+    id = _data_mgr_v[vtxid]._opdigit_v.size();
+    _data_mgr_v[vtxid]._opdigit_v.resize(id+1);
+    _data_mgr_v[vtxid]._opdigit_v[id] = opdigit;
+    return id;
+  }
+
   size_t InterDriver::AttachParticles(size_t vtxid,const larcv::PGraph* pgraph, const larcv::EventPixel2D* ev_pix) {
     size_t id = kINVALID_SIZE;
 

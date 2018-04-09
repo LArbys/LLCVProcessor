@@ -16,7 +16,10 @@ namespace llcv {
     larcv::PSet genflash_pset = pset.get<larcv::PSet>("GeneralFlashMatchAlgo");
     larlitecv::GeneralFlashMatchAlgoConfig genflash_cfg = larlitecv::GeneralFlashMatchAlgoConfig::MakeConfigFromPSet( genflash_pset );
     genflashmatch = new larlitecv::GeneralFlashMatchAlgo( genflash_cfg );
-    shower_correction_factor = pset.get<float>("ShowerCorrectionFactor",50.0);
+    shower_correction_factor = pset.get<float>("ShowerCorrectionFactor",1.0);
+    isMC = pset.get<bool>("IsMC");
+    fmax_hit_radius = pset.get<float>("MaxHitRadius");
+    fSaveHistograms = pset.get<bool>("SaveFlashHistograms",false); // for debugging
     
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -25,250 +28,465 @@ namespace llcv {
     if(!_fout) throw llcv_err("No output file?");
 
     _fout->cd();
-    outtree = new TTree("ffmatch","Final Flash Match result");
+
+    outtree = new TTree("ffmatch","");
     AttachRSEV(outtree);
-    outtree->Branch("vtxpos",vtxpos,"vtxpos[3]/F");
-    outtree->Branch("chi2",&best_chi2,"chi2/F");
-    outtree->Branch("data_totpe",&best_data_totpe,"data_totpe/F");
-    outtree->Branch("hypo_totpe",&hypo_totpe,"hypo_totpe/F");
-    outtree->Branch("hypo_pe",hypo_pe,"hypo_pe[32]/F");
-    outtree->Branch("data_pe",data_pe,"data_pe[32]/F");
-    outtree->Branch("hypo_protonpe",hypo_protonpe,"hypo_protonpe[32]/F");
-    outtree->Branch("hypo_showerpe",hypo_showerpe,"hypo_showerpe[32]/F");
-    outtree->Branch("reco_nu_E", &reco_nu_E, "reco_nu_E/F");
-    outtree->Branch("reco_shower_E", &reco_shower_E, "reco_shower_E/F");
-    outtree->Branch("reco_proton_E", &reco_proton_E, "reco_proton_E/F");
-    outtree->Branch("true_nu_E", &true_nu_E, "true_nu_E/F");
-    outtree->Branch("true_shower_E", &true_shower_E, "true_shower_E/F");
-    outtree->Branch("true_proton_E", &true_proton_E, "true_proton_E/F");
 
-    outtree->Branch("valid", &valid, "valid/I");
-    outtree->Branch("scedr", &scedr, "scedr/F");
+    // rsev
+    outtree->Branch("vtxpos_x",&vtxpos_x,"vtxpos_x/F");
+    outtree->Branch("vtxpos_y",&vtxpos_y,"vtxpos_y/F");
+    outtree->Branch("vtxpos_z",&vtxpos_z,"vtxpos_z/F");
+
+    outtree->Branch("number_tracks",&number_tracks,"number_tracks/I");
+    outtree->Branch("number_showers",&number_showers,"number_showers/I");
+    
+    // data flash
+    outtree->Branch("ndata_flashes", &ndata_flashes, "ndata_flashes/I");
+    outtree->Branch("data_totpe_v", &data_totpe_v); // per flash
+    outtree->Branch("data_pe_vv", &data_pe_vv); // per flash per channel
+
+    // track and track ID
+    outtree->Branch("proton_muon_pair_id_vv",&proton_muon_pair_id_vv);
+    outtree->Branch("proton_muon_chi2_1mu1p_v",&proton_muon_chi2_1mu1p_v);
+    outtree->Branch("proton_muon_chi2_shape_1mu1p_v",&proton_muon_chi2_shape_1mu1p_v);
+    outtree->Branch("proton_muon_hypo_totpe_v",&proton_muon_hypo_totpe_v); // per pair
+    outtree->Branch("proton_muon_hypo_pe_vv",&proton_muon_hypo_pe_vv); // per pair per channel
+    outtree->Branch("proton_muon_best_data_flash_v",&proton_muon_best_data_flash_v); // per flash
+
+    outtree->Branch("muon_proton_pair_id_vv",&muon_proton_pair_id_vv);
+    outtree->Branch("muon_proton_chi2_1mu1p_v",&muon_proton_chi2_1mu1p_v);
+    outtree->Branch("muon_proton_chi2_shape_1mu1p_v",&muon_proton_chi2_shape_1mu1p_v);
+    outtree->Branch("muon_proton_hypo_totpe_v",&muon_proton_hypo_totpe_v); // per pair
+    outtree->Branch("muon_proton_hypo_pe_vv",&muon_proton_hypo_pe_vv); // per pair per channel
+    outtree->Branch("muon_proton_best_data_flash_v",&muon_proton_best_data_flash_v); // per flash
+
+    // track and shower ID
+    outtree->Branch("proton_shower_pair_vv",&proton_shower_pair_id_vv); // per pair it's a pair
+    outtree->Branch("proton_shower_chi2_1e1p_v",&proton_shower_chi2_1e1p_v); // per pair
+    outtree->Branch("proton_shower_chi2_shape_1e1p_v",&proton_shower_chi2_shape_1e1p_v);
+    outtree->Branch("proton_shower_hypo_totpe_v",&proton_shower_hypo_totpe_v); // per pair
+    outtree->Branch("proton_shower_hypo_pe_vv",&proton_shower_hypo_pe_vv); // per pair per channel
+    outtree->Branch("proton_shower_best_data_flash_v",&proton_shower_best_data_flash_v); // per flash
+    
   }
-
 
   double InterSelFlashMatch::Select() {
     LLCV_DEBUG() << "start" << std::endl;
     
-    scedr = Tree().Scalar<float>("locv_scedr");
+    ResetVertex();
     
-    // get the reconstructed proton energy (from selection)
-    auto pproton_energy = Tree().Scalar<float>("reco_LL_proton_energy");
-    if (pproton_energy < 0)  {
-      LLCV_INFO() << "No reconstructed proton energy" << std::endl;
-      valid = 0;
-      outtree->Fill();
-      return 0;
+    const larlite::vertex& vtx = *(Data().Vertex());
+
+    vtxpos_x = (float)vtx.X();
+    vtxpos_y = (float)vtx.Y();
+    vtxpos_z = (float)vtx.Z();
+
+    // GET DATA
+    // --------
+    // get hits
+    const auto& phit_v = Data().Hits();
+
+    std::vector< larlite::hit > hit_v;
+    hit_v.reserve(phit_v.size());
+    for (auto const& phit : phit_v ) hit_v.push_back(*phit);
+
+    std::vector<int> hitmask_v(hit_v.size(),1);
+    LLCV_DEBUG() << "number of hits: " << hit_v.size() << std::endl;
+    
+    LLCV_DEBUG() << "Number of showers: " << Data().Showers().size() << std::endl;
+    LLCV_DEBUG() << "Number of tracks: "  << Data().Tracks().size() << std::endl;    
+
+    // get shower
+    const auto& shr_v = Data().Showers();
+
+    // get tracks
+    const auto& trk_v = Data().Tracks();
+
+    number_tracks = (int)trk_v.size();
+    number_showers= (int)shr_v.size();
+
+    // this class will generated de/dx per 3d position along the track. will use to set MeV deposited at 3d pos.
+    std::vector<larlitecv::TrackHitSorter> dedxgen_v(trk_v.size());
+
+    for(int ithsort=0; ithsort<(int)trk_v.size(); ++ithsort) { 
+      const auto& lltrack = *(trk_v[ithsort]);
+      dedxgen_v[ithsort].buildSortedHitList(vtx, lltrack, hit_v, fmax_hit_radius, hitmask_v);
     }
 
+    // ok, we now have dedx 3d tracks for all tracks and shower
+    // we want to build 1mu1p and 1e1p hypothesis
 
-    // 
-    // adapated from taritree's code:
-    // https://goo.gl/8MboZe
     //
-
-
-    const auto& vtx = *(Data().Vertex());
-
-    vtxpos[0] = (float)vtx.X();
-    vtxpos[1] = (float)vtx.Y();
-    vtxpos[2] = (float)vtx.Z();
-
-    valid = 1;
-
-    reco_nu_E     = Tree().Scalar<float>("reco_LL_total_energy");
-    reco_shower_E = Tree().Scalar<float>("reco_LL_electron_energy");
-    reco_proton_E = Tree().Scalar<float>("reco_LL_proton_energy");
+    // track-track hypothesis
+    //
+    std::vector<flashana::QCluster_t> qcluster_proton_muon_v;
+    qcluster_proton_muon_v.reserve(trk_v.size()*2);
     
-    true_nu_E     = Tree().Scalar<float>("locv_energyInit");
-    true_shower_E = Tree().Scalar<float>("anashr1_mc_energy");
-    true_proton_E = Tree().Scalar<float>("locv_dep_sum_proton");
-    
-    // Light Yields
-    // proton: 19200
-    // electron: 20000
-    // muon: 24000
-    
-    flashana::QCluster_t qinteraction;
-    flashana::QCluster_t qshower;
-    flashana::QCluster_t qproton;
+    std::vector<flashana::QCluster_t> qcluster_muon_proton_v;
+    qcluster_muon_proton_v.reserve(trk_v.size()*2);
 
-    // get positions 
-    auto shrid = Tree().Scalar<int>("reco_LL_electron_id");
-    auto trkid = Tree().Scalar<int>("reco_LL_proton_id");
+    proton_muon_pair_id_vv.reserve(trk_v.size()*2);
+    muon_proton_pair_id_vv.reserve(trk_v.size()*2);
 
-    const larlite::track& lltrack = *(Data().Tracks().at(trkid));
-    const larlite::shower& shreco = *(Data().Showers().at(shrid));
+    static std::vector<int> pair_v(2,kINVALID_INT);
 
-    int nsteps;
-    float step; 
+    for(size_t trkid1=0; trkid1<trk_v.size(); ++trkid1) {
+      for(size_t trkid2=trkid1+1; trkid2<trk_v.size(); ++trkid2) {
+	flashana::QCluster_t qcluster_proton_muon = build1mu1pQCluster(trkid1, trkid2, dedxgen_v);
+	flashana::QCluster_t qcluster_muon_proton = build1mu1pQCluster(trkid2, trkid1, dedxgen_v);
 
-    // make proton qcluster
+	qcluster_proton_muon_v.emplace_back(std::move(qcluster_proton_muon));
+	qcluster_muon_proton_v.emplace_back(std::move(qcluster_muon_proton));
 
-    float numphotons_proton = 19200.0 * pproton_energy;
-    flashana::QPoint_t qptproton( vtx.X(), vtx.Y(), vtx.Z(), numphotons_proton );
-    qproton.push_back( qptproton );
-    LLCV_DEBUG() << "  proton: numphotons=" << numphotons_proton << std::endl;
-    
-    
-    // make shower qcluser: each point corresponds to the number of photons
-    float shower_energy = Tree().Scalar<float>("reco_LL_electron_energy");
-    float used_energy = 2.0*shower_energy; // correction factor for under-clustering
-    float used_length = used_energy/2.4; // MeV / (MeV/cm)
+	pair_v[0] = trkid1;
+	pair_v[1] = trkid2;
+	proton_muon_pair_id_vv.push_back(pair_v);
 
-    LLCV_DEBUG() << " shower: used energy=" << used_energy << " used length=" << used_length << std::endl;
-
-    float maxstepsize = 0.3;
-    nsteps = used_length/maxstepsize+1;
-    step = used_length/float(nsteps);
-    for (int istep=0; istep<=nsteps; istep++) {
-      double pos[3];
-      pos[0] = vtx.X() + (step*istep)*shreco.Direction().X();
-      pos[1] = vtx.Y() + (step*istep)*shreco.Direction().Y();
-      pos[2] = vtx.Z() + (step*istep)*shreco.Direction().Z();      
-      float numphotons = (shower_correction_factor*step)*20000;
-      flashana::QPoint_t qpt( pos[0], pos[1], pos[2], numphotons );
-      qinteraction.push_back( qpt );
-      qshower.push_back( qpt );
+	pair_v[0] = trkid2;
+	pair_v[1] = trkid1;
+	muon_proton_pair_id_vv.push_back(pair_v);
+      }
     }
 
+    std::vector<flashana::QCluster_t> qcluster_proton_shower_v;
+    qcluster_proton_shower_v.reserve(trk_v.size() + shr_v.size());
 
+    proton_shower_pair_id_vv.reserve(trk_v.size() + shr_v.size());
+
+    for(size_t trkid1=0; trkid1<trk_v.size(); ++trkid1) {
+      for(size_t shrid1=0; shrid1<shr_v.size(); ++shrid1) {
+	flashana::QCluster_t qcluster_proton_shower  = build1e1pQCluster(trkid1, vtx, *(shr_v[shrid1]), dedxgen_v);
+	qcluster_proton_shower_v.emplace_back(std::move(qcluster_proton_shower));
+	
+	pair_v[0] = trkid1;
+	pair_v[1] = shrid1;
+	proton_shower_pair_id_vv.push_back(pair_v);
+      }
+    }
+
+    // Get data flashes
     const auto& opflash_ptr_v = Data().Flashes();
+
     std::vector<larlite::opflash> ev_opflash;
-    ev_opflash.reserve(opflash_ptr_v.size());
+    ndata_flashes = (int)opflash_ptr_v.size();
+
+    ev_opflash.reserve(ndata_flashes);
     for(const auto& opflash_ptr : opflash_ptr_v)
       ev_opflash.emplace_back(*opflash_ptr);
 
-    std::vector<flashana::Flash_t> dataflash_v = genflashmatch->MakeDataFlashes( ev_opflash );
-    
-    // make flash hypothesis
-    flashana::Flash_t hypo        = genflashmatch->GenerateUnfittedFlashHypothesis( qinteraction );
-    flashana::Flash_t hypo_proton = genflashmatch->GenerateUnfittedFlashHypothesis( qproton );
-    flashana::Flash_t hypo_shower = genflashmatch->GenerateUnfittedFlashHypothesis( qshower );    
+    data_totpe_v.resize(ndata_flashes,0.0);
+    data_pe_vv.resize(ndata_flashes);
+    for(auto& v : data_pe_vv) v.resize(32,kINVALID_FLOAT);
 
-    // make flash hist
-    std::stringstream hname_hypo;
+    std::vector<flashana::Flash_t> dataflash_v = genflashmatch->MakeDataFlashes(ev_opflash);
 
-    auto run    = Tree().Scalar<int>("run");
-    auto subrun = Tree().Scalar<int>("subrun");
-    auto event  = Tree().Scalar<int>("event");
-
-    hname_hypo << "hflash_" << run << "_" << event << "_" << subrun << "_hypo";
-    std::stringstream hname_hypo_proton;
-    hname_hypo_proton << "hflash_" << run << "_" << event << "_" << subrun << "_hypoproton";
-    std::stringstream hname_hypo_shower;
-    hname_hypo_shower << "hflash_" << run << "_" << event << "_" << subrun << "_hyposhower";
-    
-    TH1D flashhist_hypo( hname_hypo.str().c_str(),"",32,0,32);
-    TH1D flashhist_hypo_proton( hname_hypo_proton.str().c_str(),"",32,0,32);
-    TH1D flashhist_hypo_shower( hname_hypo_shower.str().c_str(),"",32,0,32);        
-
-    //vic
-    flashhist_hypo.SetDirectory(_fout);
-    flashhist_hypo_proton.SetDirectory(_fout);
-    flashhist_hypo_shower.SetDirectory(_fout);
-    //vic
-
-    float maxpe_hypo = 0.;
-    float petot_hypo = 0.;
-    for (int i=0; i<32; i++){
-      flashhist_hypo.SetBinContent( i+1, hypo.pe_v[i] );
-      flashhist_hypo_proton.SetBinContent(i+1, hypo_proton.pe_v[i] );
-      flashhist_hypo_shower.SetBinContent(i+1, hypo_shower.pe_v[i] );      
-      if ( maxpe_hypo<hypo.pe_v[i] )
-	maxpe_hypo = hypo.pe_v[i];
-      petot_hypo += hypo.pe_v[i];
-    }// num of pmts
-
-    maxpe_hypo /= petot_hypo;
-    flashhist_hypo.Scale(1.0/petot_hypo);
-    flashhist_hypo_proton.Scale(1.0/petot_hypo);
-    flashhist_hypo_shower.Scale(1.0/petot_hypo);    
-    flashhist_hypo.SetLineColor(kRed);
-    flashhist_hypo_proton.SetLineColor(kCyan);
-    flashhist_hypo_shower.SetLineColor(kMagenta);    
-    
-    std::vector<TH1D*> flashhist_data_v;
-    std::vector<float> petot_data_v;    
-    float maxpe_data = 0.;
-    
-    for ( size_t i=0; i<ev_opflash.size(); i++) {
-      std::stringstream hname_data;
-      hname_data << "hflash_" << run << "_" << event << "_" << subrun << "_data" << i;
-      TH1D* flashhist_data = new TH1D( hname_data.str().c_str(),"",32,0,32);
-      flashhist_data->SetDirectory(_fout);
-      float datatot = 0.;
+    for(size_t idata=0; idata<dataflash_v.size(); ++idata) {
       for (int ipmt=0; ipmt<32; ipmt++) {
-	flashhist_data->SetBinContent(ipmt+1,dataflash_v[i].pe_v[ipmt]);
-	datatot += dataflash_v[i].pe_v[ipmt];
-	if ( dataflash_v[i].pe_v[ipmt]>maxpe_data )
-	  maxpe_data = dataflash_v[i].pe_v[ipmt];
-	flashhist_data->SetLineColor(kBlack);
-      }
-      flashhist_data->Scale( 1.0/datatot );
-      flashhist_data_v.push_back( flashhist_data );
-      maxpe_data /= datatot;
-      petot_data_v.push_back( datatot );
-    }// end of flashes
-
-    // calculate simple chi2
-    best_chi2 = -1;
-    best_data_totpe = -1;
-    int best_data = 0;
-    int idata = -1;
-    for ( auto& phist : flashhist_data_v ) {
-      idata++;
-      float chi2 = 0.;
-      for (int ipmt=0; ipmt<32; ipmt++) {
-	float pefrac_data = phist->GetBinContent(ipmt+1);
-	float pefrac_hypo = flashhist_hypo.GetBinContent(ipmt+1);
-
-	float pe_data = pefrac_data*petot_data_v[idata];
-	float pefrac_data_err = sqrt(pe_data)/petot_data_v[idata];
-
-	float diff = pefrac_hypo - pefrac_data;
-	
-	LLCV_DEBUG() << "[" << ipmt << "] diff=" << diff << " hypo=" << pefrac_hypo << " data=" << pefrac_data << std::endl;
-	
-	// i know this is all fubar
-	if ( pefrac_data_err>0 )
-	  chi2 += (diff*diff)/pefrac_data;
-	else if (pefrac_data_err==0.0 && pefrac_hypo>0){
-	  chi2 += (diff*diff)/pefrac_hypo;
-	}
-	
-      }
-      if ( best_chi2<0 || best_chi2>chi2 ) {
-	best_chi2 = chi2;
-	best_data_totpe = petot_data_v[idata];
-	best_data = idata;
+	data_pe_vv[idata][ipmt] = dataflash_v[idata].pe_v[ipmt];
+	data_totpe_v[idata] += dataflash_v[idata].pe_v[ipmt];
       }
     }
-
-
-    hypo_totpe = 0.0;
     
-    for (int ipmt=0; ipmt<32; ipmt++) {
-      data_pe[ipmt] = 0.0;
+    //
+    // make flash hypothesis for proton-muon pair
+    //
+    for(const auto& qcluster_1mu1p : qcluster_proton_muon_v) {
+      flashana::Flash_t hypo_1mu1p = genflashmatch->GenerateUnfittedFlashHypothesis(qcluster_1mu1p);
 
-      for(auto& phist : flashhist_data_v)
-	data_pe[ipmt] += phist->GetBinContent(ipmt+1);
+      proton_muon_chi2_1mu1p_v.resize(proton_muon_chi2_1mu1p_v.size()+1);
+      auto& proton_muon_chi2_1mu1p = proton_muon_chi2_1mu1p_v.back();
 
-      hypo_pe[ipmt]       = flashhist_hypo.GetBinContent(ipmt+1);
-      hypo_protonpe[ipmt] = flashhist_hypo_proton.GetBinContent(ipmt+1);
-      hypo_showerpe[ipmt] = flashhist_hypo_shower.GetBinContent(ipmt+1);
-      hypo_totpe += hypo_pe[ipmt];
+      proton_muon_chi2_shape_1mu1p_v.resize(proton_muon_chi2_shape_1mu1p_v.size()+1);
+      auto& proton_muon_chi2_shape_1mu1p = proton_muon_chi2_shape_1mu1p_v.back();
+
+      proton_muon_hypo_totpe_v.resize(proton_muon_hypo_totpe_v.size()+1);
+      auto& proton_muon_hypo_totpe = proton_muon_hypo_totpe_v.back();
+
+      proton_muon_hypo_pe_vv.resize(proton_muon_hypo_pe_vv.size()+1);
+      auto& proton_muon_hypo_pe_v = proton_muon_hypo_pe_vv.back();
+
+      proton_muon_best_data_flash_v.resize(proton_muon_best_data_flash_v.size()+1);
+      auto& proton_muon_best_data_flash = proton_muon_best_data_flash_v.back();
+
+      proton_muon_hypo_pe_v.resize(32);
+
+      FillChi2(dataflash_v,
+	       hypo_1mu1p,
+	       proton_muon_chi2_1mu1p,
+	       proton_muon_chi2_shape_1mu1p,
+	       proton_muon_hypo_totpe,
+	       proton_muon_hypo_pe_v,
+	       proton_muon_best_data_flash);
+    }
+    
+    //
+    // make flash hypothesis for muon-proton pair
+    //
+    for(const auto& qcluster_1mu1p : qcluster_muon_proton_v) {
+      flashana::Flash_t hypo_1mu1p = genflashmatch->GenerateUnfittedFlashHypothesis(qcluster_1mu1p);
+      
+      muon_proton_chi2_1mu1p_v.resize(muon_proton_chi2_1mu1p_v.size()+1);
+      auto& muon_proton_chi2_1mu1p = muon_proton_chi2_1mu1p_v.back();
+
+      muon_proton_chi2_shape_1mu1p_v.resize(muon_proton_chi2_shape_1mu1p_v.size()+1);
+      auto& muon_proton_chi2_shape_1mu1p = muon_proton_chi2_shape_1mu1p_v.back();
+
+      muon_proton_hypo_totpe_v.resize(muon_proton_hypo_totpe_v.size()+1);
+      auto& muon_proton_hypo_totpe = muon_proton_hypo_totpe_v.back();
+
+      muon_proton_hypo_pe_vv.resize(muon_proton_hypo_pe_vv.size()+1);
+      auto& muon_proton_hypo_pe_v = muon_proton_hypo_pe_vv.back();
+
+      muon_proton_best_data_flash_v.resize(muon_proton_best_data_flash_v.size()+1);
+      auto& muon_proton_best_data_flash = muon_proton_best_data_flash_v.back();
+
+      muon_proton_hypo_pe_v.resize(32);
+
+      FillChi2(dataflash_v,
+	       hypo_1mu1p,
+	       muon_proton_chi2_1mu1p,
+	       muon_proton_chi2_shape_1mu1p,
+	       muon_proton_hypo_totpe,
+	       muon_proton_hypo_pe_v,
+	       muon_proton_best_data_flash);
     }
 
-    for ( auto& phist : flashhist_data_v )
-      delete phist;
+    //
+    // make flash hypothesis for proton-shower pair
+    //
+    for(const auto& qcluster_1e1p : qcluster_proton_shower_v) {
+      flashana::Flash_t hypo_1e1p = genflashmatch->GenerateUnfittedFlashHypothesis(qcluster_1e1p);
 
-    flashhist_data_v.clear();
-    
+      proton_shower_chi2_1e1p_v.resize(proton_shower_chi2_1e1p_v.size()+1);
+      auto& proton_shower_chi2_1e1p = proton_shower_chi2_1e1p_v.back();
+
+      proton_shower_chi2_shape_1e1p_v.resize(proton_shower_chi2_shape_1e1p_v.size()+1);
+      auto& proton_shower_chi2_shape_1e1p = proton_shower_chi2_shape_1e1p_v.back();
+
+      proton_shower_hypo_totpe_v.resize(proton_shower_hypo_totpe_v.size()+1);
+      auto& proton_shower_hypo_totpe = proton_shower_hypo_totpe_v.back();
+
+      proton_shower_hypo_pe_vv.resize(proton_shower_hypo_pe_vv.size()+1);
+      auto& proton_shower_hypo_pe_v = proton_shower_hypo_pe_vv.back();
+      
+      proton_shower_best_data_flash_v.resize(proton_shower_best_data_flash_v.size()+1);
+      auto& proton_shower_best_data_flash = proton_shower_best_data_flash_v.back();
+
+      proton_shower_hypo_pe_v.resize(32);
+
+      FillChi2(dataflash_v,
+	       hypo_1e1p,
+	       proton_shower_chi2_1e1p,
+	       proton_shower_chi2_shape_1e1p,
+	       proton_shower_hypo_totpe,
+	       proton_shower_hypo_pe_v,
+	       proton_shower_best_data_flash);
+    }
+
     outtree->Fill();
     
     LLCV_DEBUG() << "end" << std::endl;
     return 1;
+  }
+
+  void InterSelFlashMatch::FillChi2(const std::vector<flashana::Flash_t>& dataflash_v,
+				    const flashana::Flash_t& hypo,
+				    float& best_chi2,
+				    float& best_chi2_shape,
+				    float& hypo_totpe,
+				    std::vector<float>& hypo_pe,
+				    int& data_flashidx) {
+    
+    float maxpe_hypo = -1.0*kINVALID_FLOAT;    
+    float petot_hypo = 0;
+
+    hypo_totpe = 0;
+
+    for (int ich=0; ich<32; ich++) {
+
+      // fill array
+      hypo_pe[ich] = hypo.pe_v[ich];
+    
+      if (hypo_pe[ich] < 1.0e-3) 
+	hypo_pe[ich] = 1.0e-3;
+    
+      // total
+      hypo_totpe += hypo_pe[ich];
+
+      // max
+      if (maxpe_hypo < hypo.pe_v[ich])
+
+	maxpe_hypo = hypo.pe_v[ich];
+      
+    }
+    maxpe_hypo /= petot_hypo;
+    
+    best_chi2 = -1*kINVALID_FLOAT; 
+
+    // record which data flash best matched
+    data_flashidx = -1;
+
+    for (size_t idata=0; idata<dataflash_v.size(); idata++) {
+
+      float chi2 = 0.;
+
+      float totpe_data = 0.;
+
+      for (int ipmt=0; ipmt<32; ipmt++)
+	totpe_data += dataflash_v[idata].pe_v[ipmt];
+      
+      for (int ipmt=0; ipmt<32; ipmt++) {
+
+	float pefrac_data = dataflash_v[idata].pe_v[ipmt] / totpe_data;
+	float pefrac_hypo = hypo_pe[ipmt] / hypo_totpe;
+
+	//float pe_data = pefrac_data * totpe_data;
+	//float pefrac_data_err = std::sqrt(pe_data)/pe_data;
+
+	float diff = pefrac_hypo - pefrac_data;
+	
+	// if ( pefrac_data_err>0 ) {
+	//  chi2 += (diff*diff)/pefrac_data;
+	// }
+	// else if (pefrac_data_err==0.0 ){
+	//  if ( pefrac_hypo>0 ) {
+	//    chi2 += (diff*diff)/pefrac_hypo;
+	//  }
+	// }
+
+	chi2 += (diff*diff)/pefrac_hypo;
+	
+      } // end pmt
+
+      if ( (best_chi2<0) or (best_chi2>chi2) ) {
+	best_chi2 = chi2;
+	data_flashidx = idata;
+      }
+
+    }
+
+    best_chi2_shape = best_chi2;
+
+  }
+
+  flashana::QCluster_t InterSelFlashMatch::build1mu1pQCluster(const int protonid,
+							      const int muonid,
+							      std::vector<larlitecv::TrackHitSorter>& dedxgen_v) {
+    // we use the proton id to build proton hypothesis
+    // other tracks are assumed as muons
+
+    const float ly_proton   = 19200;
+    const float ly_muon     = 24000;
+    
+    flashana::QCluster_t qinteraction; // should reserve
+    qinteraction.reserve(1000);
+    
+    for ( int itrack=0; itrack<(int)dedxgen_v.size(); itrack++ ) {
+
+      float ly = kINVALID_FLOAT;
+      if (itrack == protonid) 
+	ly = ly_proton;
+      else if (itrack == muonid) 
+	ly = ly_muon;
+      else 
+	continue;
+
+      // we get the dedx track
+      std::vector<std::vector<float>> dedx_track_per_plane(3);
+      dedxgen_v[itrack].getPathBinneddEdx(0.5,0.5,dedx_track_per_plane);
+
+      // todo: use v plane if y plane missing too many pieces
+      const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ(2); 
+      LLCV_DEBUG() << "1mu1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+      
+      for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
+	if ( ipt>=(int)bincenter_xyz.size() ) continue;
+	
+	float dedx = dedx_track_per_plane[2].at(ipt);
+
+        if ( dedx<1.0e-2 )
+ 	  dedx = 2.07; // MeV/cm
+
+
+	const std::vector<float>& edep_pos = bincenter_xyz[ipt];
+	if ( edep_pos.size()==3 ) {
+	  float numphotons = dedx*(2*0.5)*ly;
+	  LLCV_DEBUG() << "1mu1p-track: (" << edep_pos[0] << "," << edep_pos[1] << "," << edep_pos[2] << ")" 
+		       << " numphotons=" << numphotons << " dedx=" << dedx << std::endl;
+	  flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
+	  qinteraction.emplace_back( std::move(qpt) );
+	} // end edep_pos.size
+      } // end dedx_track_per_plane[2]
+    } // end track loop
+
+    return qinteraction;
+  }
+
+  flashana::QCluster_t InterSelFlashMatch::build1e1pQCluster(const int protonid,
+							     const larlite::vertex& vtx, 
+							     const larlite::shower& shower, 
+							     std::vector<larlitecv::TrackHitSorter>& dedxgen_v) {
+    
+    // we use the proton id to build proton hypothesis. same with shrid.
+    // any leftover tracks are assumed as muons
+
+    const float ly_proton = 19200;
+    //const float ly_muon   = 24000;
+    const float ly_shower = 20000;
+    
+    flashana::QCluster_t qinteraction; // should reserve
+    qinteraction.reserve(1000);
+    size_t itrack = protonid;
+    
+    // we get the dedx track
+    std::vector< std::vector<float> > dedx_track_per_plane(3);
+    dedxgen_v[itrack].getPathBinneddEdx( 0.5, 0.5, dedx_track_per_plane );
+    // todo: use v plane if y plane missing too many pieces
+    
+    const std::vector< std::vector<float> >& bincenter_xyz = dedxgen_v[itrack].getBinCentersXYZ( 2 ); 
+    LLCV_DEBUG() << "1e1p-track: bincenters=" << bincenter_xyz.size() << " vs " << dedx_track_per_plane[2].size() << std::endl;
+    
+    float ly = ly_proton;
+    
+    for (int ipt=0; ipt<(int)dedx_track_per_plane[2].size(); ipt++) {
+      if ( ipt>=(int)bincenter_xyz.size() ) continue;
+      float dedx = dedx_track_per_plane[2].at(ipt);
+      const std::vector<float>& edep_pos = bincenter_xyz[ipt];
+      if ( edep_pos.size()==3 ) {
+	float numphotons = dedx*(2*0.5)*ly;
+	flashana::QPoint_t qpt( edep_pos[0], edep_pos[1], edep_pos[2], numphotons );
+	LLCV_DEBUG() << "1e1p-track: (" << edep_pos[0] << "," << edep_pos[1] << "," << edep_pos[2] << ") numphotons=" << numphotons << std::endl;
+	qinteraction.emplace_back( std::move(qpt) );
+      }
+    }
+    
+    //make shower qcluser: each point corresponds to the number of photons
+    
+    float shower_energy = shower.Energy_v().at(2); 
+    if (shower_energy<=0) {
+      shower_energy = shower.Energy_v().at(0);
+      shower_energy+= shower.Energy_v().at(1);
+      shower_energy/=2.0;
+    }
+    float used_length = shower_energy/2.4; // MeV / (MeV/cm)
+    
+    LLCV_DEBUG() << " shower: shower energy=" << shower_energy << " used length=" << used_length << std::endl;
+    
+    float maxstepsize = 0.3;
+    int nsteps = used_length/maxstepsize+1;
+    float step = used_length/float(nsteps);
+    for (int istep=0; istep<=nsteps; istep++) {
+      double pos[3];
+      pos[0] = vtx.X() + (step*istep)*shower.Direction().X();
+      pos[1] = vtx.Y() + (step*istep)*shower.Direction().Y();
+      pos[2] = vtx.Z() + (step*istep)*shower.Direction().Z();      
+      float numphotons = (shower_correction_factor*step)*ly_shower;
+      flashana::QPoint_t qpt( pos[0], pos[1], pos[2], numphotons );
+      LLCV_DEBUG() << "1e1p-shower: (" << pos[0] << "," << pos[1] << "," << pos[2] << ") numphotons=" << numphotons << std::endl;
+      qinteraction.push_back( qpt );
+    }
+    
+    return qinteraction;
   }
   
   void InterSelFlashMatch::Finalize() {
@@ -278,6 +496,45 @@ namespace llcv {
     outtree->Write();
 
     LLCV_DEBUG() << "end" << std::endl;
+  }
+
+  void InterSelFlashMatch::ResetVertex() {
+    
+    vtxpos_x = kINVALID_FLOAT;
+    vtxpos_y = kINVALID_FLOAT;
+    vtxpos_z = kINVALID_FLOAT;
+
+    number_tracks = -1*kINVALID_INT;
+    number_showers= -1*kINVALID_INT;
+    
+    // data flash
+    ndata_flashes = -1.0*kINVALID_INT;
+    data_totpe_v.clear();
+    data_pe_vv.clear();
+
+    // track and track ID
+    proton_muon_pair_id_vv.clear();
+    proton_muon_chi2_1mu1p_v.clear();
+    proton_muon_chi2_shape_1mu1p_v.clear();
+    proton_muon_hypo_totpe_v.clear();
+    proton_muon_hypo_pe_vv.clear();
+    proton_muon_best_data_flash_v.clear();
+
+    muon_proton_pair_id_vv.clear();
+    muon_proton_chi2_1mu1p_v.clear();
+    muon_proton_chi2_shape_1mu1p_v.clear();
+    muon_proton_hypo_totpe_v.clear();
+    muon_proton_hypo_pe_vv.clear();
+    muon_proton_best_data_flash_v.clear();
+
+    // track and shower ID
+    proton_shower_pair_id_vv.clear();
+    proton_shower_chi2_1e1p_v.clear();
+    proton_shower_chi2_shape_1e1p_v.clear();
+    proton_shower_hypo_totpe_v.clear();
+    proton_shower_hypo_pe_vv.clear();
+    proton_shower_best_data_flash_v.clear();
+
   }
 
 }

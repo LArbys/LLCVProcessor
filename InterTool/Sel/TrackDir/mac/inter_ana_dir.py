@@ -9,7 +9,7 @@ if len(sys.argv) != 9:
     print "SHR_FILE   = str(sys.argv[4])"
     print "TRK_FILE   = str(sys.argv[5])"
     print "INTER_FILE = str(sys.argv[6])"
-    print "IS_MC      = int(str(sys.argv[7]))"
+    print "IS_MC      = int(sys.argv[7])"
     print "OUT_DIR    = str(sys.argv[8])"
     print
     print
@@ -30,49 +30,36 @@ from ROOT import llcv
 
 BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
+print "Base path at: ",BASE_PATH
 sys.path.insert(0,BASE_PATH)
 
-TOP_DIR = os.environ['LARLITECV_BASEDIR']
-TOP_DIR = os.path.join(TOP_DIR,"app","LLCVProcessor","InterTool")
-sys.path.insert(0,os.path.join(TOP_DIR,"Sel"))
-
-from lib.ssnet_modules import attach_ssnet
+#from lib.ssnet_modules import attach_ssnet
 
 proc = llcv.Processor()
-
-# attach ssnet
-# attach_ssnet(proc)
 
 # intermodule
 imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-FOUT = "cosmic_ana_%d.root"
 
-num = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-FOUT = FOUT % num
+#NUM = 1
+NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
+driver.SetOutputFilename("track_dir_ana_%d.root" % NUM);
 
-driver.SetOutputFilename(FOUT)
-
-# if len(INTER_FILE) != 0:
-#     driver.AttachInterFile(INTER_FILE,"vertex_tree")
-
-selection = llcv.SelCosmicID()
+selection = llcv.SelTrackDir()
+selection.SetIsMC(IS_MC);
 driver.AddSelection(selection);
 
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"inter_cosmic.cfg"))
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "cosmic_trash.root"),"larcv")
+proc.configure(os.path.join(BASE_PATH,"inter_dir.cfg"))
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
-
-# if len(FLASH_FILE) != 0:
-#     proc.add_ll_input_file(FLASH_FILE)
-
+#proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
 

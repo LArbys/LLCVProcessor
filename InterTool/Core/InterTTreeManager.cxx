@@ -52,7 +52,12 @@ namespace llcv {
       return true;
     }
 
-    _centry = _rsev_m.at(rsev);
+    auto it_rsev = _rsev_m.find(rsev);
+    if ( it_rsev==_rsev_m.end() ) {
+      throw llcv_err("Could not find RSEV in the inter file");
+    }
+
+    _centry = (*it_rsev).second;
 
     if(_centry>=(size_t)_nentries) 
       throw llcv_err("Out of range centry");

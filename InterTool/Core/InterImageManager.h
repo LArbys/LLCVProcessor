@@ -21,11 +21,17 @@
 namespace llcv {
 
   class InterModule;
+  class InterMichel;
+  class InterPMT;
+
   class InterDriver;
 
   class InterImageManager : public llcv_base {
     
     friend class InterModule;
+    friend class InterMichel;
+    friend class InterPMT;
+
     friend class InterDriver;
 
   public:
@@ -42,6 +48,9 @@ namespace llcv {
     template <class T>
       std::vector<T*> Image(llcv::InterImageType iitype, int cropx, int cropy);
 
+    template <class T>
+      std::vector<T*> RawImage(llcv::InterImageType iitype );
+    
   private:
 
     std::string _name;

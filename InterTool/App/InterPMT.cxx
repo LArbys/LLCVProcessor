@@ -1,28 +1,28 @@
-#ifndef __INTERMICHEL_CXX__
-#define __INTERMICHEL_CXX__
+#ifndef __INTERPMT_CXX__
+#define __INTERPMT_CXX__
 
-#include "InterMichel.h"
+#include "InterPMT.h"
 
 // ll
-#include "DataFormat/hit.h"
+#include "DataFormat/vertex.h"
+#include "DataFormat/opdetwaveform.h"
 
 namespace llcv {
 
-  void InterMichel::configure(const larcv::PSet& cfg) {
+  void InterPMT::configure(const larcv::PSet& cfg) {
     LLCV_DEBUG() << "start" << std::endl;
 
     _adc_img_prod = cfg.get<std::string>("ADCImageProducer");
     _trk_img_prod = cfg.get<std::string>("TrackImageProducer");
     _shr_img_prod = cfg.get<std::string>("ShowerImageProducer");
 
-    _hit_prod      = cfg.get<std::string>("HitProducer");
-    // _opflash_prod  = cfg.get<std::string>("OpFlashProducer");
+    _track_vertex_prod   = cfg.get<std::string>("TrackVertexProducer");
+    _opdigit_prod  = cfg.get<std::string>("OpDigitProducer","saturation");
 
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
     LLCV_DEBUG() << "shr_img_prod........." << _shr_img_prod << std::endl;
-    LLCV_DEBUG() << "hit_prod............." << _hit_prod     << std::endl;
-    // LLCV_DEBUG() << "opflash_prod........." << _opflash_prod << std::endl;
+    LLCV_DEBUG() << "opdigit_prod............." << _opdigit_prod     << std::endl;
     
     _epsilon = cfg.get<float>("EPS",1e-5);
 
@@ -36,13 +36,13 @@ namespace llcv {
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  void InterMichel::initialize() {
+  void InterPMT::initialize() {
     LLCV_DEBUG() << "start" << std::endl;
     _driver.Initialize();
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  bool InterMichel::process(larcv::IOManager& mgr, larlite::storage_manager& sto) {
+  bool InterPMT::process(larcv::IOManager& mgr, larlite::storage_manager& sto) {
     LLCV_DEBUG() << "start" << std::endl;
     LLCV_DEBUG() << "@sto (r,s,e,e)=(" 
 		 << sto.run_id()    << "," 
@@ -87,17 +87,28 @@ namespace llcv {
     //
     // larlite data products
     //
+    larlite::event_vertex* ev_track_vertex = nullptr;
+    if(_track_vertex_prod.empty()) 
+      throw llcv_err("Empty track vertex producer specified");
+      
+    ev_track_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_track_vertex_prod);
 
-    larlite::event_hit* ev_hit = nullptr;
-    if(!_hit_prod.empty()) 
-      ev_hit = (larlite::event_hit*)sto.get_data(larlite::data::kHit,_hit_prod);
+
+
+    larlite::event_opdetwaveform* ev_opdigit = nullptr;
+    if(!_opdigit_prod.empty()) 
+      ev_opdigit = (larlite::event_opdetwaveform*)sto.get_data(larlite::data::kOpDetWaveform,_opdigit_prod);
     
     //
     // configure the driver
     //
-    auto id = _driver.AttachVertex(nullptr);
-    for(const auto& hit : (*ev_hit))
-      _driver.AttachHit(id,&hit);
+    size_t num_vertex = ev_track_vertex->size();
+    for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+      const auto track_vertex_ptr = &((*ev_track_vertex)[vtxid]);
+      auto vid  = _driver.AttachVertex(track_vertex_ptr);
+      for(const auto& opdigit : (*ev_opdigit))
+	_driver.AttachOpDigit(vid,&opdigit);
+    }
     
     _driver.Process();
     _driver.Reset();
@@ -106,7 +117,7 @@ namespace llcv {
     return true;
   }
   
-  void InterMichel::finalize() {
+  void InterPMT::finalize() {
     LLCV_DEBUG() << "start" << std::endl;
     _driver.Finalize();
     LLCV_DEBUG() << "end" << std::endl;

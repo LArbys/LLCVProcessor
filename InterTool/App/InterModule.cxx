@@ -31,8 +31,10 @@ namespace llcv {
 
     _track_vertex_prod  = cfg.get<std::string>("TrackVertexProducer");
     _shower_vertex_prod = cfg.get<std::string>("ShowerVertexProducer");
+    
     _shower_shower_prod = cfg.get<std::string>("ShowerShowerProducer");
     _opflash_prod       = cfg.get<std::string>("OpFlashProducer");
+    _rawhit_prod        = cfg.get<std::string>("HitProducer","");
 
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
@@ -42,6 +44,7 @@ namespace llcv {
     LLCV_DEBUG() << "track_vertex_prod... " << _track_vertex_prod << std::endl;
     LLCV_DEBUG() << "shower_vertex_prod.. " << _shower_vertex_prod << std::endl;
     LLCV_DEBUG() << "opflash_prod........." << _opflash_prod << std::endl;
+    LLCV_DEBUG() << "rawhit_prod.........." << _rawhit_prod << std::endl;
     
     _epsilon = cfg.get<float>("EPS",1e-5);
 
@@ -120,7 +123,6 @@ namespace llcv {
     if(!_track_vertex_prod.empty())
       ev_track_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_track_vertex_prod);
 
-
     larlite::event_vertex* ev_shower_vertex = nullptr;
     if(!_shower_vertex_prod.empty())
       ev_shower_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,_shower_vertex_prod);
@@ -128,36 +130,51 @@ namespace llcv {
     larlite::event_opflash* ev_opflash = nullptr;
     if(!_opflash_prod.empty()) 
       ev_opflash = (larlite::event_opflash*)sto.get_data(larlite::data::kOpFlash,_opflash_prod);
+
+    larlite::event_hit* ev_allhits = nullptr;
+    if (!_rawhit_prod.empty())
+      ev_allhits = (larlite::event_hit*)sto.get_data(larlite::data::kHit,_rawhit_prod);
     
     //
     // configure the driver
     //
 
-    auto npgraph_vertex= ev_pgraph->PGraphArray().size();
-
-    size_t ntrack_vertex = kINVALID_SIZE;
+    // vertices have to come from somewhere
+    size_t npgraph_vertex = ev_pgraph->PGraphArray().size();
+    size_t num_vertex     = npgraph_vertex;
+    size_t ntrack_vertex  = kINVALID_SIZE;
     size_t nshower_vertex = kINVALID_SIZE;
 
     if (ev_track_vertex) {
       ntrack_vertex = ev_track_vertex->size();
+      num_vertex = ntrack_vertex;
       assert(ntrack_vertex == npgraph_vertex);
     }
     
     if (ev_shower_vertex) {
       nshower_vertex = ev_shower_vertex->size();
+      num_vertex = nshower_vertex;      
       assert(nshower_vertex == npgraph_vertex);
     }
-    
-    if (ev_track_vertex && ev_shower_vertex) {
+
+    // check self-consistency
+    if (ev_track_vertex && ev_shower_vertex)
       assert(ntrack_vertex == nshower_vertex);
-    }
     
-    if (!npgraph_vertex) {
+    if ( ev_pgraph && ev_track_vertex )
+      assert(ntrack_vertex == npgraph_vertex);
+    
+    if ( ev_pgraph && ev_shower_vertex )
+      assert(nshower_vertex == npgraph_vertex);
+
+    LLCV_DEBUG() << "GOT VERTICES: pgraph=" << npgraph_vertex << " track=" << ntrack_vertex << " shower=" << nshower_vertex << std::endl;
+    
+    if (!num_vertex) {
       LLCV_DEBUG() << "NO VERTEX... return" << std::endl;
       return true;
     }
 
-    LLCV_DEBUG() << "GOT: " << npgraph_vertex << " vertices" << std::endl;
+    LLCV_DEBUG() << "NUM VERTICES: " << num_vertex << std::endl;
     
     // get tracks
     larlite::event_track *ev_track = nullptr;
@@ -189,7 +206,7 @@ namespace llcv {
     if (ev_cluster)
       ass_hit_vv = sto.find_one_ass(ev_cluster->id(), ev_hit, ev_cluster->name());
 
-    for(size_t vtxid=0; vtxid < npgraph_vertex; ++vtxid) {
+    for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
       
       LLCV_DEBUG() << "@vtxid=" << vtxid << std::endl;
 
@@ -218,7 +235,14 @@ namespace llcv {
       if (!ev_track_vertex and !ev_shower_vertex) {
 	auto vid  = _driver.AttachVertex(nullptr);
 	auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);	
+	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+
+	// attach all the hits	
+	if (ev_allhits!=nullptr) {
+	  for ( auto const& hit : *ev_allhits ) {
+	    auto hid = _driver.AttachHit(vid,&hit);
+	  }
+	}
 	continue;
       }
 
@@ -226,8 +250,10 @@ namespace llcv {
       
       size_t vid = kINVALID_SIZE;
       size_t pgid = kINVALID_SIZE;
-      
+      size_t pid = kINVALID_SIZE;
+
       bool attached_opflash = false;
+      bool attached_hits    = false;
 
       //
       // track exists
@@ -236,9 +262,9 @@ namespace llcv {
 	// attach vertex & pgraph
 	vid  = _driver.AttachVertex(track_vertex_ptr);
 	pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-
+	
 	// attach particle
-	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+	pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash) {
 	  for(const auto& opflash : *ev_opflash) {
@@ -253,7 +279,16 @@ namespace llcv {
 	  auto track_id = ass_track_v[trk_id];
 	  auto& track = ev_track->at(track_id);
 	  auto tid = _driver.AttachTrack(vid,&track);
-	} 
+	}
+
+	if (ev_allhits) {
+	  for ( auto const& hit : *ev_allhits ) {
+	    auto hid = _driver.AttachHit(vid,&hit);
+	  }
+	  attached_hits = true;
+	  LLCV_DEBUG() << "Attached hits" << std::endl;
+	}
+	
       } // end track
 
 
@@ -267,18 +302,27 @@ namespace llcv {
 	
 	if (pgid == kINVALID_SIZE)
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-
-	// attach particle
-	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+	  
+	if (pid == kINVALID_SIZE)
+	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
 	if(ev_opflash and !attached_opflash) {
-	  for(const auto& opflash : *ev_opflash)
+	  for(const auto& opflash : *ev_opflash) {
 	    _driver.AttachOpFlash(vid,&opflash);
+	  }
+	  attached_opflash = true;
 	}
 
+	if (ev_allhits and !attached_hits) {
+	  for ( auto const& hit : *ev_allhits ) {
+	    auto hid = _driver.AttachHit(vid,&hit);
+	  }
+	  attached_hits = true;
+	}
+	
 	// attach shower cluster hit
 	const auto& ass_pfpart_v = ass_pfpart_vv[vtxid];
-	for( size_t pfp_id=0; pfp_id < ass_pfpart_v.size(); ++ pfp_id) {
+	for( size_t pfp_id=0; pfp_id < ass_pfpart_v.size(); ++pfp_id) {
 	  const auto pfpart_id = ass_pfpart_v.at(pfp_id);
 
 	  // edge case
@@ -299,12 +343,12 @@ namespace llcv {
 
 	      // attach cluster
 	      auto cid = _driver.AttachCluster(vid,sid,&cluster);
-	    
+	      
 	      const auto& ass_hit_v = ass_hit_vv.at(shower_id);
-	      for(size_t h_id=0; h_id < ass_hit_v.size(); ++ h_id) {
+	      for(size_t h_id=0; h_id < ass_hit_v.size() and !attached_hits; ++ h_id) {
 		const auto hit_id = ass_hit_v.at(h_id);
 		const auto& hit = ev_hit->at(hit_id);
-
+		
 		// attach hit
 		auto hid = _driver.AttachHit(vid,cid,&hit);
 	      } // end hit

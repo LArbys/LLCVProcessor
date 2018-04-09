@@ -20,10 +20,9 @@ namespace llcv {
     for(auto& iimg : *_iimg_v) 
       res_v.push_back(iimg.get<T>());
 
-    LLCV_DEBUG() << "end" << std::endl;     
+    LLCV_DEBUG() << "end" << std::endl;
     return res_v;
   }
-
 
 }
 

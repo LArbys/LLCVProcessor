@@ -227,7 +227,7 @@ namespace llcv {
   template std::vector<cv::Mat*> InterImageManager::Image<cv::Mat>(llcv::InterImageType iitype, int cropx, int cropy);
   template std::vector<larocv::ImageMeta*> InterImageManager::Image<larocv::ImageMeta>(llcv::InterImageType iitype, int cropx, int cropy);
   template std::vector<larcv::Image2D*> InterImageManager::Image<larcv::Image2D>(llcv::InterImageType iitype, int cropx, int cropy);
-
+  
 }
 
 #endif
