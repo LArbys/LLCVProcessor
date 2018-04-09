@@ -106,7 +106,6 @@ namespace llcv {
 
     LLCV_DEBUG() << "FOUND: " << ass_track_vv.size() << " associations" << std::endl;
 
-
     std::vector<larcv::Image2D> pgraph_img_v;
 
     for(size_t img_idx=0; img_idx < meta_v.size(); ++img_idx) {
@@ -214,7 +213,9 @@ namespace llcv {
 	    const auto& pgraph_img = pgraph_img_v[plane];
 	    xpixel = kINVALID_DOUBLE;
 	    ypixel = kINVALID_DOUBLE;
+
 	    Project3D(meta_v[plane],pt.X(),pt.Y(),pt.Z(),0.0,plane,xpixel,ypixel);
+
 	    int xx = (int)(xpixel+0.5);
 	    int yy = (int)(ypixel+0.5);
 	    yy = pgraph_img.meta().rows() - yy - 1;
@@ -233,20 +234,24 @@ namespace llcv {
 	      continue;
 	    }
 
-	    float pixel_value = adc_img.pixel(yy,xx);
-	    if(pixel_value==0) continue;
-	    float pixel_type  = pgraph_img.pixel(yy,xx);
+	    // float pixel_value = adc_img.pixel(yy,xx);
+	    // if(pixel_value==0) continue;
+	    // float pixel_type  = pgraph_img.pixel(yy,xx);
+
+	    float pixel_type = TestPixelType(yy,xx,adc_img,pgraph_img);
+	    if (pixel_type < -1) continue;	    
 
 	    LLCV_DEBUG() << "(xx,yy) = " << "(" << yy << "," << xx << ")=" << pixel_type << std::endl;
 
 	    if (pixel_type<0) trk_type_v.back() += 1;
 	    else trk_type_v.at((size_t)pixel_type) += 1;
+
 	    _npx_v[aid] += 1;
 	  } // end plane
-	} // end 3D poin
+	} // end 3D point
 
-	auto res_iter = std::max_element(std::begin(trk_type_v), std::end(trk_type_v)-1);
-	auto res_loc  = std::distance(std::begin(trk_type_v), res_iter);
+	auto res_itr  = std::max_element(std::begin(trk_type_v), std::end(trk_type_v)-1);
+	auto res_loc  = std::distance(std::begin(trk_type_v), res_itr);
 	
 	_trk_type_v[aid] = (int)res_loc;
 	
@@ -281,6 +286,71 @@ namespace llcv {
     _npts_v.clear();
     _trk_type_v.clear();
     _trk_type_vv.clear();
+  }
+
+  float TrackPGraphMatch::TestPixelType(int row, int col, const larcv::Image2D& adc_img, const larcv::Image2D& pgraph_img) {
+
+    float res = -2;
+
+    int maxrow = pgraph_img.meta().rows() - 1;
+    int maxcol = pgraph_img.meta().cols() - 1;
+
+    static std::vector<int> pixel_type_v;
+    static std::vector<int> row_v(3);
+    static std::vector<int> col_v(3);
+
+    row_v[0] = row;
+    row_v[1] = row+1;
+    row_v[2] = row-1;
+    col_v[0] = col;
+    col_v[1] = col+1;
+    col_v[2] = col-1;
+
+    for(auto& v : row_v) { 
+      if(v<0)      v=0;
+      if(v>maxrow) v=maxrow;
+    }
+
+    for(auto& v : col_v) { 
+      if(v<0)      v=0;
+      if(v>maxcol) v=maxcol;
+    }
+    
+    pixel_type_v.clear();
+
+    bool valid_px = false;
+    
+    for(size_t rid=0; rid<3; ++rid) {
+      for(size_t cid=0; cid<3; ++cid) {
+	
+	if (adc_img.pixel(row_v[rid],col_v[cid]) == 0)
+	  continue;
+
+	int px = (int) pgraph_img.pixel(row_v[rid],col_v[cid]);
+
+	valid_px = true;
+
+	if (px < 0) continue;
+
+	if (px >= (int) pixel_type_v.size())
+	  pixel_type_v.resize(px+1,0);
+
+	pixel_type_v[px] += 1;
+
+      }
+    }
+
+    if (pixel_type_v.empty()) {
+      if (!valid_px) return -2;
+      else           return -1;
+    }
+    
+    static std::vector<int>::iterator res_iter;
+
+    res_iter = std::max_element(std::begin(pixel_type_v), std::end(pixel_type_v));
+    res      = (float) std::distance(std::begin(pixel_type_v), res_iter);
+    
+    return res;
   }
 
 }
