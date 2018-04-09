@@ -46,8 +46,6 @@ namespace llcv {
     std::vector<std::vector<int> > _trk_type_vv;
 
     void ClearVertex();
- 
-    float TestPixelType(int row, int col, const larcv::Image2D& adc_img, const larcv::Image2D& pgraph_img);
      
   };
 

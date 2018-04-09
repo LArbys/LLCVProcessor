@@ -16,6 +16,10 @@ namespace llcv {
 
 
   void mask_image(larcv::Image2D& target, const larcv::Image2D& ref);
+
+  float TestPixelType(int row, int col, 
+		      const larcv::Image2D& adc_img, const larcv::Image2D& pgraph_img,
+		      bool ignore_zero=false);
   
 }
 #endif

@@ -167,9 +167,14 @@ namespace llcv {
 	      continue;
 	    }
 
-	    float pixel_value = adc_img.pixel(yy,xx);
-	    if(pixel_value==0) continue;
-	    float pixel_type  = seg_img.pixel(yy,xx);
+	    // float pixel_value = adc_img.pixel(yy,xx);
+	    // if(pixel_value==0) continue;
+	    // float pixel_type  = seg_img.pixel(yy,xx);
+
+	    float pixel_type = TestPixelType(yy,xx,adc_img,seg_img,true);
+	    if (pixel_type < -1) continue;	    	    
+	    if (pixel_type < 0) pixel_type = 0;
+
 	    pt_type_v.at((size_t)pixel_type) += 1;
 	    _npx_v[aid] += 1;
 	    LLCV_DEBUG() << "p:" << plane << "(" << yy << "," << xx << ")=" << (size_t)pixel_type << std::endl;
