@@ -50,7 +50,7 @@ imod = llcv.InterModule()
 driver = imod.Driver()
 FOUT = "cosmic_ana_%d.root"
 
-num = int(VTX_FILE.split(".")[0].split("_")[-1])
+num = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
 FOUT = FOUT % num
 
 driver.SetOutputFilename(FOUT)
