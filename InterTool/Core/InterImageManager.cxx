@@ -38,7 +38,7 @@ namespace llcv {
     for(size_t plane=0; plane<3; ++plane) {
       auto& iimg  = (*_iimg_v).at(plane);
 
-      auto mat_meta = _larmkr.ExtractImage(iimg.img2d);
+      auto mat_meta = _larmkr.ExtractImage(iimg.img2d,plane);
       iimg.mat  = std::move(std::get<0>(mat_meta));
       iimg.meta = std::get<1>(mat_meta);
     }
@@ -136,7 +136,7 @@ namespace llcv {
       
       crop_iimg.img2d = img.crop(crop_meta);
 
-      auto mat_meta = _larmkr.ExtractImage(crop_iimg.img2d);
+      auto mat_meta = _larmkr.ExtractImage(crop_iimg.img2d,plane);
 
       crop_iimg.mat  = std::move(std::get<0>(mat_meta));
       crop_iimg.meta = std::get<1>(mat_meta);

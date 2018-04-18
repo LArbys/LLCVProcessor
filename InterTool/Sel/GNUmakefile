@@ -1,4 +1,4 @@
-SUBDIRS := Toy MichelFlash TrackDir MichelStudy SSNetStudy CosmicID Example FlashMatch
+SUBDIRS := Toy TrackScatter MichelFlash TrackDir MichelStudy SSNetStudy CosmicID Example FlashMatch
 
 .phony: all clean
 

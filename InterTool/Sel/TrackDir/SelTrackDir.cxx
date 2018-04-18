@@ -506,12 +506,12 @@ namespace llcv {
       auto& trk_forward_fixed_p_end_chi     = trk_forward_fixed_p_end_chi_v[ithsort];
       auto& trk_backward_fixed_p_end_chi     = trk_backward_fixed_p_end_chi_v[ithsort];
 
-      trk_forward_fixed_p_start_chi   = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
-      trk_backward_fixed_p_start_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
-      trk_forward_fixed_p_middle_chi  = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
-      trk_backward_fixed_p_middle_chi = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
-      trk_forward_fixed_p_end_chi     = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
-      trk_backward_fixed_p_end_chi    = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      trk_forward_fixed_p_start_chi   = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_start_chi  = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      trk_forward_fixed_p_middle_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_middle_chi = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
+      trk_forward_fixed_p_end_chi     = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_forward_fixed_p_A , trk_forward_fixed_p_d);
+      trk_backward_fixed_p_end_chi    = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_backward_fixed_p_A, trk_backward_fixed_p_d);
       
       auto& trk_forward_fixed_m_start_chi   = trk_forward_fixed_m_start_chi_v[ithsort];
       auto& trk_backward_fixed_m_start_chi  = trk_backward_fixed_m_start_chi_v[ithsort];
@@ -520,12 +520,12 @@ namespace llcv {
       auto& trk_forward_fixed_m_end_chi     = trk_forward_fixed_m_end_chi_v[ithsort];
       auto& trk_backward_fixed_m_end_chi    = trk_backward_fixed_m_end_chi_v[ithsort];
       
-      trk_forward_fixed_m_start_chi   = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
-      trk_backward_fixed_m_start_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
-      trk_forward_fixed_m_middle_chi  = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
-      trk_backward_fixed_m_middle_chi = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
-      trk_forward_fixed_m_end_chi     = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
-      trk_backward_fixed_m_end_chi    = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
+      trk_forward_fixed_m_start_chi   = RChi2WithFixedFit(range_v, tdedx_rev_v, s0, s1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_start_chi  = RChi2WithFixedFit(range_v, tdedx_v    , s0, s1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
+      trk_forward_fixed_m_middle_chi  = RChi2WithFixedFit(range_v, tdedx_rev_v, m0, m1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_middle_chi = RChi2WithFixedFit(range_v, tdedx_v    , m0, m1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
+      trk_forward_fixed_m_end_chi     = RChi2WithFixedFit(range_v, tdedx_rev_v, e0, e1, trk_forward_fixed_m_A , trk_forward_fixed_m_d);
+      trk_backward_fixed_m_end_chi    = RChi2WithFixedFit(range_v, tdedx_v    , e0, e1, trk_backward_fixed_m_A, trk_backward_fixed_m_d);
       
       //
       // calculate the chi2 w.r.t theoretical
