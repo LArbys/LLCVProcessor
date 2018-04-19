@@ -17,6 +17,7 @@ namespace llcv {
 
     if(_fout_fname.empty()) throw llcv_err("Must specify output filename");
     _fout = TFile::Open(_fout_fname.c_str(),"RECREATE"); 
+    _fout->cd();
 
     for(auto selptr : _sel_base_v) {
       selptr->_run    = &_run;
@@ -79,6 +80,8 @@ namespace llcv {
 
   void InterDriver::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
+
+    _fout->cd();
 
     for(auto selptr : _sel_base_v)
       selptr->Finalize();

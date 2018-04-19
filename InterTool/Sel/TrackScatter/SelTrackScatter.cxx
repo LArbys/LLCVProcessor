@@ -31,6 +31,8 @@ namespace llcv {
 				srdb_pset.get<int>("NHullEdgePoints"),
 				srdb_pset.get<int>("NAllowedBreaks"));
     
+    _DBSCAN.Configure(10,5);
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -39,10 +41,51 @@ namespace llcv {
 
     _outtree = new TTree("scatter","");
     AttachRSEV(_outtree);
+
     _outtree->Branch("track_x_vv", &_track_x_vv);
     _outtree->Branch("track_y_vv", &_track_y_vv);
     _outtree->Branch("track_z_vv", &_track_z_vv);
 
+    _outtree->Branch("shower_x_vv", &_shower_x_vv);
+    _outtree->Branch("shower_y_vv", &_shower_y_vv);
+    _outtree->Branch("shower_z_vv", &_shower_z_vv);
+
+    _outtree->Branch("shower_start_x_vv" , &_shower_start_x_vv);
+    _outtree->Branch("shower_start_y_vv" , &_shower_start_y_vv);
+    _outtree->Branch("shower_start_z_vv" , &_shower_start_z_vv);
+
+    _outtree->Branch("shower_center_x_vv", &_shower_center_x_vv);
+    _outtree->Branch("shower_center_y_vv", &_shower_center_y_vv);
+    _outtree->Branch("shower_center_z_vv", &_shower_center_z_vv);
+
+    _outtree->Branch("shower_end_x_vv"   , &_shower_end_x_vv);
+    _outtree->Branch("shower_end_y_vv"   , &_shower_end_y_vv);
+    _outtree->Branch("shower_end_z_vv"   , &_shower_end_z_vv);
+
+    _outtree->Branch("shower_edge1_x_vv"   , &_shower_edge1_x_vv);
+    _outtree->Branch("shower_edge1_y_vv"   , &_shower_edge1_y_vv);
+    _outtree->Branch("shower_edge1_z_vv"   , &_shower_edge1_z_vv);
+
+    _outtree->Branch("shower_edge2_x_vv"   , &_shower_edge2_x_vv);
+    _outtree->Branch("shower_edge2_y_vv"   , &_shower_edge2_y_vv);
+    _outtree->Branch("shower_edge2_z_vv"   , &_shower_edge2_z_vv);
+
+    _outtree->Branch("shower_dev_vv", &_shower_dev_vv);
+    _outtree->Branch("shower_cid_vv", &_shower_cid_vv);
+
+    _outtree->Branch("shower_length_v", &_shower_length_v);
+    _outtree->Branch("shower_width_v", &_shower_width_v);
+    _outtree->Branch("shower_width1_v", &_shower_width1_v);
+    _outtree->Branch("shower_width2_v", &_shower_width2_v);
+
+    _outtree->Branch("shower_theta_v", &_shower_theta_v);
+    _outtree->Branch("shower_phi_v", &_shower_phi_v);
+
+    _outtree->Branch("shower_opening_v", &_shower_opening_v);
+    _outtree->Branch("shower_opening1_v", &_shower_opening1_v);
+    _outtree->Branch("shower_opening2_v", &_shower_opening2_v);
+
+    
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -69,11 +112,12 @@ namespace llcv {
     auto mat_v  = Image().Image<cv::Mat>(kImageADC,_cropx,_cropy);
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
     auto img_v  = Image().Image<larcv::Image2D>(kImageADC,_cropx,_cropy);
+    auto dead_v = Image().Image<cv::Mat>(kImageDead,_cropx,_cropy);
 
     for(auto const& meta : meta_v)
       _PixelScan3D.SetPlaneInfo(*meta);
     
-    std::array<cv::Mat,3> white_mat_v;
+    //std::array<cv::Mat,3> white_mat_v;
     std::vector<cv::Mat> thresh_mat_v;
     std::vector<cv::Mat> mat3d_v;
     mat3d_v.reserve(3);
@@ -85,7 +129,7 @@ namespace llcv {
       auto img3d = As8UC3(img);
       thresh_mat_v.emplace_back(std::move(img));      
       mat3d_v.emplace_back(std::move(img3d));
-      white_mat_v[plane] = larocv::BlankImage(*mat);
+      // white_mat_v[plane] = larocv::BlankImage(*mat);
     }
     
 
@@ -172,15 +216,16 @@ namespace llcv {
       auto& ctor_v = ctor_vv[plane];
       auto& tass_vv= tass_vvv[plane];
 
-      ctor_v = FindAndMaskVertex(mat,vertex_ctor[plane]);
-      tass_vv= AssociateToTracks(ctor_v, track_ctor_vv, plane);
+      ctor_v  = FindAndMaskVertex(mat,vertex_ctor[plane]);
+      tass_vv = AssociateToTracks(ctor_v, track_ctor_vv, plane);
 
       auto& img3d = mat3d_v[plane];
       for(size_t cid=0; cid<ctor_v.size(); ++cid) {
-    	cv::Scalar color(std::rand() % 255,std::rand() % 255,std::rand() % 255);
-    	if (!ContainsTrack(tass_vv[cid])) continue;
-    	//cv::drawContours(img3d,ctor_v,cid,color);
+      	cv::Scalar color(std::rand() % 255,std::rand() % 255,std::rand() % 255);
+      	if (!ContainsTrack(tass_vv[cid])) continue;
+      	// cv::drawContours(img3d,ctor_v,cid,color);
       }
+
     }
 
 
@@ -195,22 +240,21 @@ namespace llcv {
   
     float _track_threshold = 0.5;
 
-
-
-    _track_x_vv.clear();
-    _track_y_vv.clear();
-    _track_z_vv.clear();
-
-    _track_x_vv.resize(track_v.size());
-    _track_y_vv.resize(track_v.size());
-    _track_z_vv.resize(track_v.size());
+    ResizeOutput(track_v.size());
 
     for(size_t tid=0; tid<track_v.size(); ++tid) {
 
-      auto track_x_v = _track_x_vv[tid];
-      auto track_y_v = _track_y_vv[tid];
-      auto track_z_v = _track_z_vv[tid];
-      
+      auto& track_x_v = _track_x_vv[tid];
+      auto& track_y_v = _track_y_vv[tid];
+      auto& track_z_v = _track_z_vv[tid];
+
+      for(size_t pid=0; pid< track_v[tid]->NumberTrajectoryPoints(); ++pid) {
+	const auto& pt = track_v[tid]->LocationAtPoint(pid);
+	track_x_v.push_back(pt.X());
+	track_y_v.push_back(pt.Y());
+	track_z_v.push_back(pt.Z());
+      }
+
       LLCV_DEBUG() << "@tid=" << tid << std::endl;
       
       std::array<cv::Mat,3> timg_v;
@@ -236,12 +280,12 @@ namespace llcv {
       }
       
       // estimate the track angle
-      auto theta_phi = TrackAngle(*Data().Tracks()[tid]);
-      auto track_len = TrackLength(*Data().Tracks()[tid]);
+      auto theta_phi = TrackAngle(*track_v[tid]);
+      auto track_len = TrackLength(*track_v[tid]);
 
       float pi8 = 3.14159 / 8.0;
       float pi4 = 3.14159 / 4.0;
-
+      
       float rad_min = 0.5;
       float rad_max = track_len + 3;
       float rad_step = 0.5;
@@ -258,24 +302,93 @@ namespace llcv {
 			       theta_min, theta_max,
 			       phi_min, phi_max);
       
-      //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d);
-      auto reg_v = _PixelScan3D.SphereScan3D(timg_v,vtx3d,2);
+      //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d,3);
+      auto reg_v = _PixelScan3D.SphereScan3D(timg_v,dead_v,vtx3d,3);
       
       LLCV_DEBUG() << "Returned: " << reg_v.size() << " locations" << std::endl;
 
-      for(const auto& reg : reg_v) {
 
-	track_x_v.push_back(reg.x);
-	track_y_v.push_back(reg.x);
-	track_z_v.push_back(reg.x);
+      if (!reg_v.empty()) {
+	LLCV_DEBUG() << "Objectify" << std::endl;
+	Object3D obj(vtx3d,reg_v);
+	LLCV_DEBUG() << "return" << std::endl;
 
-    	for(size_t plane=0; plane<3; ++plane) {
-    	  auto& mat3d = mat3d_v[plane];
-    	  int px_x = reg.vtx2d_v[plane].pt.x;
-    	  int px_y = reg.vtx2d_v[plane].pt.y;
-    	  if (px_x < 0) continue;
-    	  mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
-    	}
+	auto& shower_x_v = _shower_x_vv[tid];
+	auto& shower_y_v = _shower_y_vv[tid];
+	auto& shower_z_v = _shower_z_vv[tid];
+
+	auto& shower_start_x_v = _shower_start_x_vv[tid];
+	auto& shower_start_y_v = _shower_start_y_vv[tid];
+	auto& shower_start_z_v = _shower_start_z_vv[tid];
+
+	auto& shower_center_x_v = _shower_center_x_vv[tid];
+	auto& shower_center_y_v = _shower_center_y_vv[tid];
+	auto& shower_center_z_v = _shower_center_z_vv[tid];
+
+	auto& shower_end_x_v = _shower_end_x_vv[tid];
+	auto& shower_end_y_v = _shower_end_y_vv[tid];
+	auto& shower_end_z_v = _shower_end_z_vv[tid];
+
+	auto& shower_edge1_x_v = _shower_edge1_x_vv[tid];
+	auto& shower_edge1_y_v = _shower_edge1_y_vv[tid];
+	auto& shower_edge1_z_v = _shower_edge1_z_vv[tid];
+
+	auto& shower_edge2_x_v = _shower_edge2_x_vv[tid];
+	auto& shower_edge2_y_v = _shower_edge2_y_vv[tid];
+	auto& shower_edge2_z_v = _shower_edge2_z_vv[tid];
+
+	auto& shower_dev_v = _shower_dev_vv[tid];
+	auto& shower_cid_v = _shower_cid_vv[tid];
+
+	shower_dev_v = obj.PCADeviation();
+	shower_cid_v = Cluster(obj);
+
+	shower_start_x_v.push_back(obj.Start().x);
+	shower_start_y_v.push_back(obj.Start().y);
+	shower_start_z_v.push_back(obj.Start().z);
+
+	shower_center_x_v.push_back(obj.Center().x);
+	shower_center_y_v.push_back(obj.Center().y);
+	shower_center_z_v.push_back(obj.Center().z);
+
+	shower_end_x_v.push_back(obj.End().x);
+	shower_end_y_v.push_back(obj.End().y);
+	shower_end_z_v.push_back(obj.End().z);
+
+	shower_edge1_x_v.push_back(obj.Edge1().x);
+	shower_edge1_y_v.push_back(obj.Edge1().y);
+	shower_edge1_z_v.push_back(obj.Edge1().z);
+
+	shower_edge2_x_v.push_back(obj.Edge2().x);
+	shower_edge2_y_v.push_back(obj.Edge2().y);
+	shower_edge2_z_v.push_back(obj.Edge2().z);
+
+	_shower_length_v[tid] = obj.Length();
+	_shower_width_v[tid]  = obj.Width();
+	_shower_width1_v[tid] = obj.Width1();
+	_shower_width2_v[tid] = obj.Width2();
+      
+	_shower_theta_v[tid] = obj.Theta();
+	_shower_phi_v[tid]   = obj.Phi();
+      
+	_shower_opening_v[tid]  = obj.Opening();
+	_shower_opening1_v[tid] = obj.Opening1();
+	_shower_opening2_v[tid] = obj.Opening2();
+
+	for(const auto& reg : reg_v) {
+	
+	  shower_x_v.push_back(reg.x);
+	  shower_y_v.push_back(reg.y);
+	  shower_z_v.push_back(reg.z);
+
+	  for(size_t plane=0; plane<3; ++plane) {
+	    auto& mat3d = mat3d_v[plane];
+	    int px_x = reg.vtx2d_v[plane].pt.x;
+	    int px_y = reg.vtx2d_v[plane].pt.y;
+	    if (px_x < 0) continue;
+	    mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
+	  }
+	}
       }
 
       LLCV_DEBUG() << "done!" << std::endl;
@@ -465,8 +578,6 @@ namespace llcv {
     return res;
   }
 
-
-
   bool SelTrackScatter::ContainsTrack(const std::vector<size_t>& tin_v) {
     
     for(const auto tin : tin_v) {
@@ -492,49 +603,129 @@ namespace llcv {
   
   void SelTrackScatter::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
-    
+    _outtree->Write();
     LLCV_DEBUG() << "end" << std::endl;
   }
+
+  std::vector<int> SelTrackScatter::Cluster(const Object3D& obj) {
+    std::vector<int> res_v;
+    res_v.resize(obj.Points().size(),-1);
+    
+    static std::vector<Point> pts_v;
+    pts_v.clear();
+    pts_v.resize(obj.Points().size());
+    
+    for(size_t pid=0; pid<obj.Points().size(); ++pid) {
+      pts_v[pid].x = obj.Points()[pid].x;
+      pts_v[pid].y = obj.Points()[pid].y;
+      pts_v[pid].z = obj.Points()[pid].z;
+    }
+    
+    
+    _DBSCAN.Reset(pts_v);
+    _DBSCAN.run();
+
+    for(size_t pid=0; pid<obj.Points().size(); ++pid) 
+      res_v[pid] = _DBSCAN.Points()[pid].clusterID - 1;
+
+    return res_v;
+  }
+
+  void SelTrackScatter::ResizeOutput(size_t sz) {
+
+    _shower_x_vv.clear();
+    _shower_y_vv.clear();
+    _shower_z_vv.clear();
+    
+    _track_x_vv.clear();
+    _track_y_vv.clear();
+    _track_z_vv.clear();
+
+    _shower_start_x_vv.clear();
+    _shower_end_x_vv.clear();
+    _shower_center_x_vv.clear();
+
+    _shower_start_y_vv.clear();
+    _shower_end_y_vv.clear();
+    _shower_center_y_vv.clear();
+
+    _shower_start_z_vv.clear();
+    _shower_end_z_vv.clear();
+    _shower_center_z_vv.clear();
+
+    _shower_edge1_x_vv.clear();
+    _shower_edge1_y_vv.clear();
+    _shower_edge1_z_vv.clear();
+
+    _shower_edge2_x_vv.clear();
+    _shower_edge2_y_vv.clear();
+    _shower_edge2_z_vv.clear();
+
+    _shower_length_v.clear();
+    _shower_width_v.clear();
+    _shower_width1_v.clear();
+    _shower_width2_v.clear();
+
+    _shower_theta_v.clear();
+    _shower_phi_v.clear();
+
+    _shower_opening_v.clear();
+    _shower_opening1_v.clear();
+    _shower_opening2_v.clear();
+
+    _shower_dev_vv.clear();
+
+    _shower_cid_vv.clear();
+
+    _track_x_vv.resize(sz);
+    _track_y_vv.resize(sz);
+    _track_z_vv.resize(sz);
+
+    _shower_x_vv.resize(sz);
+    _shower_y_vv.resize(sz);
+    _shower_z_vv.resize(sz);
+
+    _shower_start_x_vv.resize(sz);
+    _shower_end_x_vv.resize(sz);
+    _shower_center_x_vv.resize(sz);
+
+    _shower_start_y_vv.resize(sz);
+    _shower_end_y_vv.resize(sz);
+    _shower_center_y_vv.resize(sz);
+
+    _shower_start_z_vv.resize(sz);
+    _shower_end_z_vv.resize(sz);
+    _shower_center_z_vv.resize(sz);
+
+    _shower_edge1_x_vv.resize(sz);
+    _shower_edge1_y_vv.resize(sz);
+    _shower_edge1_z_vv.resize(sz);
+
+    _shower_edge2_x_vv.resize(sz);
+    _shower_edge2_y_vv.resize(sz);
+    _shower_edge2_z_vv.resize(sz);
+
+    _shower_length_v.resize(sz);
+    _shower_width_v.resize(sz);
+    _shower_width1_v.resize(sz);
+    _shower_width2_v.resize(sz);
+
+    _shower_theta_v.resize(sz);
+    _shower_phi_v.resize(sz);
+
+    _shower_opening_v.resize(sz);
+    _shower_opening1_v.resize(sz);
+    _shower_opening2_v.resize(sz);
+
+    _shower_dev_vv.resize(sz);
+
+    _shower_cid_vv.resize(sz);
+
+  }
+
 
 }
 
 
 #endif
 
-
-    // std::array<cv::Mat,3> white_mat_v;
-    // std::vector<cv::Mat> mat3d_v;
-    // mat3d_v.reserve(3);
-    
-    // for(size_t plane=0; plane<3; ++plane) {
-    //   const auto mat = mat_v[plane];
-    //   auto white_img = larocv::BlankImage(*mat,255);
-    //   auto black_img = larocv::BlankImage(*mat,0);
-    //   auto img3d = As8UC3(black_img);
-    //   mat3d_v.emplace_back(std::move(img3d));
-    //   white_mat_v[plane] = white_img;
-    // }
-
-    // larocv::data::Vertex3D vtx3d;
-    // vtx3d.x = Data().Vertex()->X();
-    // vtx3d.y = Data().Vertex()->Y();
-    // vtx3d.z = Data().Vertex()->Z();    
-
-    // LLCV_DEBUG() << "Scanning Spheres" << std::endl;
-    // _PixelScan3D.Reconfigure(50,60,10,   // radius
-    // 			     3.14/2,3.14/2+1,    // theta
-    // 			     0,2*3.14); // phi
-
-    // auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d);
-    
-    // LLCV_DEBUG() << "Returned: " << reg_v.size() << " locations" << std::endl;
-    
-    // for(const auto& reg : reg_v) {
-    //   for(size_t plane=0; plane<3; ++plane) {
-    // 	auto& mat3d = mat3d_v[plane];
-    // 	int px_x = reg.vtx2d_v[plane].pt.x;
-    // 	int px_y = reg.vtx2d_v[plane].pt.y;
-    // 	if (px_x < 0) continue;
-    // 	mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
-    //   }
-    // }

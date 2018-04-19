@@ -10,7 +10,8 @@ namespace llcv {
     kImageADC = 1,
     kImageTrack = 2,
     kImageShower = 3,
-    kINTER_IMAGE_TYPE_MAX = 4
+    kImageDead = 4,
+    kINTER_IMAGE_TYPE_MAX = 5
   };
 
   enum InterSpecType {

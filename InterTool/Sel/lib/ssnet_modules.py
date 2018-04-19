@@ -6,13 +6,16 @@ def ChannelMax(plane):
     return lcv.ChannelMax(ROOT.std.string(name))
 
 def Combine():
-    return lcv.CombineImages("CombineImages")
+    name = "CombineImages"
+    return lcv.CombineImages(ROOT.std.string(name))
 
 def Mask(prefix=""):
-    return lcv.SegmentMask("%sSegment" % prefix)
+    name = "%sSegment" % prefix
+    return lcv.SegmentMask(ROOT.std.string(name))
 
 def Image(prefix=""):
-    return lcv.MaskImage("%sImage" % prefix)
+    name = "%sImage" % prefix
+    return lcv.MaskImage(ROOT.std.string(Name))
 
 
 def attach_ssnet(proc):

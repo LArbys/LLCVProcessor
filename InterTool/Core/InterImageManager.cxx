@@ -21,6 +21,9 @@ namespace llcv {
     case kImageShower:
       _iimg_v = &(_inter_shr_m[cpair]);
       break;
+    case kImageDead:
+      _iimg_v = &(_inter_dead_m[cpair]);
+      break;
     default: 
       throw llcv_err("invalid InterImageType requested");
     }
@@ -56,7 +59,13 @@ namespace llcv {
     
     SetIIT(iitype,-1,-1);
     const auto& orig_iimg_v = (*_iimg_v);
-    assert (orig_iimg_v.size()==3);
+    if (orig_iimg_v.size()!=3) {
+      LLCV_CRITICAL() << "@iitype=" << (int)iitype 
+		      << " orig_iimg_v sz=" << orig_iimg_v.size() << std::endl;
+      throw llcv_err("die");
+    }
+
+
 
     SetIIT(iitype,cropx,cropy);
     _iimg_v->resize(3);
@@ -172,6 +181,7 @@ namespace llcv {
     _inter_adc_m.clear();
     _inter_shr_m.clear();
     _inter_trk_m.clear();
+    _inter_dead_m.clear();
 
     _vtx_pixel_v.clear();
     _vtx_pixel_v.resize(3);
@@ -220,6 +230,12 @@ namespace llcv {
       auto trk_iter = std::begin(_inter_trk_m);
       std::advance(trk_iter, 1);
       _inter_trk_m.erase(trk_iter,std::end(_inter_trk_m));
+    }
+
+    if (_inter_dead_m.size()>1) {
+      auto dead_iter = std::begin(_inter_dead_m);
+      std::advance(dead_iter,1);
+      _inter_dead_m.erase(dead_iter,std::end(_inter_dead_m));
     }
       
   }

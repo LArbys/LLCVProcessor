@@ -27,7 +27,8 @@ namespace llcv {
     std::string _adc_img_prod;
     std::string _trk_img_prod;
     std::string _shr_img_prod;
-    
+    std::string _dead_img_prod;
+
     std::string _pgraph_prod;
     std::string _pixel_prod;
 

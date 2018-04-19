@@ -33,7 +33,7 @@ namespace llcv {
     friend class InterPMT;
 
     friend class InterDriver;
-
+    
   public:
   InterImageManager(std::string name="InterImageManager") : 
     llcv_base(name), 
@@ -72,6 +72,7 @@ namespace llcv {
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_adc_m;
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_shr_m;
     std::map<std::pair<int,int>, std::vector<InterImage> > _inter_trk_m;
+    std::map<std::pair<int,int>, std::vector<InterImage> > _inter_dead_m;
 
     larcv::LArbysImageMaker _larmkr;
     

@@ -25,6 +25,7 @@ namespace llcv {
     _adc_img_prod = cfg.get<std::string>("ADCImageProducer");
     _trk_img_prod = cfg.get<std::string>("TrackImageProducer");
     _shr_img_prod = cfg.get<std::string>("ShowerImageProducer");
+    _dead_img_prod= cfg.get<std::string>("DeadImageProducer");
     
     _pgraph_prod = cfg.get<std::string>("PGraphProducer");
     _pixel_prod  = cfg.get<std::string>("PixelProducer");
@@ -39,6 +40,7 @@ namespace llcv {
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
     LLCV_DEBUG() << "shr_img_prod........." << _shr_img_prod << std::endl;
+    LLCV_DEBUG() << "dead_img_prod........" << _dead_img_prod << std::endl;
     LLCV_DEBUG() << "pgraph_prod.........." << _pgraph_prod << std::endl;
     LLCV_DEBUG() << "pixel_prod..........." << _pixel_prod << std::endl;
     LLCV_DEBUG() << "track_vertex_prod... " << _track_vertex_prod << std::endl;
@@ -104,6 +106,12 @@ namespace llcv {
     if(!_shr_img_prod.empty()) {
       ev_shr_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_shr_img_prod);
       _driver.AttachImage(ev_shr_img->Image2DArray(),kImageShower);
+    }
+
+    larcv::EventImage2D* ev_dead_img = nullptr;
+    if(!_dead_img_prod.empty()) {
+      ev_dead_img = (larcv::EventImage2D*)mgr.get_data(larcv::kProductImage2D,_dead_img_prod);
+      _driver.AttachImage(ev_dead_img->Image2DArray(),kImageDead);
     }
     
     larcv::EventPGraph* ev_pgraph = nullptr;

@@ -3,6 +3,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class llcv::Point+;
+#pragma link C++ class llcv::DBSCAN+;
 #pragma link C++ class llcv::SelTrackScatter+;
+#pragma link C++ class llcv::Object3D+;
+
 
 #endif
