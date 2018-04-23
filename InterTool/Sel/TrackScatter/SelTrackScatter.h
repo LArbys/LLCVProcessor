@@ -6,6 +6,9 @@
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
 #include "DBSCAN.h"
 #include "Object3D.h"
+#include <array>
+
+#include "TStopwatch.h"
 
 namespace llcv {
   
@@ -23,8 +26,56 @@ namespace llcv {
     void Finalize();
     
   private:
-
     TTree* _outtree;
+
+    //
+    // Members
+    //
+  private:
+
+    DBSCAN _DBSCAN;
+
+    size_t _cropx;
+    size_t _cropy;
+
+    larocv::DefectBreaker _LR_DefectBreaker;
+    larocv::DefectBreaker _SR_DefectBreaker;
+
+    larocv::PixelScan3D _PixelScan3D;
+
+    TStopwatch _twatch;
+
+    bool _debug;
+    bool _allow_dead_image;
+
+    larocv::GEO2D_ContourArray_t FindAndMaskVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
+    larocv::GEO2D_ContourArray_t FindAndBreakVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
+    
+    std::vector<std::vector<size_t> > AssociateToTracks(const larocv::GEO2D_ContourArray_t& ctor_v,
+							const std::vector<larocv::GEO2D_ContourArray_t>& track_ctor_vv,
+							const size_t plane);
+
+    bool ContainsTrack(const std::vector<size_t>& tin_v);
+
+    float TrackFraction(const std::vector<size_t>& tin_v, size_t tid);
+    float TrackLength(const larlite::track& track);
+    std::pair<float,float> TrackAngle(const larlite::track& track); 
+
+    std::vector<int> Cluster(const Object3D& obj);
+
+    std::array<float,4> ComputeMeans(const std::vector<float>& data_v);
+
+    float Average(const std::vector<float>& data_v, size_t start, size_t end);
+
+    int CountClusters(const std::vector<int>& cid_v);
+
+    void ResizeOutput(size_t sz);
+
+
+    //
+    // TTree
+    //
+  private:
 
     std::vector<std::vector<float> > _track_x_vv;
     std::vector<std::vector<float> > _track_y_vv;
@@ -48,7 +99,8 @@ namespace llcv {
 
     std::vector<std::vector<int> > _shower_cid_vv;
     
-    std::vector<std::vector<float> > _shower_dev_vv;
+    std::vector<std::vector<float> > _shower_pca_dev_vv;
+    std::vector<std::vector<float> > _shower_trk_dev_vv;
 
     std::vector<std::vector<float> > _shower_edge1_x_vv;
     std::vector<std::vector<float> > _shower_edge1_y_vv;
@@ -58,46 +110,64 @@ namespace llcv {
     std::vector<std::vector<float> > _shower_edge2_y_vv;
     std::vector<std::vector<float> > _shower_edge2_z_vv;
 
-    std::vector<float> _shower_length_v;
-    std::vector<float> _shower_width_v;
-    std::vector<float> _shower_width1_v;
-    std::vector<float> _shower_width2_v;
+    //
+    // per track -- shower
+    //
+    std::vector<int>  _shower3D_n_points_v;
 
-    std::vector<float> _shower_theta_v;
-    std::vector<float> _shower_phi_v;
+    std::vector<float> _shower3D_length_v;
+    std::vector<float> _shower3D_width_v;
+    std::vector<float> _shower3D_width1_v;
+    std::vector<float> _shower3D_width2_v;
 
-    std::vector<float> _shower_opening_v;
-    std::vector<float> _shower_opening1_v;
-    std::vector<float> _shower_opening2_v;
+    std::vector<float> _shower3D_theta_v;
+    std::vector<float> _shower3D_phi_v;
 
-  private:
+    std::vector<float> _shower3D_opening_v;
+    std::vector<float> _shower3D_opening1_v;
+    std::vector<float> _shower3D_opening2_v;
 
-    DBSCAN _DBSCAN;
+    std::vector<float> _shower3D_pca_mean_dev_v;
+    std::vector<float> _shower3D_start_pca_mean_dev_v;
+    std::vector<float> _shower3D_middle_pca_mean_dev_v;
+    std::vector<float> _shower3D_end_pca_mean_dev_v;
 
-    size_t _cropx;
-    size_t _cropy;
+    std::vector<float> _shower3D_track_mean_dev_v;
+    std::vector<float> _shower3D_start_track_mean_dev_v;
+    std::vector<float> _shower3D_middle_track_mean_dev_v;
+    std::vector<float> _shower3D_end_track_mean_dev_v;
 
-    larocv::DefectBreaker _LR_DefectBreaker;
-    larocv::DefectBreaker _SR_DefectBreaker;
-
-    larocv::PixelScan3D _PixelScan3D;
-
-    larocv::GEO2D_ContourArray_t FindAndMaskVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
-    larocv::GEO2D_ContourArray_t FindAndBreakVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
+    std::vector<int> _shower3D_n_clusters_v;
     
-    std::vector<std::vector<size_t> > AssociateToTracks(const larocv::GEO2D_ContourArray_t& ctor_v,
-							const std::vector<larocv::GEO2D_ContourArray_t>& track_ctor_vv,
-							const size_t plane);
+    //
+    // per track per 3D shower -- cluster
+    //
+    std::vector<std::vector<int> > _shower3D_cluster_n_points_vv;
 
-    bool ContainsTrack(const std::vector<size_t>& tin_v);
-
-    float TrackFraction(const std::vector<size_t>& tin_v, size_t tid);
-    float TrackLength(const larlite::track& track);
-    std::pair<float,float> TrackAngle(const larlite::track& track); 
-
-    std::vector<int> Cluster(const Object3D& obj);
-
-    void ResizeOutput(size_t sz);
+    std::vector<std::vector<float> > _shower3D_cluster_length_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_width_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_width1_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_width2_vv;
+    
+    std::vector<std::vector<float> > _shower3D_cluster_theta_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_phi_vv;
+    
+    std::vector<std::vector<float> > _shower3D_cluster_opening_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_opening1_vv;
+    std::vector<std::vector<float> > _shower3D_cluster_opening2_vv;
+    
+    std::vector<std::vector<float> > _shower3D_cluster_distance_vv;
+    
+    //
+    // per track per plane -- 2D stuffs
+    //
+    std::vector<std::vector<int> > _shower2D_n_clusters_U_vv;
+    std::vector<std::vector<int> > _shower2D_n_clusters_V_vv;
+    std::vector<std::vector<int> > _shower2D_n_clusters_Y_vv;
+    
+    std::vector<std::vector<int> > _shower2D_n_defects_U_vv;
+    std::vector<std::vector<int> > _shower2D_n_defects_V_vv;
+    std::vector<std::vector<int> > _shower2D_n_defects_Y_vv;
 
   };
 

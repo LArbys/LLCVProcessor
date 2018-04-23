@@ -18,6 +18,18 @@
 
 namespace llcv {
   
+  Object3D::Object3D(const larocv::data::Vertex3D& s,
+		     const std::vector<const larocv::data::Vertex3D*> & v) {
+    
+    _start = s;
+    _pts_v.resize(v.size());
+    for(size_t vid=0; vid<v.size(); ++vid)
+      _pts_v[vid] = *v[vid];
+
+    FillPCA();
+  }
+
+
   void Object3D::FillPCA() {
   
     cv::Mat vertex_mat(_pts_v.size(), 3, CV_32FC1);
@@ -176,8 +188,34 @@ namespace llcv {
 
   }
   
-  std::array<float,3> Object3D::ToVector(const larocv::data::Vertex3D& vtx)
+  std::array<float,3> Object3D::ToVector(const larocv::data::Vertex3D& vtx) const
   { return {{(float)vtx.x,(float)vtx.y,(float)vtx.z}}; }
+
+  std::array<float,3> Object3D::ToVector(const TVector3& pt) const
+  { return {{(float)pt.X(),(float)pt.Y(),(float)pt.Z()}}; }
+
+  std::vector<float> Object3D::TrackDeviation(const larlite::track& trk) const {
+
+    std::vector<float> res_v;
+    res_v.resize(_pts_v.size(),-1);
+
+    // for each segment compute the closest distance to segment
+    for(size_t pid=0; pid<_pts_v.size(); ++pid) {
+      auto apt = ToVector(_pts_v[pid]);
+      float dist = larocv::kINVALID_FLOAT;
+      for(size_t pid=0; pid< trk.NumberTrajectoryPoints()-1; ++pid) {
+	auto pt1 = ToVector(trk.LocationAtPoint(pid));
+	auto pt2 = ToVector(trk.LocationAtPoint(pid+1));
+	auto line_pt = larocv::ClosestPoint(pt1,pt2,apt);
+	auto dist_tmp= larocv::Distance(line_pt,apt);
+	if (dist_tmp < dist)
+	  dist = dist_tmp;
+      }
+      res_v[pid] = dist;
+    }
+    
+    return res_v;
+  }
 
 }
 

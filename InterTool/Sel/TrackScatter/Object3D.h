@@ -2,6 +2,7 @@
 #define __OBJECT3D_H__
 
 #include "LArOpenCV/ImageCluster/AlgoData/Vertex.h"
+#include "DataFormat/track.h"
 
 namespace llcv {
   
@@ -11,7 +12,10 @@ namespace llcv {
   Object3D(const larocv::data::Vertex3D& s,
 	   const std::vector<larocv::data::Vertex3D>& v) 
     : _start(s), _pts_v(v) { FillPCA(); }
-
+    
+    Object3D(const larocv::data::Vertex3D& s,
+	     const std::vector<const larocv::data::Vertex3D*> & v);
+    
     ~Object3D() {}
 
     float Width1() const { return _width1; }
@@ -34,7 +38,10 @@ namespace llcv {
 
     const std::vector<float>& PCADeviation() const { return _deviation_v; }
 
+    const larocv::data::Vertex3D& Point(size_t pid) const { return _pts_v.at(pid); }
     const std::vector<larocv::data::Vertex3D>& Points() const { return _pts_v; }
+
+    std::vector<float> TrackDeviation(const larlite::track& trk) const;
 
   private:
 
@@ -58,7 +65,9 @@ namespace llcv {
 
     void FillPCA();
     void FillOOBB(const std::array<float,3> mean_v, const std::array<std::array<float,3>, 3> eigen_vv);
-    std::array<float,3> ToVector(const larocv::data::Vertex3D& vtx);
+
+    std::array<float,3> ToVector(const larocv::data::Vertex3D& vtx) const;
+    std::array<float,3> ToVector(const TVector3& pt) const;
     
   };
 

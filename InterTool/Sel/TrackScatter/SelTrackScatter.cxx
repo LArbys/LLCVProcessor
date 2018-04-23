@@ -7,13 +7,17 @@
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
 
+#include <iomanip>
 #include <sstream>
 #include <cstdlib>
 #include <array>
+#include <algorithm>
+#include <unordered_set>
 
 namespace llcv {
 
   void SelTrackScatter::Configure (const larcv::PSet &pset) {
+
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
     
@@ -31,7 +35,12 @@ namespace llcv {
 				srdb_pset.get<int>("NHullEdgePoints"),
 				srdb_pset.get<int>("NAllowedBreaks"));
     
+    _debug            = pset.get<bool>("Debug");
+    _allow_dead_image = pset.get<bool>("AllowDeadImage");
+
     _DBSCAN.Configure(10,5);
+    
+    _twatch.Stop();
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -42,50 +51,91 @@ namespace llcv {
     _outtree = new TTree("scatter","");
     AttachRSEV(_outtree);
 
-    _outtree->Branch("track_x_vv", &_track_x_vv);
-    _outtree->Branch("track_y_vv", &_track_y_vv);
-    _outtree->Branch("track_z_vv", &_track_z_vv);
-
-    _outtree->Branch("shower_x_vv", &_shower_x_vv);
-    _outtree->Branch("shower_y_vv", &_shower_y_vv);
-    _outtree->Branch("shower_z_vv", &_shower_z_vv);
-
-    _outtree->Branch("shower_start_x_vv" , &_shower_start_x_vv);
-    _outtree->Branch("shower_start_y_vv" , &_shower_start_y_vv);
-    _outtree->Branch("shower_start_z_vv" , &_shower_start_z_vv);
-
-    _outtree->Branch("shower_center_x_vv", &_shower_center_x_vv);
-    _outtree->Branch("shower_center_y_vv", &_shower_center_y_vv);
-    _outtree->Branch("shower_center_z_vv", &_shower_center_z_vv);
-
-    _outtree->Branch("shower_end_x_vv"   , &_shower_end_x_vv);
-    _outtree->Branch("shower_end_y_vv"   , &_shower_end_y_vv);
-    _outtree->Branch("shower_end_z_vv"   , &_shower_end_z_vv);
-
-    _outtree->Branch("shower_edge1_x_vv"   , &_shower_edge1_x_vv);
-    _outtree->Branch("shower_edge1_y_vv"   , &_shower_edge1_y_vv);
-    _outtree->Branch("shower_edge1_z_vv"   , &_shower_edge1_z_vv);
-
-    _outtree->Branch("shower_edge2_x_vv"   , &_shower_edge2_x_vv);
-    _outtree->Branch("shower_edge2_y_vv"   , &_shower_edge2_y_vv);
-    _outtree->Branch("shower_edge2_z_vv"   , &_shower_edge2_z_vv);
-
-    _outtree->Branch("shower_dev_vv", &_shower_dev_vv);
-    _outtree->Branch("shower_cid_vv", &_shower_cid_vv);
-
-    _outtree->Branch("shower_length_v", &_shower_length_v);
-    _outtree->Branch("shower_width_v", &_shower_width_v);
-    _outtree->Branch("shower_width1_v", &_shower_width1_v);
-    _outtree->Branch("shower_width2_v", &_shower_width2_v);
-
-    _outtree->Branch("shower_theta_v", &_shower_theta_v);
-    _outtree->Branch("shower_phi_v", &_shower_phi_v);
-
-    _outtree->Branch("shower_opening_v", &_shower_opening_v);
-    _outtree->Branch("shower_opening1_v", &_shower_opening1_v);
-    _outtree->Branch("shower_opening2_v", &_shower_opening2_v);
-
+    if(_debug) {
+      _outtree->Branch("track_x_vv", &_track_x_vv);
+      _outtree->Branch("track_y_vv", &_track_y_vv);
+      _outtree->Branch("track_z_vv", &_track_z_vv);
+      
+      _outtree->Branch("shower_x_vv", &_shower_x_vv);
+      _outtree->Branch("shower_y_vv", &_shower_y_vv);
+      _outtree->Branch("shower_z_vv", &_shower_z_vv);
+      
+      _outtree->Branch("shower_start_x_vv" , &_shower_start_x_vv);
+      _outtree->Branch("shower_start_y_vv" , &_shower_start_y_vv);
+      _outtree->Branch("shower_start_z_vv" , &_shower_start_z_vv);
+      
+      _outtree->Branch("shower_center_x_vv", &_shower_center_x_vv);
+      _outtree->Branch("shower_center_y_vv", &_shower_center_y_vv);
+      _outtree->Branch("shower_center_z_vv", &_shower_center_z_vv);
+      
+      _outtree->Branch("shower_end_x_vv"   , &_shower_end_x_vv);
+      _outtree->Branch("shower_end_y_vv"   , &_shower_end_y_vv);
+      _outtree->Branch("shower_end_z_vv"   , &_shower_end_z_vv);
+      
+      _outtree->Branch("shower_edge1_x_vv"   , &_shower_edge1_x_vv);
+      _outtree->Branch("shower_edge1_y_vv"   , &_shower_edge1_y_vv);
+      _outtree->Branch("shower_edge1_z_vv"   , &_shower_edge1_z_vv);
     
+      _outtree->Branch("shower_edge2_x_vv"   , &_shower_edge2_x_vv);
+      _outtree->Branch("shower_edge2_y_vv"   , &_shower_edge2_y_vv);
+      _outtree->Branch("shower_edge2_z_vv"   , &_shower_edge2_z_vv);
+
+      _outtree->Branch("shower_pca_dev_vv", &_shower_pca_dev_vv);
+      _outtree->Branch("shower_trk_dev_vv", &_shower_trk_dev_vv);
+
+      _outtree->Branch("shower_cid_vv", &_shower_cid_vv);
+    }
+
+    _outtree->Branch("shower3D_n_points_v", &_shower3D_n_points_v);
+
+    _outtree->Branch("shower3D_length_v", &_shower3D_length_v);
+    _outtree->Branch("shower3D_width_v",  &_shower3D_width_v);
+    _outtree->Branch("shower3D_width1_v", &_shower3D_width1_v);
+    _outtree->Branch("shower3D_width2_v", &_shower3D_width2_v);
+
+    _outtree->Branch("shower3D_theta_v", &_shower3D_theta_v);
+    _outtree->Branch("shower3D_phi_v",   &_shower3D_phi_v);
+
+    _outtree->Branch("shower3D_opening_v",  &_shower3D_opening_v);
+    _outtree->Branch("shower3D_opening1_v", &_shower3D_opening1_v);
+    _outtree->Branch("shower3D_opening2_v", &_shower3D_opening2_v);
+    
+    _outtree->Branch("shower3D_pca_mean_dev_v",         &_shower3D_pca_mean_dev_v);
+    _outtree->Branch("shower3D_start_pca_mean_dev_v",   &_shower3D_start_pca_mean_dev_v);
+    _outtree->Branch("shower3D_middle_pca_mean_dev_v",  &_shower3D_middle_pca_mean_dev_v);
+    _outtree->Branch("shower3D_end_pca_mean_dev_v",     &_shower3D_end_pca_mean_dev_v);
+
+    _outtree->Branch("shower3D_track_mean_dev_v",        &_shower3D_track_mean_dev_v);      
+    _outtree->Branch("shower3D_start_track_mean_dev_v",  &_shower3D_start_track_mean_dev_v);
+    _outtree->Branch("shower3D_middle_track_mean_dev_v", &_shower3D_middle_track_mean_dev_v);
+    _outtree->Branch("shower3D_end_track_mean_dev_v",    &_shower3D_end_track_mean_dev_v);
+
+    _outtree->Branch("shower3D_n_clusters_v", &_shower3D_n_clusters_v);
+    
+    _outtree->Branch("shower3D_cluster_n_points_vv", &_shower3D_cluster_n_points_vv);
+
+    _outtree->Branch("shower3D_cluster_length_vv" , &_shower3D_cluster_length_vv);
+    _outtree->Branch("shower3D_cluster_width_vv"  , &_shower3D_cluster_width_vv);
+    _outtree->Branch("shower3D_cluster_width1_vv" , &_shower3D_cluster_width1_vv);
+    _outtree->Branch("shower3D_cluster_width2_vv" , &_shower3D_cluster_width2_vv);
+    
+    _outtree->Branch("shower3D_cluster_theta_vv" , &_shower3D_cluster_theta_vv);
+    _outtree->Branch("shower3D_cluster_phi_vv"   , &_shower3D_cluster_phi_vv);
+    
+    _outtree->Branch("shower3D_cluster_opening_vv"   , &_shower3D_cluster_opening_vv);
+    _outtree->Branch("shower3D_cluster_opening1_vv"  , &_shower3D_cluster_opening1_vv);
+    _outtree->Branch("shower3D_cluster_opening2_vv"  , &_shower3D_cluster_opening2_vv);
+    
+    _outtree->Branch("shower3D_cluster_distance_vv"  , &_shower3D_cluster_distance_vv);
+    
+    _outtree->Branch("shower2D_n_clusters_U_vv" , &_shower2D_n_clusters_U_vv);
+    _outtree->Branch("shower2D_n_clusters_V_vv" , &_shower2D_n_clusters_V_vv);
+    _outtree->Branch("shower2D_n_clusters_Y_vv" , &_shower2D_n_clusters_Y_vv);
+    
+    _outtree->Branch("shower2D_n_defects_U_vv"  , &_shower2D_n_defects_U_vv);
+    _outtree->Branch("shower2D_n_defects_V_vv"  , &_shower2D_n_defects_V_vv);
+    _outtree->Branch("shower2D_n_defects_Y_vv"  , &_shower2D_n_defects_Y_vv);
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -154,7 +204,6 @@ namespace llcv {
     //
     // Project reconstructed tracks onto plane
     //
-    
     auto track_v = Data().Tracks();
     
     std::vector<std::vector<GEO2D_Contour_t> > track_ctor_vv;
@@ -189,12 +238,14 @@ namespace llcv {
     	  if (px_x >= (int)_cropx) continue;
     	  if (px_y >= (int)_cropy) continue;
 	  
-    	  auto& mat3d = mat3d_v[plane];
+	  if(_debug) {
+	    auto& mat3d = mat3d_v[plane];
 	  
-    	  if (tid==0) mat3d.at<cv::Vec3b>(px_x,px_y) = {0,0,255};
-    	  if (tid==1) mat3d.at<cv::Vec3b>(px_x,px_y) = {0,255,0};
-    	  if (tid==2) mat3d.at<cv::Vec3b>(px_x,px_y) = {255,0,0};
-	  
+	    if (tid==0) mat3d.at<cv::Vec3b>(px_x,px_y) = {0,0,255};
+	    if (tid==1) mat3d.at<cv::Vec3b>(px_x,px_y) = {0,255,0};
+	    if (tid==2) mat3d.at<cv::Vec3b>(px_x,px_y) = {255,0,0};
+	  }
+
     	  track_ctor.emplace_back(px_y,px_x);
 	  
     	} // end plane
@@ -218,12 +269,14 @@ namespace llcv {
 
       ctor_v  = FindAndMaskVertex(mat,vertex_ctor[plane]);
       tass_vv = AssociateToTracks(ctor_v, track_ctor_vv, plane);
+      
+      if(!_debug) continue;
 
       auto& img3d = mat3d_v[plane];
       for(size_t cid=0; cid<ctor_v.size(); ++cid) {
       	cv::Scalar color(std::rand() % 255,std::rand() % 255,std::rand() % 255);
       	if (!ContainsTrack(tass_vv[cid])) continue;
-      	// cv::drawContours(img3d,ctor_v,cid,color);
+	cv::drawContours(img3d,ctor_v,cid,color);
       }
 
     }
@@ -231,6 +284,7 @@ namespace llcv {
 
     //
     // generate 3D consistent points using radial approximation
+    // copmuter 3D object paramters
     //
     
     larocv::data::Vertex3D vtx3d;
@@ -244,15 +298,17 @@ namespace llcv {
 
     for(size_t tid=0; tid<track_v.size(); ++tid) {
 
-      auto& track_x_v = _track_x_vv[tid];
-      auto& track_y_v = _track_y_vv[tid];
-      auto& track_z_v = _track_z_vv[tid];
+      if(_debug) {
+	auto& track_x_v = _track_x_vv[tid];
+	auto& track_y_v = _track_y_vv[tid];
+	auto& track_z_v = _track_z_vv[tid];
 
-      for(size_t pid=0; pid< track_v[tid]->NumberTrajectoryPoints(); ++pid) {
-	const auto& pt = track_v[tid]->LocationAtPoint(pid);
-	track_x_v.push_back(pt.X());
-	track_y_v.push_back(pt.Y());
-	track_z_v.push_back(pt.Z());
+	for(size_t pid=0; pid< track_v[tid]->NumberTrajectoryPoints(); ++pid) {
+	  const auto& pt = track_v[tid]->LocationAtPoint(pid);
+	  track_x_v.push_back(pt.X());
+	  track_y_v.push_back(pt.Y());
+	  track_z_v.push_back(pt.Z());
+	}
       }
 
       LLCV_DEBUG() << "@tid=" << tid << std::endl;
@@ -279,7 +335,9 @@ namespace llcv {
     	timg_v[plane] = larocv::MaskImage(thresh_mat,veto_v,-1,false);
       }
       
-      // estimate the track angle
+      //
+      // Estimate the track angle
+      //
       auto theta_phi = TrackAngle(*track_v[tid]);
       auto track_len = TrackLength(*track_v[tid]);
 
@@ -287,7 +345,7 @@ namespace llcv {
       float pi4 = 3.14159 / 4.0;
       
       float rad_min = 0.5;
-      float rad_max = track_len + 3;
+      float rad_max = track_len + 5;
       float rad_step = 0.5;
       
       float theta_min = theta_phi.first - pi8;
@@ -298,112 +356,271 @@ namespace llcv {
 
       LLCV_DEBUG() << "Scanning Spheres" << std::endl;
 
+      //
+      // Build 3D object
+      //
+      _twatch.Start();
+
       _PixelScan3D.Reconfigure(rad_min, rad_max, rad_step,
 			       theta_min, theta_max,
 			       phi_min, phi_max);
       
-      //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d,3);
-      auto reg_v = _PixelScan3D.SphereScan3D(timg_v,dead_v,vtx3d,3);
       
-      LLCV_DEBUG() << "Returned: " << reg_v.size() << " locations" << std::endl;
-
-
+      //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d,3);
+      std::vector<larocv::data::Vertex3D> reg_v;
+      
+      if(_allow_dead_image)
+	reg_v = _PixelScan3D.SphereScan3D(timg_v,dead_v,vtx3d);
+      else
+	reg_v = _PixelScan3D.SphereScan3D(timg_v,vtx3d);
+      
+      _twatch.Stop();
+      LLCV_DEBUG() << reg_v.size() << " spheres scanned in " 
+		   << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+      
+      
       if (!reg_v.empty()) {
 	LLCV_DEBUG() << "Objectify" << std::endl;
+	_twatch.Start();
 	Object3D obj(vtx3d,reg_v);
-	LLCV_DEBUG() << "return" << std::endl;
+	_twatch.Stop();
+	LLCV_DEBUG() << "...objectified in " << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+
+	if(_debug) {
+	  //
+	  // Shower3D start
+	  //
+	  auto& shower3D_start_x_v = _shower_start_x_vv[tid];
+	  auto& shower3D_start_y_v = _shower_start_y_vv[tid];
+	  auto& shower3D_start_z_v = _shower_start_z_vv[tid];
+
+	  shower3D_start_x_v.push_back(obj.Start().x);
+	  shower3D_start_y_v.push_back(obj.Start().y);
+	  shower3D_start_z_v.push_back(obj.Start().z);
+
+	  //
+	  // Shower3D Center
+	  //
+	  auto& shower3D_center_x_v = _shower_center_x_vv[tid];
+	  auto& shower3D_center_y_v = _shower_center_y_vv[tid];
+	  auto& shower3D_center_z_v = _shower_center_z_vv[tid];
+
+	  shower3D_center_x_v.push_back(obj.Center().x);
+	  shower3D_center_y_v.push_back(obj.Center().y);
+	  shower3D_center_z_v.push_back(obj.Center().z);
+
+	  //
+	  // Shower3D End
+	  //
+	  auto& shower3D_end_x_v = _shower_end_x_vv[tid];
+	  auto& shower3D_end_y_v = _shower_end_y_vv[tid];
+	  auto& shower3D_end_z_v = _shower_end_z_vv[tid];
+
+	  shower3D_end_x_v.push_back(obj.End().x);
+	  shower3D_end_y_v.push_back(obj.End().y);
+	  shower3D_end_z_v.push_back(obj.End().z);
+
+	  //
+	  // Shower3D Edge1
+	  //
+	  auto& shower3D_edge1_x_v = _shower_edge1_x_vv[tid];
+	  auto& shower3D_edge1_y_v = _shower_edge1_y_vv[tid];
+	  auto& shower3D_edge1_z_v = _shower_edge1_z_vv[tid];
+
+	  shower3D_edge1_x_v.push_back(obj.Edge1().x);
+	  shower3D_edge1_y_v.push_back(obj.Edge1().y);
+	  shower3D_edge1_z_v.push_back(obj.Edge1().z);
+
+	  //
+	  // Shower3D Edge2
+	  //
+	  auto& shower3D_edge2_x_v = _shower_edge2_x_vv[tid];
+	  auto& shower3D_edge2_y_v = _shower_edge2_y_vv[tid];
+	  auto& shower3D_edge2_z_v = _shower_edge2_z_vv[tid];
+	
+	  shower3D_edge2_x_v.push_back(obj.Edge2().x);
+	  shower3D_edge2_y_v.push_back(obj.Edge2().y);
+	  shower3D_edge2_z_v.push_back(obj.Edge2().z);
+	}
+
+	//
+	// Shower3D dimensions
+	//
+	_shower3D_n_points_v[tid] = obj.Points().size();
+	_shower3D_length_v[tid]   = obj.Length();
+	_shower3D_width_v[tid]    = obj.Width();
+	_shower3D_width1_v[tid]   = obj.Width1();
+	_shower3D_width2_v[tid]   = obj.Width2();
+      
+	_shower3D_theta_v[tid] = obj.Theta();
+	_shower3D_phi_v[tid]   = obj.Phi();
+      
+	_shower3D_opening_v[tid]  = obj.Opening();
+	_shower3D_opening1_v[tid] = obj.Opening1();
+	_shower3D_opening2_v[tid] = obj.Opening2();
+
+
+	//
+	// Compute average deviation from PCA and track
+	//
+	auto& shower_pca_dev_v = _shower_pca_dev_vv[tid];
+	auto& shower_trk_dev_v = _shower_trk_dev_vv[tid];
+
+	shower_pca_dev_v = obj.PCADeviation();
+	shower_trk_dev_v = obj.TrackDeviation(*(track_v[tid]));
+
+	auto pca_dev = ComputeMeans(shower_pca_dev_v);
+	auto trk_dev = ComputeMeans(shower_trk_dev_v);
+
+	_shower3D_pca_mean_dev_v[tid]        = pca_dev[0];
+	_shower3D_start_pca_mean_dev_v[tid]  = pca_dev[1];
+	_shower3D_middle_pca_mean_dev_v[tid] = pca_dev[2];
+	_shower3D_end_pca_mean_dev_v[tid]    = pca_dev[3];
+	
+	_shower3D_track_mean_dev_v[tid]        = trk_dev[0];
+	_shower3D_start_track_mean_dev_v[tid]  = trk_dev[1];
+	_shower3D_middle_track_mean_dev_v[tid] = trk_dev[2];
+	_shower3D_end_track_mean_dev_v[tid]    = trk_dev[3];
+
+	//
+	// Cluster using DBSCAN
+	//
+	LLCV_DEBUG() << "Clustering..." << std::endl;
+
+	auto& shower_cid_v = _shower_cid_vv[tid];
+
+	_twatch.Start();
+	shower_cid_v = Cluster(obj);
+	_twatch.Stop();
+
+	LLCV_DEBUG() << "... clustered in " 
+		     << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+
+	int n_clusters = CountClusters(shower_cid_v);
+	_shower3D_n_clusters_v[tid] = n_clusters;
+
+	LLCV_DEBUG() << "returned " << n_clusters << " clusters" << std::endl;
 
 	auto& shower_x_v = _shower_x_vv[tid];
 	auto& shower_y_v = _shower_y_vv[tid];
 	auto& shower_z_v = _shower_z_vv[tid];
 
-	auto& shower_start_x_v = _shower_start_x_vv[tid];
-	auto& shower_start_y_v = _shower_start_y_vv[tid];
-	auto& shower_start_z_v = _shower_start_z_vv[tid];
+	std::vector<std::vector<const larocv::data::Vertex3D*> > pts_cluster_vv;
+	pts_cluster_vv.resize(n_clusters);
 
-	auto& shower_center_x_v = _shower_center_x_vv[tid];
-	auto& shower_center_y_v = _shower_center_y_vv[tid];
-	auto& shower_center_z_v = _shower_center_z_vv[tid];
-
-	auto& shower_end_x_v = _shower_end_x_vv[tid];
-	auto& shower_end_y_v = _shower_end_y_vv[tid];
-	auto& shower_end_z_v = _shower_end_z_vv[tid];
-
-	auto& shower_edge1_x_v = _shower_edge1_x_vv[tid];
-	auto& shower_edge1_y_v = _shower_edge1_y_vv[tid];
-	auto& shower_edge1_z_v = _shower_edge1_z_vv[tid];
-
-	auto& shower_edge2_x_v = _shower_edge2_x_vv[tid];
-	auto& shower_edge2_y_v = _shower_edge2_y_vv[tid];
-	auto& shower_edge2_z_v = _shower_edge2_z_vv[tid];
-
-	auto& shower_dev_v = _shower_dev_vv[tid];
-	auto& shower_cid_v = _shower_cid_vv[tid];
-
-	shower_dev_v = obj.PCADeviation();
-	shower_cid_v = Cluster(obj);
-
-	shower_start_x_v.push_back(obj.Start().x);
-	shower_start_y_v.push_back(obj.Start().y);
-	shower_start_z_v.push_back(obj.Start().z);
-
-	shower_center_x_v.push_back(obj.Center().x);
-	shower_center_y_v.push_back(obj.Center().y);
-	shower_center_z_v.push_back(obj.Center().z);
-
-	shower_end_x_v.push_back(obj.End().x);
-	shower_end_y_v.push_back(obj.End().y);
-	shower_end_z_v.push_back(obj.End().z);
-
-	shower_edge1_x_v.push_back(obj.Edge1().x);
-	shower_edge1_y_v.push_back(obj.Edge1().y);
-	shower_edge1_z_v.push_back(obj.Edge1().z);
-
-	shower_edge2_x_v.push_back(obj.Edge2().x);
-	shower_edge2_y_v.push_back(obj.Edge2().y);
-	shower_edge2_z_v.push_back(obj.Edge2().z);
-
-	_shower_length_v[tid] = obj.Length();
-	_shower_width_v[tid]  = obj.Width();
-	_shower_width1_v[tid] = obj.Width1();
-	_shower_width2_v[tid] = obj.Width2();
-      
-	_shower_theta_v[tid] = obj.Theta();
-	_shower_phi_v[tid]   = obj.Phi();
-      
-	_shower_opening_v[tid]  = obj.Opening();
-	_shower_opening1_v[tid] = obj.Opening1();
-	_shower_opening2_v[tid] = obj.Opening2();
-
-	for(const auto& reg : reg_v) {
+	for(auto& v : pts_cluster_vv) 
+	  v.reserve(obj.Points().size());
 	
-	  shower_x_v.push_back(reg.x);
-	  shower_y_v.push_back(reg.y);
-	  shower_z_v.push_back(reg.z);
+	//
+	// Make the clusters
+	//
+	int nfail = 0;
+	for(size_t pid=0; pid < obj.Points().size(); ++pid) {
+	  const auto& pt = obj.Points()[pid];
+	  
+	  int cid = shower_cid_v[pid];
+	  
+	  if (cid == -3) {
+	    nfail++;
+	    continue;
+	  }
+
+	  pts_cluster_vv.at(cid).push_back(&pt);
+	  
+	  if(!_debug) continue;
+
+	  shower_x_v.push_back(pt.x);
+	  shower_y_v.push_back(pt.y);
+	  shower_z_v.push_back(pt.z);
 
 	  for(size_t plane=0; plane<3; ++plane) {
 	    auto& mat3d = mat3d_v[plane];
-	    int px_x = reg.vtx2d_v[plane].pt.x;
-	    int px_y = reg.vtx2d_v[plane].pt.y;
+	    int px_x = pt.vtx2d_v[plane].pt.x;
+	    int px_y = pt.vtx2d_v[plane].pt.y;
 	    if (px_x < 0) continue;
 	    mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
 	  }
+	} // end sphere point
+
+	LLCV_DEBUG() << "nfail=(" << nfail << "/" << obj.Points().size() << ")" << std::endl;
+
+	//
+	// analyze cluster objects
+	//
+	auto& shower3D_cluster_n_points_v = _shower3D_cluster_n_points_vv[tid];
+
+	auto& shower3D_cluster_length_v = _shower3D_cluster_length_vv[tid];
+	auto& shower3D_cluster_width_v = _shower3D_cluster_width_vv[tid];
+	auto& shower3D_cluster_width1_v = _shower3D_cluster_width1_vv[tid];
+	auto& shower3D_cluster_width2_v = _shower3D_cluster_width2_vv[tid];
+	
+	auto& shower3D_cluster_theta_v = _shower3D_cluster_theta_vv[tid];
+	auto& shower3D_cluster_phi_v = _shower3D_cluster_phi_vv[tid];
+	
+	auto& shower3D_cluster_opening_v = _shower3D_cluster_opening_vv[tid];
+	auto& shower3D_cluster_opening1_v = _shower3D_cluster_opening1_vv[tid];
+	auto& shower3D_cluster_opening2_v = _shower3D_cluster_opening2_vv[tid];
+	
+	auto& shower3D_cluster_distance_v = _shower3D_cluster_distance_vv[tid];
+
+	shower3D_cluster_n_points_v.resize(n_clusters);
+
+	shower3D_cluster_length_v.resize(n_clusters);
+	shower3D_cluster_width_v.resize(n_clusters);
+	shower3D_cluster_width1_v.resize(n_clusters);
+	shower3D_cluster_width2_v.resize(n_clusters);
+	
+	shower3D_cluster_theta_v.resize(n_clusters);
+	shower3D_cluster_phi_v.resize(n_clusters);
+	
+	shower3D_cluster_opening_v.resize(n_clusters);
+	shower3D_cluster_opening1_v.resize(n_clusters);
+	shower3D_cluster_opening2_v.resize(n_clusters);
+	
+	shower3D_cluster_distance_v.resize(n_clusters);
+
+	for(size_t cid=0; cid<pts_cluster_vv.size(); ++cid) {
+	  
+	  LLCV_DEBUG() << "@cid=" << cid << std::endl;
+	  const auto& pts_cluster_v = pts_cluster_vv[cid];
+	  _twatch.Start();
+	  Object3D cluster(vtx3d,pts_cluster_v);
+	  _twatch.Stop();
+	  LLCV_DEBUG() << "... " << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+
+	  shower3D_cluster_n_points_v[cid] = cluster.Points().size();
+
+	  shower3D_cluster_length_v[cid] = cluster.Length();
+	  shower3D_cluster_width_v[cid] = cluster.Width();
+	  shower3D_cluster_width1_v[cid] = cluster.Width1();
+	  shower3D_cluster_width2_v[cid] = cluster.Width2();
+	  
+	  shower3D_cluster_theta_v[cid] = cluster.Theta();
+	  shower3D_cluster_phi_v[cid] = cluster.Phi();
+	  
+	  shower3D_cluster_opening_v[cid] = cluster.Opening();
+	  shower3D_cluster_opening1_v[cid] = cluster.Opening1();
+	  shower3D_cluster_opening2_v[cid] = cluster.Opening2();
 	}
-      }
 
+      } //end non-empty scan
+
+      //
+      // Analyze 2D clusters
+      //
+      
+      
       LLCV_DEBUG() << "done!" << std::endl;
-
-    }
+    } // end this track
     
 
-    //    
-    // debug print out
-    //
-    for(size_t plane=0; plane<3; ++plane) {
-      auto& img3d = mat3d_v[plane];
-      std::stringstream ss; 
-      ss << "png/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
-      cv::imwrite(ss.str(),img3d);
+    if(_debug) {
+      for(size_t plane=0; plane<3; ++plane) {
+	auto& img3d = mat3d_v[plane];
+	std::stringstream ss; 
+	ss << "png/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
+	cv::imwrite(ss.str(),img3d);
+      }
     }
 
     _outtree->Fill();
@@ -621,7 +838,6 @@ namespace llcv {
       pts_v[pid].z = obj.Points()[pid].z;
     }
     
-    
     _DBSCAN.Reset(pts_v);
     _DBSCAN.run();
 
@@ -631,27 +847,88 @@ namespace llcv {
     return res_v;
   }
 
-  void SelTrackScatter::ResizeOutput(size_t sz) {
 
-    _shower_x_vv.clear();
-    _shower_y_vv.clear();
-    _shower_z_vv.clear();
+  std::array<float,4> SelTrackScatter::ComputeMeans(const std::vector<float>& data_v) {
+
+    std::array<float,4> res_v = {{-1,-1,-1,-1}};
+
+    float npts = (float)data_v.size();
+    
+    if (data_v.size() <= 3) {
+      for(size_t did=0; did<data_v.size(); ++did) 
+	{ res_v[did] = data_v[did]; }
+      return res_v;
+    }
+
+    std::array<size_t,4> range_v;
+    range_v[0] = 0;
+    range_v[1] = npts/3;
+    range_v[2] = 2*npts/3;
+    range_v[3] = npts;
+    
+
+    res_v[0] = Average(data_v,0,data_v.size());
+
+    for(size_t rid=0; rid<3; ++rid) 
+      res_v[rid+1] = Average(data_v,range_v[rid],range_v[rid+1]);
+    
+    return res_v;
+  }
+
+  float SelTrackScatter::Average(const std::vector<float>& data_v, size_t start, size_t end) {
+    float res = 0.0;
+    
+    for(size_t id=start; id<end; ++id)
+      res += data_v[id];
+    
+    res /= ((float) (end - start));
+    
+    return res;
+  }
+
+
+  int SelTrackScatter::CountClusters(const std::vector<int>& cid_v) {
+    int res = 0;
+    static std::unordered_set<int> s;
+    s.clear();
+
+    for(auto cid : cid_v) {
+      if (cid == -3) continue;
+      s.insert(cid);
+    }
+    
+    res = s.size();
+
+    return res;
+  }
+
+
+  void SelTrackScatter::ResizeOutput(size_t sz) {
     
     _track_x_vv.clear();
     _track_y_vv.clear();
     _track_z_vv.clear();
 
+    _shower_x_vv.clear();
+    _shower_y_vv.clear();
+    _shower_z_vv.clear();
+
     _shower_start_x_vv.clear();
-    _shower_end_x_vv.clear();
-    _shower_center_x_vv.clear();
-
     _shower_start_y_vv.clear();
-    _shower_end_y_vv.clear();
-    _shower_center_y_vv.clear();
-
     _shower_start_z_vv.clear();
+
+    _shower_end_x_vv.clear();
+    _shower_end_y_vv.clear();
     _shower_end_z_vv.clear();
+
+    _shower_center_x_vv.clear();
+    _shower_center_y_vv.clear();
     _shower_center_z_vv.clear();
+
+    _shower_cid_vv.clear();
+    
+    _shower_pca_dev_vv.clear();
+    _shower_trk_dev_vv.clear();
 
     _shower_edge1_x_vv.clear();
     _shower_edge1_y_vv.clear();
@@ -661,22 +938,54 @@ namespace llcv {
     _shower_edge2_y_vv.clear();
     _shower_edge2_z_vv.clear();
 
-    _shower_length_v.clear();
-    _shower_width_v.clear();
-    _shower_width1_v.clear();
-    _shower_width2_v.clear();
+    _shower3D_n_points_v.clear();
+    
+    _shower3D_length_v.clear();
+    _shower3D_width_v.clear();
+    _shower3D_width1_v.clear();
+    _shower3D_width2_v.clear();
 
-    _shower_theta_v.clear();
-    _shower_phi_v.clear();
+    _shower3D_theta_v.clear();
+    _shower3D_phi_v.clear();
 
-    _shower_opening_v.clear();
-    _shower_opening1_v.clear();
-    _shower_opening2_v.clear();
+    _shower3D_opening_v.clear();
+    _shower3D_opening1_v.clear();
+    _shower3D_opening2_v.clear();
 
-    _shower_dev_vv.clear();
+    _shower3D_start_pca_mean_dev_v.clear();
+    _shower3D_middle_pca_mean_dev_v.clear();
+    _shower3D_end_pca_mean_dev_v.clear();
 
-    _shower_cid_vv.clear();
+    _shower3D_start_track_mean_dev_v.clear();
+    _shower3D_middle_track_mean_dev_v.clear();
+    _shower3D_end_track_mean_dev_v.clear();
 
+    _shower3D_n_clusters_v.clear();
+
+    _shower3D_cluster_n_points_vv.clear();
+
+    _shower3D_cluster_length_vv.clear();
+    _shower3D_cluster_width_vv.clear();
+    _shower3D_cluster_width1_vv.clear();
+    _shower3D_cluster_width2_vv.clear();
+    
+    _shower3D_cluster_theta_vv.clear();
+    _shower3D_cluster_phi_vv.clear();
+    
+    _shower3D_cluster_opening_vv.clear();
+    _shower3D_cluster_opening1_vv.clear();
+    _shower3D_cluster_opening2_vv.clear();
+
+    _shower3D_cluster_distance_vv.clear();
+    
+    _shower2D_n_clusters_U_vv.clear();
+    _shower2D_n_clusters_V_vv.clear();
+    _shower2D_n_clusters_Y_vv.clear();
+    
+    _shower2D_n_defects_U_vv.clear();
+    _shower2D_n_defects_V_vv.clear();
+    _shower2D_n_defects_Y_vv.clear();
+    
     _track_x_vv.resize(sz);
     _track_y_vv.resize(sz);
     _track_z_vv.resize(sz);
@@ -686,16 +995,21 @@ namespace llcv {
     _shower_z_vv.resize(sz);
 
     _shower_start_x_vv.resize(sz);
-    _shower_end_x_vv.resize(sz);
-    _shower_center_x_vv.resize(sz);
-
     _shower_start_y_vv.resize(sz);
-    _shower_end_y_vv.resize(sz);
-    _shower_center_y_vv.resize(sz);
-
     _shower_start_z_vv.resize(sz);
+
+    _shower_end_x_vv.resize(sz);
+    _shower_end_y_vv.resize(sz);
     _shower_end_z_vv.resize(sz);
+
+    _shower_center_x_vv.resize(sz);
+    _shower_center_y_vv.resize(sz);
     _shower_center_z_vv.resize(sz);
+
+    _shower_cid_vv.resize(sz);
+    
+    _shower_pca_dev_vv.resize(sz);
+    _shower_trk_dev_vv.resize(sz);
 
     _shower_edge1_x_vv.resize(sz);
     _shower_edge1_y_vv.resize(sz);
@@ -705,22 +1019,55 @@ namespace llcv {
     _shower_edge2_y_vv.resize(sz);
     _shower_edge2_z_vv.resize(sz);
 
-    _shower_length_v.resize(sz);
-    _shower_width_v.resize(sz);
-    _shower_width1_v.resize(sz);
-    _shower_width2_v.resize(sz);
+    _shower3D_n_points_v.resize(sz);
 
-    _shower_theta_v.resize(sz);
-    _shower_phi_v.resize(sz);
+    _shower3D_length_v.resize(sz);
+    _shower3D_width_v.resize(sz);
+    _shower3D_width1_v.resize(sz);
+    _shower3D_width2_v.resize(sz);
 
-    _shower_opening_v.resize(sz);
-    _shower_opening1_v.resize(sz);
-    _shower_opening2_v.resize(sz);
+    _shower3D_theta_v.resize(sz);
+    _shower3D_phi_v.resize(sz);
 
-    _shower_dev_vv.resize(sz);
+    _shower3D_opening_v.resize(sz);
+    _shower3D_opening1_v.resize(sz);
+    _shower3D_opening2_v.resize(sz);
 
-    _shower_cid_vv.resize(sz);
+    _shower3D_pca_mean_dev_v.resize(sz);
+    _shower3D_start_pca_mean_dev_v.resize(sz);
+    _shower3D_middle_pca_mean_dev_v.resize(sz);
+    _shower3D_end_pca_mean_dev_v.resize(sz);
 
+    _shower3D_track_mean_dev_v.resize(sz);
+    _shower3D_start_track_mean_dev_v.resize(sz);
+    _shower3D_middle_track_mean_dev_v.resize(sz);
+    _shower3D_end_track_mean_dev_v.resize(sz);
+
+    _shower3D_n_clusters_v.resize(sz);
+
+    _shower3D_cluster_n_points_vv.resize(sz);
+
+    _shower3D_cluster_length_vv.resize(sz);
+    _shower3D_cluster_width_vv.resize(sz);
+    _shower3D_cluster_width1_vv.resize(sz);
+    _shower3D_cluster_width2_vv.resize(sz);
+    
+    _shower3D_cluster_theta_vv.resize(sz);
+    _shower3D_cluster_phi_vv.resize(sz);
+    
+    _shower3D_cluster_opening_vv.resize(sz);
+    _shower3D_cluster_opening1_vv.resize(sz);
+    _shower3D_cluster_opening2_vv.resize(sz);
+
+    _shower3D_cluster_distance_vv.resize(sz);
+    
+    _shower2D_n_clusters_U_vv.resize(sz);
+    _shower2D_n_clusters_V_vv.resize(sz);
+    _shower2D_n_clusters_Y_vv.resize(sz);
+    
+    _shower2D_n_defects_U_vv.resize(sz);
+    _shower2D_n_defects_V_vv.resize(sz);
+    _shower2D_n_defects_Y_vv.resize(sz);
   }
 
 
