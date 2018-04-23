@@ -8,9 +8,11 @@
 
 #pragma link C++ class llcv::VPoint+;
 #pragma link C++ class llcv::VThinning+;
+#pragma link C++ class llcv::Skeletonize+;
 
-#pragma link C++ class llcv::SelTrackScatter+;
 #pragma link C++ class llcv::Object3D+;
+#pragma link C++ class llcv::SelTrackScatter+;
+
 
 
 #endif

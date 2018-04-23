@@ -4,7 +4,10 @@
 #include "InterTool_Core/InterSelBase.h"
 #include "LArOpenCV/ImageCluster/AlgoClass/DefectBreaker.h"
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
+
 #include "DBSCAN.h"
+#include "Skeletonize.h"
+
 #include "Object3D.h"
 #include <array>
 
@@ -34,6 +37,7 @@ namespace llcv {
   private:
 
     DBSCAN _DBSCAN;
+    Skeletonize _Skeletonize;
 
     size_t _cropx;
     size_t _cropy;
