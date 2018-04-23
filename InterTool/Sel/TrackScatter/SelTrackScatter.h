@@ -46,6 +46,7 @@ namespace llcv {
     TStopwatch _twatch;
 
     bool _debug;
+    bool _fill2d;
     bool _allow_dead_image;
 
     larocv::GEO2D_ContourArray_t FindAndMaskVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
@@ -159,12 +160,30 @@ namespace llcv {
     std::vector<std::vector<float> > _shower3D_cluster_distance_vv;
     
     //
-    // per track per plane -- 2D stuffs
+    // per track per cluster -- 2D stuffs
     //
-    std::vector<std::vector<int> > _shower2D_n_clusters_U_vv;
-    std::vector<std::vector<int> > _shower2D_n_clusters_V_vv;
-    std::vector<std::vector<int> > _shower2D_n_clusters_Y_vv;
-    
+    std::vector<int> _shower2D_n_clusters_U_v;
+    std::vector<int> _shower2D_n_clusters_V_v;
+    std::vector<int> _shower2D_n_clusters_Y_v;
+
+    std::vector<std::vector<float> > _shower2D_area_U_vv;
+    std::vector<std::vector<float> > _shower2D_length_U_vv;
+    std::vector<std::vector<float> > _shower2D_width_U_vv;
+    std::vector<std::vector<float> > _shower2D_npixel_U_vv;
+    std::vector<std::vector<float> > _shower2D_qsum_U_vv;
+
+    std::vector<std::vector<float> > _shower2D_area_V_vv;
+    std::vector<std::vector<float> > _shower2D_length_V_vv;
+    std::vector<std::vector<float> > _shower2D_width_V_vv;
+    std::vector<std::vector<float> > _shower2D_npixel_V_vv;
+    std::vector<std::vector<float> > _shower2D_qsum_V_vv;
+
+    std::vector<std::vector<float> > _shower2D_area_Y_vv;
+    std::vector<std::vector<float> > _shower2D_length_Y_vv;
+    std::vector<std::vector<float> > _shower2D_width_Y_vv;
+    std::vector<std::vector<float> > _shower2D_npixel_Y_vv;
+    std::vector<std::vector<float> > _shower2D_qsum_Y_vv;
+
     std::vector<std::vector<int> > _shower2D_n_defects_U_vv;
     std::vector<std::vector<int> > _shower2D_n_defects_V_vv;
     std::vector<std::vector<int> > _shower2D_n_defects_Y_vv;

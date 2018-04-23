@@ -6,6 +6,7 @@
 #include "InterTool_Util/InterImageUtils.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
+#include "LArOpenCV/ImageCluster/AlgoClass/PixelChunk.h"
 
 #include <iomanip>
 #include <sstream>
@@ -36,6 +37,7 @@ namespace llcv {
 				srdb_pset.get<int>("NAllowedBreaks"));
     
     _debug            = pset.get<bool>("Debug");
+    _fill2d           = pset.get<bool>("Fill2D");
     _allow_dead_image = pset.get<bool>("AllowDeadImage");
 
     _DBSCAN.Configure(10,5);
@@ -127,14 +129,34 @@ namespace llcv {
     _outtree->Branch("shower3D_cluster_opening2_vv"  , &_shower3D_cluster_opening2_vv);
     
     _outtree->Branch("shower3D_cluster_distance_vv"  , &_shower3D_cluster_distance_vv);
+
+    if(_fill2d) {
+      _outtree->Branch("shower2D_n_clusters_U_v" , &_shower2D_n_clusters_U_v);
+      _outtree->Branch("shower2D_n_clusters_V_v" , &_shower2D_n_clusters_V_v);
+      _outtree->Branch("shower2D_n_clusters_Y_v" , &_shower2D_n_clusters_Y_v);
+
+      _outtree->Branch("shower2D_area_U_vv"   , &_shower2D_area_U_vv);
+      _outtree->Branch("shower2D_length_U_vv" , &_shower2D_length_U_vv);
+      _outtree->Branch("shower2D_width_U_vv"  , &_shower2D_width_U_vv);
+      _outtree->Branch("shower2D_npixel_U_vv" , &_shower2D_npixel_U_vv);
+      _outtree->Branch("shower2D_qsum_U_vv"   , &_shower2D_qsum_U_vv);
+
+      _outtree->Branch("shower2D_area_V_vv"   , &_shower2D_area_V_vv);
+      _outtree->Branch("shower2D_length_V_vv" , &_shower2D_length_V_vv);
+      _outtree->Branch("shower2D_width_V_vv"  , &_shower2D_width_V_vv);
+      _outtree->Branch("shower2D_npixel_V_vv" , &_shower2D_npixel_V_vv);
+      _outtree->Branch("shower2D_qsum_V_vv"   , &_shower2D_qsum_V_vv);
     
-    _outtree->Branch("shower2D_n_clusters_U_vv" , &_shower2D_n_clusters_U_vv);
-    _outtree->Branch("shower2D_n_clusters_V_vv" , &_shower2D_n_clusters_V_vv);
-    _outtree->Branch("shower2D_n_clusters_Y_vv" , &_shower2D_n_clusters_Y_vv);
-    
-    _outtree->Branch("shower2D_n_defects_U_vv"  , &_shower2D_n_defects_U_vv);
-    _outtree->Branch("shower2D_n_defects_V_vv"  , &_shower2D_n_defects_V_vv);
-    _outtree->Branch("shower2D_n_defects_Y_vv"  , &_shower2D_n_defects_Y_vv);
+      _outtree->Branch("shower2D_area_Y_vv"   , &_shower2D_area_Y_vv);
+      _outtree->Branch("shower2D_length_Y_vv" , &_shower2D_length_Y_vv);
+      _outtree->Branch("shower2D_width_Y_vv"  , &_shower2D_width_Y_vv);
+      _outtree->Branch("shower2D_npixel_Y_vv" , &_shower2D_npixel_Y_vv);
+      _outtree->Branch("shower2D_qsum_Y_vv"   , &_shower2D_qsum_Y_vv);
+
+      _outtree->Branch("shower2D_n_defects_U_vv"  , &_shower2D_n_defects_U_vv);
+      _outtree->Branch("shower2D_n_defects_V_vv"  , &_shower2D_n_defects_V_vv);
+      _outtree->Branch("shower2D_n_defects_Y_vv"  , &_shower2D_n_defects_Y_vv);
+    }
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -378,7 +400,6 @@ namespace llcv {
       LLCV_DEBUG() << reg_v.size() << " spheres scanned in " 
 		   << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
       
-      
       if (!reg_v.empty()) {
 	LLCV_DEBUG() << "Objectify" << std::endl;
 	_twatch.Start();
@@ -603,13 +624,136 @@ namespace llcv {
 	  shower3D_cluster_opening2_v[cid] = cluster.Opening2();
 	}
 
+	if(!_fill2d) continue;
+
+	//
+	// Analyze 2D clusters
+	//
+      
+	// make an image which has pixels only from this track
+	std::vector<cv::Mat>  track_mat_v;
+	track_mat_v.resize(3);
+      
+	std::vector<larocv::GEO2D_ContourArray_t> track_ctor_vv;
+	track_ctor_vv.resize(3);
+      
+	for(size_t plane=0; plane<3; ++plane) {
+	  auto track_mat = larocv::BlankImage(thresh_mat_v[plane],0);
+
+	  for(const auto& pt : obj.Points()) {
+	    int px_x = pt.vtx2d_v[plane].pt.x;
+	    int px_y = pt.vtx2d_v[plane].pt.y;
+	    if (px_x < 0) continue;
+	    track_mat.at<uchar>(px_y,px_x) = (uchar)10;
+	  }
+	
+	  auto& track_ctor_v = track_ctor_vv[plane];
+
+	  track_ctor_v = larocv::FindContours(track_mat);
+	  track_mat_v[plane] = track_mat;
+	}
+      
+	//
+	// Fill parameters
+	//
+	auto& shower2D_n_clusters_U = _shower2D_n_clusters_U_v[tid];
+	auto& shower2D_n_clusters_V = _shower2D_n_clusters_V_v[tid];
+	auto& shower2D_n_clusters_Y = _shower2D_n_clusters_Y_v[tid];
+
+	auto& shower2D_area_U_v    = _shower2D_area_U_vv[tid];
+	auto& shower2D_length_U_v  = _shower2D_length_U_vv[tid];
+	auto& shower2D_width_U_v   = _shower2D_width_U_vv[tid];
+	auto& shower2D_npixel_U_v  = _shower2D_npixel_U_vv[tid];
+	auto& shower2D_qsum_U_v    = _shower2D_qsum_U_vv[tid];	
+
+	auto& shower2D_area_V_v    = _shower2D_area_V_vv[tid];
+	auto& shower2D_length_V_v  = _shower2D_length_V_vv[tid];
+	auto& shower2D_width_V_v   = _shower2D_width_V_vv[tid];
+	auto& shower2D_npixel_V_v  = _shower2D_npixel_V_vv[tid];
+	auto& shower2D_qsum_V_v    = _shower2D_qsum_V_vv[tid];
+
+	auto& shower2D_area_Y_v    = _shower2D_area_Y_vv[tid];
+	auto& shower2D_length_Y_v  = _shower2D_length_Y_vv[tid];
+	auto& shower2D_width_Y_v   = _shower2D_width_Y_vv[tid];
+	auto& shower2D_npixel_Y_v  = _shower2D_npixel_Y_vv[tid];
+	auto& shower2D_qsum_Y_v    = _shower2D_qsum_Y_vv[tid];
+
+	auto& shower2D_n_defects_U_v = _shower2D_n_defects_U_vv[tid];
+	auto& shower2D_n_defects_V_v = _shower2D_n_defects_V_vv[tid];
+	auto& shower2D_n_defects_Y_v = _shower2D_n_defects_Y_vv[tid];
+
+	for(size_t plane=0; plane<3; ++plane) {
+	  const auto& track_mat    = track_mat_v[plane];
+	  const auto& track_ctor_v = track_ctor_vv[plane];
+
+	  int nctor = track_ctor_v.size();
+	  LLCV_DEBUG() << "a plane=" << plane << " nctor=" << nctor << std::endl;
+
+	  if(plane==0) { 
+	    shower2D_n_clusters_U = nctor;
+
+	    shower2D_area_U_v.resize(nctor);	    
+	    shower2D_length_U_v.resize(nctor);
+	    shower2D_width_U_v.resize(nctor);
+	    shower2D_npixel_U_v.resize(nctor);
+	    shower2D_qsum_U_v.resize(nctor);
+
+	    for(int cid=0; cid<nctor; ++cid) {
+	      const auto& ctor = track_ctor_v[cid];
+	      larocv::PixelChunk pc(ctor,*(mat_v[plane]));
+	      shower2D_area_U_v[cid]   = pc.area;
+	      shower2D_length_U_v[cid] = pc.length;
+	      shower2D_width_U_v[cid]  = pc.width ;
+	      shower2D_npixel_U_v[cid] = pc.npixel;
+	      shower2D_qsum_U_v[cid]   = pc.qsum;
+	    }
+
+	  }
+
+	  if(plane==1) { 
+	    shower2D_n_clusters_V = nctor;
+
+	    shower2D_area_V_v.resize(nctor);	    
+	    shower2D_length_V_v.resize(nctor);
+	    shower2D_width_V_v.resize(nctor);
+	    shower2D_npixel_V_v.resize(nctor);
+	    shower2D_qsum_V_v.resize(nctor);
+
+	    for(int cid=0; cid<nctor; ++cid) {
+	      const auto& ctor = track_ctor_v[cid];
+	      larocv::PixelChunk pc(ctor,*(mat_v[plane]));
+	      shower2D_area_V_v[cid]   = pc.area;
+	      shower2D_length_V_v[cid] = pc.length;
+	      shower2D_width_V_v[cid]  = pc.width ;
+	      shower2D_npixel_V_v[cid] = pc.npixel;
+	      shower2D_qsum_V_v[cid]   = pc.qsum;
+	    }
+
+	  }
+
+	  if(plane==2) { 
+	    shower2D_n_clusters_Y = nctor;	
+	
+	    shower2D_area_Y_v.resize(nctor);	    
+	    shower2D_length_Y_v.resize(nctor);
+	    shower2D_width_Y_v.resize(nctor);
+	    shower2D_npixel_Y_v.resize(nctor);
+	    shower2D_qsum_Y_v.resize(nctor);
+
+	    for(int cid=0; cid<nctor; ++cid) {
+	      const auto& ctor = track_ctor_v[cid];
+	      larocv::PixelChunk pc(ctor,*(mat_v[plane]));
+	      shower2D_area_Y_v[cid]   = pc.area;
+	      shower2D_length_Y_v[cid] = pc.length;
+	      shower2D_width_Y_v[cid]  = pc.width ;
+	      shower2D_npixel_Y_v[cid] = pc.npixel;
+	      shower2D_qsum_Y_v[cid]   = pc.qsum;
+	    }
+	  }
+	}
+
       } //end non-empty scan
 
-      //
-      // Analyze 2D clusters
-      //
-      
-      
       LLCV_DEBUG() << "done!" << std::endl;
     } // end this track
     
@@ -978,10 +1122,28 @@ namespace llcv {
 
     _shower3D_cluster_distance_vv.clear();
     
-    _shower2D_n_clusters_U_vv.clear();
-    _shower2D_n_clusters_V_vv.clear();
-    _shower2D_n_clusters_Y_vv.clear();
+    _shower2D_n_clusters_U_v.clear();
+    _shower2D_n_clusters_V_v.clear();
+    _shower2D_n_clusters_Y_v.clear();
     
+    _shower2D_area_U_vv.clear();
+    _shower2D_length_U_vv.clear();
+    _shower2D_width_U_vv.clear();
+    _shower2D_npixel_U_vv.clear();
+    _shower2D_qsum_U_vv.clear();
+
+    _shower2D_area_V_vv.clear();
+    _shower2D_length_V_vv.clear();
+    _shower2D_width_V_vv.clear();
+    _shower2D_npixel_V_vv.clear();
+    _shower2D_qsum_V_vv.clear();
+
+    _shower2D_area_Y_vv.clear();
+    _shower2D_length_Y_vv.clear();
+    _shower2D_width_Y_vv.clear();
+    _shower2D_npixel_Y_vv.clear();
+    _shower2D_qsum_Y_vv.clear();
+
     _shower2D_n_defects_U_vv.clear();
     _shower2D_n_defects_V_vv.clear();
     _shower2D_n_defects_Y_vv.clear();
@@ -1061,9 +1223,27 @@ namespace llcv {
 
     _shower3D_cluster_distance_vv.resize(sz);
     
-    _shower2D_n_clusters_U_vv.resize(sz);
-    _shower2D_n_clusters_V_vv.resize(sz);
-    _shower2D_n_clusters_Y_vv.resize(sz);
+    _shower2D_n_clusters_U_v.resize(sz);
+    _shower2D_n_clusters_V_v.resize(sz);
+    _shower2D_n_clusters_Y_v.resize(sz);
+
+    _shower2D_area_U_vv.resize(sz);
+    _shower2D_length_U_vv.resize(sz);
+    _shower2D_width_U_vv.resize(sz);
+    _shower2D_npixel_U_vv.resize(sz);
+    _shower2D_qsum_U_vv.resize(sz);
+
+    _shower2D_area_V_vv.resize(sz);
+    _shower2D_length_V_vv.resize(sz);
+    _shower2D_width_V_vv.resize(sz);
+    _shower2D_npixel_V_vv.resize(sz);
+    _shower2D_qsum_V_vv.resize(sz);
+
+    _shower2D_area_Y_vv.resize(sz);
+    _shower2D_length_Y_vv.resize(sz);
+    _shower2D_width_Y_vv.resize(sz);
+    _shower2D_npixel_Y_vv.resize(sz);
+    _shower2D_qsum_Y_vv.resize(sz);
     
     _shower2D_n_defects_U_vv.resize(sz);
     _shower2D_n_defects_V_vv.resize(sz);

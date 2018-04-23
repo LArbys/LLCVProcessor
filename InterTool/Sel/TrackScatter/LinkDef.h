@@ -5,6 +5,10 @@
 
 #pragma link C++ class llcv::Point+;
 #pragma link C++ class llcv::DBSCAN+;
+
+#pragma link C++ class llcv::VPoint+;
+#pragma link C++ class llcv::VThinning+;
+
 #pragma link C++ class llcv::SelTrackScatter+;
 #pragma link C++ class llcv::Object3D+;
 
