@@ -51,6 +51,7 @@ namespace llcv {
 
     bool _debug;
     bool _fill2d;
+    bool _skeletonize;
     bool _allow_dead_image;
 
     larocv::GEO2D_ContourArray_t FindAndMaskVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
@@ -89,6 +90,10 @@ namespace llcv {
     std::vector<std::vector<float> > _shower_x_vv;
     std::vector<std::vector<float> > _shower_y_vv;
     std::vector<std::vector<float> > _shower_z_vv;
+
+    std::vector<std::vector<float> > _shower_skel_x_vv;
+    std::vector<std::vector<float> > _shower_skel_y_vv;
+    std::vector<std::vector<float> > _shower_skel_z_vv;
 
     std::vector<std::vector<float> > _shower_start_x_vv;
     std::vector<std::vector<float> > _shower_start_y_vv;

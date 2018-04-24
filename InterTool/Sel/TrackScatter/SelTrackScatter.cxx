@@ -39,6 +39,7 @@ namespace llcv {
     _debug            = pset.get<bool>("Debug");
     _fill2d           = pset.get<bool>("Fill2D");
     _allow_dead_image = pset.get<bool>("AllowDeadImage");
+    _skeletonize      = pset.get<bool>("Skeletonize");
 
     _DBSCAN.Configure(10,5);
     
@@ -61,6 +62,10 @@ namespace llcv {
       _outtree->Branch("shower_x_vv", &_shower_x_vv);
       _outtree->Branch("shower_y_vv", &_shower_y_vv);
       _outtree->Branch("shower_z_vv", &_shower_z_vv);
+
+      _outtree->Branch("shower_skel_x_vv", &_shower_skel_x_vv);
+      _outtree->Branch("shower_skel_y_vv", &_shower_skel_y_vv);
+      _outtree->Branch("shower_skel_z_vv", &_shower_skel_z_vv);
       
       _outtree->Branch("shower_start_x_vv" , &_shower_start_x_vv);
       _outtree->Branch("shower_start_y_vv" , &_shower_start_y_vv);
@@ -390,6 +395,7 @@ namespace llcv {
       
       //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d,3);
       std::vector<larocv::data::Vertex3D> reg_v;
+      //std::vector<larocv::data::Vertex3D> skel_v;
       
       if(_allow_dead_image)
 	reg_v = _PixelScan3D.SphereScan3D(timg_v,dead_v,vtx3d);
@@ -400,6 +406,24 @@ namespace llcv {
       LLCV_DEBUG() << reg_v.size() << " spheres scanned in " 
 		   << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
       
+
+      if(_skeletonize and !reg_v.empty()) {
+	_twatch.Start();
+	_Skeletonize.Initialize(reg_v,0.5);
+	_twatch.Stop();
+	
+	LLCV_DEBUG() << "Initialize skeleton in " 
+		     << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+	
+	_twatch.Start();
+	skel_v = _Skeletonize.Run();
+	_twatch.Stop();
+	
+	LLCV_DEBUG() << "Skeletonize to " << reg_v.size() << " pts in "
+		     << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
+      }
+      
+
       if (!reg_v.empty()) {
 	LLCV_DEBUG() << "Objectify" << std::endl;
 	_twatch.Start();
@@ -526,12 +550,22 @@ namespace llcv {
 	auto& shower_y_v = _shower_y_vv[tid];
 	auto& shower_z_v = _shower_z_vv[tid];
 
+	auto& shower_skel_x_v = _shower_skel_x_vv[tid];
+	auto& shower_skel_y_v = _shower_skel_y_vv[tid];
+	auto& shower_skel_z_v = _shower_skel_z_vv[tid];
+
 	std::vector<std::vector<const larocv::data::Vertex3D*> > pts_cluster_vv;
 	pts_cluster_vv.resize(n_clusters);
 
 	for(auto& v : pts_cluster_vv) 
 	  v.reserve(obj.Points().size());
 	
+	for(const auto& skel : skel_v) {
+	  shower_skel_x_v.push_back(skel.x);
+	  shower_skel_y_v.push_back(skel.y);
+	  shower_skel_z_v.push_back(skel.z);
+	}
+
 	//
 	// Make the clusters
 	//
@@ -553,6 +587,8 @@ namespace llcv {
 	  shower_x_v.push_back(pt.x);
 	  shower_y_v.push_back(pt.y);
 	  shower_z_v.push_back(pt.z);
+
+	  if (_skeletonize) continue;
 
 	  for(size_t plane=0; plane<3; ++plane) {
 	    auto& mat3d = mat3d_v[plane];
@@ -610,7 +646,7 @@ namespace llcv {
 	  LLCV_DEBUG() << "... " << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
 
 	  shower3D_cluster_n_points_v[cid] = cluster.Points().size();
-
+	  
 	  shower3D_cluster_length_v[cid] = cluster.Length();
 	  shower3D_cluster_width_v[cid] = cluster.Width();
 	  shower3D_cluster_width1_v[cid] = cluster.Width1();
@@ -624,7 +660,7 @@ namespace llcv {
 	  shower3D_cluster_opening2_v[cid] = cluster.Opening2();
 	}
 
-	if(!_fill2d) continue;
+	if(!_fill2d or _skeletonize) continue;
 
 	//
 	// Analyze 2D clusters
@@ -1057,6 +1093,10 @@ namespace llcv {
     _shower_y_vv.clear();
     _shower_z_vv.clear();
 
+    _shower_skel_x_vv.clear();
+    _shower_skel_y_vv.clear();
+    _shower_skel_z_vv.clear();
+
     _shower_start_x_vv.clear();
     _shower_start_y_vv.clear();
     _shower_start_z_vv.clear();
@@ -1155,6 +1195,10 @@ namespace llcv {
     _shower_x_vv.resize(sz);
     _shower_y_vv.resize(sz);
     _shower_z_vv.resize(sz);
+
+    _shower_skel_x_vv.resize(sz);
+    _shower_skel_y_vv.resize(sz);
+    _shower_skel_z_vv.resize(sz);
 
     _shower_start_x_vv.resize(sz);
     _shower_start_y_vv.resize(sz);
