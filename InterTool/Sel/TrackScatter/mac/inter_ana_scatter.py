@@ -54,7 +54,7 @@ driver.AttachInterFile(INTER_FILE,"inter_tree")
 
 NUM = 1
 # NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-driver.SetOutputFilename("track_scatter_ana_%d.root" % NUM);
+driver.SetOutputFilename("track_scatter_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM));
 
 selection = llcv.SelTrackScatter()
 driver.AddSelection(selection);
@@ -73,8 +73,8 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-proc.batch_process_lcv_reverse(0,500)
-#proc.batch_process_lcv_reverse(0,2)
+#proc.batch_process_lcv_reverse(0,500)
+proc.batch_process_lcv_reverse(180,1)
 
 proc.finalize()
 

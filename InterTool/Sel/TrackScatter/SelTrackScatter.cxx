@@ -40,8 +40,9 @@ namespace llcv {
     _fill2d           = pset.get<bool>("Fill2D");
     _allow_dead_image = pset.get<bool>("AllowDeadImage");
     _skeletonize      = pset.get<bool>("Skeletonize");
+    _sub_skeleton     = pset.get<bool>("SubSkeleton");
 
-    _DBSCAN.Configure(10,5);
+    _DBSCAN.Configure(3,5);
     
     _twatch.Stop();
 
@@ -220,7 +221,7 @@ namespace llcv {
       int px_x = kINVALID_INT;
       int px_y = kINVALID_INT;
 
-      ProjectMat(img_v.at(plane)->meta(),
+      ProjectMat(img_v[plane]->meta(),
     		 Data().Vertex()->X(),Data().Vertex()->Y(),Data().Vertex()->Z(),
     		 px_x, px_y);
 
@@ -255,7 +256,7 @@ namespace llcv {
     	  int px_x = kINVALID_INT;
     	  int px_y = kINVALID_INT;
 	  
-    	  ProjectMat(img_v.at(plane)->meta(),
+    	  ProjectMat(img_v[plane]->meta(),
     		     pt.X(),pt.Y(),pt.Z(),
     		     px_x, px_y);
 	  
@@ -307,7 +308,6 @@ namespace llcv {
       }
 
     }
-
 
     //
     // generate 3D consistent points using radial approximation
@@ -395,7 +395,7 @@ namespace llcv {
       
       //auto reg_v = _PixelScan3D.SphereScan3D(white_mat_v,vtx3d,3);
       std::vector<larocv::data::Vertex3D> reg_v;
-      //std::vector<larocv::data::Vertex3D> skel_v;
+      std::vector<larocv::data::Vertex3D> skel_v;
       
       if(_allow_dead_image)
 	reg_v = _PixelScan3D.SphereScan3D(timg_v,dead_v,vtx3d);
@@ -419,10 +419,12 @@ namespace llcv {
 	skel_v = _Skeletonize.Run();
 	_twatch.Stop();
 	
-	LLCV_DEBUG() << "Skeletonize to " << reg_v.size() << " pts in "
+	LLCV_DEBUG() << "Skeletonize to " << skel_v.size() << " pts in "
 		     << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
       }
-      
+
+      if(_sub_skeleton)
+	reg_v = skel_v;
 
       if (!reg_v.empty()) {
 	LLCV_DEBUG() << "Objectify" << std::endl;
@@ -580,7 +582,11 @@ namespace llcv {
 	    continue;
 	  }
 
-	  pts_cluster_vv.at(cid).push_back(&pt);
+
+	  const auto pt_ptr = &pt;
+	  assert(pt_ptr);
+
+	  pts_cluster_vv[cid].push_back(pt_ptr);
 	  
 	  if(!_debug) continue;
 
@@ -588,13 +594,16 @@ namespace llcv {
 	  shower_y_v.push_back(pt.y);
 	  shower_z_v.push_back(pt.z);
 
-	  if (_skeletonize) continue;
+	  if (_sub_skeleton) continue;
 
 	  for(size_t plane=0; plane<3; ++plane) {
 	    auto& mat3d = mat3d_v[plane];
 	    int px_x = pt.vtx2d_v[plane].pt.x;
 	    int px_y = pt.vtx2d_v[plane].pt.y;
 	    if (px_x < 0) continue;
+	    if (px_y < 0) continue;
+	    if (px_x >= mat3d.rows) continue;
+	    if (px_y >= mat3d.cols) continue;
 	    mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
 	  }
 	} // end sphere point
@@ -660,7 +669,8 @@ namespace llcv {
 	  shower3D_cluster_opening2_v[cid] = cluster.Opening2();
 	}
 
-	if(!_fill2d or _skeletonize) continue;
+	if(!_fill2d) continue;
+	if(_sub_skeleton) continue;
 
 	//
 	// Analyze 2D clusters
@@ -786,7 +796,7 @@ namespace llcv {
 	      shower2D_qsum_Y_v[cid]   = pc.qsum;
 	    }
 	  }
-	}
+	} // end plane
 
       } //end non-empty scan
 

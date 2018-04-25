@@ -47,7 +47,7 @@ namespace llcv {
       for(int index=0; index<(int)clusterSeeds.size(); ++index) {
 
 	const auto seed_id = clusterSeeds[index];
-	auto& seed_pt = m_points.at(seed_id);
+	auto& seed_pt = m_points[seed_id];
 	
 	seed_pt.clusterID = clusterID;
 	
@@ -59,11 +59,11 @@ namespace llcv {
 
       for( size_t i = 0, n = clusterSeeds.size(); i < n; ++i ) {
 	const auto seed_id = clusterSeeds[i];
-	auto& seed_pt = m_points.at(seed_id);
+	auto& seed_pt = m_points[seed_id];
 	auto clusterNeighbors = calculateCluster(seed_pt);
 	if (clusterNeighbors.size() >= m_minPoints) {
 	  for(auto neighbor_id : clusterNeighbors) {
-	    auto& neighbor_pt = m_points.at(neighbor_id);
+	    auto& neighbor_pt = m_points[neighbor_id];
 	    if (neighbor_pt.clusterID == UNCLASSIFIED or neighbor_pt.clusterID == NOISE) {
 	      if (neighbor_pt.clusterID == UNCLASSIFIED) {
 		clusterSeeds.push_back(neighbor_id);

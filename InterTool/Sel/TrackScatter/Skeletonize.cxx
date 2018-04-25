@@ -42,7 +42,7 @@ namespace llcv {
 
     _sz = _lX * _lY * _lZ;
     
-
+    
     _voxel = new unsigned char[_sz];
 
     for(size_t xid=0; xid<(size_t)_sz; ++xid)
@@ -155,8 +155,9 @@ namespace llcv {
 
   void Skeletonize::Clear() {
 
-    if(_voxel)
-      delete _voxel;
+    if(_voxel) 
+      delete[] _voxel;
+
     _voxel = nullptr;
 
     _thin_voxel_v.clear();

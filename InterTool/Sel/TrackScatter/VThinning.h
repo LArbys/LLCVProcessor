@@ -6,7 +6,7 @@
 //
 
 //
-// This code found by vic
+// This code modded by vic
 //
 
 
@@ -57,7 +57,6 @@ namespace llcv {
     ~VThinning() {}
 
     int Execute(unsigned char *volin,int SizeX,int  SizeY,int  SizeZ, vector<VPoint> *pExtractedIndexes);
-    bool WriteOutput(char *outFile, unsigned char *vol, int sz);
     bool MatchesATemplate(unsigned char n[3][3][3]);
     bool TransformNeighborhood(unsigned char n[3][3][3], char direction,unsigned char USn[3][3][3]); 
     bool markBoundaryInDirection(unsigned char *vol, int L, int M, int N,char direction);

@@ -16,15 +16,20 @@
 #endif
 #endif
 
+#include <cassert>
+
 namespace llcv {
   
   Object3D::Object3D(const larocv::data::Vertex3D& s,
 		     const std::vector<const larocv::data::Vertex3D*> & v) {
     
     _start = s;
+
+    _pts_v.clear();
     _pts_v.resize(v.size());
-    for(size_t vid=0; vid<v.size(); ++vid)
-      _pts_v[vid] = *v[vid];
+
+    for(size_t vid=0; vid<v.size(); ++vid) 
+      _pts_v[vid] = *(v[vid]);
 
     FillPCA();
   }

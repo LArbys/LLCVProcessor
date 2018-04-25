@@ -219,7 +219,8 @@ namespace llcv {
 
 
   // transform neighborhood from a different direction
-  bool VThinning::TransformNeighborhood(unsigned char n[3][3][3], char direction, 
+  bool VThinning::TransformNeighborhood(unsigned char n[3][3][3], 
+					char direction, 
 					unsigned char USn[3][3][3]) 
   {
     char i, j, k;

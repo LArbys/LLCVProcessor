@@ -52,6 +52,7 @@ namespace llcv {
     bool _debug;
     bool _fill2d;
     bool _skeletonize;
+    bool _sub_skeleton;
     bool _allow_dead_image;
 
     larocv::GEO2D_ContourArray_t FindAndMaskVertex(const cv::Mat& mat,const cv::Point_<int> vertex);
