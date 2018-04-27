@@ -67,6 +67,18 @@ namespace llcv {
       _outtree->Branch("shower_skel_x_vv", &_shower_skel_x_vv);
       _outtree->Branch("shower_skel_y_vv", &_shower_skel_y_vv);
       _outtree->Branch("shower_skel_z_vv", &_shower_skel_z_vv);
+
+      _outtree->Branch("shower_p0_x_vv", &_shower_p0_x_vv);
+      _outtree->Branch("shower_p0_y_vv", &_shower_p0_y_vv);
+      _outtree->Branch("shower_p0_z_vv", &_shower_p0_z_vv);
+      
+      _outtree->Branch("shower_p1_x_vv", &_shower_p1_x_vv);
+      _outtree->Branch("shower_p1_y_vv", &_shower_p1_y_vv);
+      _outtree->Branch("shower_p1_z_vv", &_shower_p1_z_vv);
+
+      _outtree->Branch("shower_p2_x_vv", &_shower_p2_x_vv);
+      _outtree->Branch("shower_p2_y_vv", &_shower_p2_y_vv);
+      _outtree->Branch("shower_p2_z_vv", &_shower_p2_z_vv);
       
       _outtree->Branch("shower_start_x_vv" , &_shower_start_x_vv);
       _outtree->Branch("shower_start_y_vv" , &_shower_start_y_vv);
@@ -405,7 +417,6 @@ namespace llcv {
       _twatch.Stop();
       LLCV_DEBUG() << reg_v.size() << " spheres scanned in " 
 		   << std::setprecision(6) << _twatch.RealTime() << "s" << std::endl;
-      
 
       if(_skeletonize and !reg_v.empty()) {
 	_twatch.Start();
@@ -552,20 +563,54 @@ namespace llcv {
 	auto& shower_y_v = _shower_y_vv[tid];
 	auto& shower_z_v = _shower_z_vv[tid];
 
-	auto& shower_skel_x_v = _shower_skel_x_vv[tid];
-	auto& shower_skel_y_v = _shower_skel_y_vv[tid];
-	auto& shower_skel_z_v = _shower_skel_z_vv[tid];
-
 	std::vector<std::vector<const larocv::data::Vertex3D*> > pts_cluster_vv;
 	pts_cluster_vv.resize(n_clusters);
 
 	for(auto& v : pts_cluster_vv) 
 	  v.reserve(obj.Points().size());
-	
+
+	auto& shower_skel_x_v = _shower_skel_x_vv[tid];
+	auto& shower_skel_y_v = _shower_skel_y_vv[tid];
+	auto& shower_skel_z_v = _shower_skel_z_vv[tid];
+
 	for(const auto& skel : skel_v) {
 	  shower_skel_x_v.push_back(skel.x);
 	  shower_skel_y_v.push_back(skel.y);
 	  shower_skel_z_v.push_back(skel.z);
+	}
+
+	auto p0_v = _PixelScan3D.ProjectAndDistance(timg_v[0],0,obj.Points(),shower_trk_dev_v);
+	auto p1_v = _PixelScan3D.ProjectAndDistance(timg_v[1],1,obj.Points(),shower_trk_dev_v);
+	auto p2_v = _PixelScan3D.ProjectAndDistance(timg_v[2],2,obj.Points(),shower_trk_dev_v);
+
+	auto& shower_p0_x_v = _shower_p0_x_vv[tid];
+	auto& shower_p0_y_v = _shower_p0_y_vv[tid];
+	auto& shower_p0_z_v = _shower_p0_z_vv[tid];
+	
+	auto& shower_p1_x_v = _shower_p1_x_vv[tid];
+	auto& shower_p1_y_v = _shower_p1_y_vv[tid];
+	auto& shower_p1_z_v = _shower_p1_z_vv[tid];
+	
+	auto& shower_p2_x_v = _shower_p2_x_vv[tid];
+	auto& shower_p2_y_v = _shower_p2_y_vv[tid];
+	auto& shower_p2_z_v = _shower_p2_z_vv[tid];
+
+	for(const auto& p0 : p0_v) {
+	  shower_p0_x_v.push_back(p0->x);
+	  shower_p0_y_v.push_back(p0->y);
+	  shower_p0_z_v.push_back(p0->z);
+	}
+
+	for(const auto& p1 : p1_v) {
+	  shower_p1_x_v.push_back(p1->x);
+	  shower_p1_y_v.push_back(p1->y);
+	  shower_p1_z_v.push_back(p1->z);
+	}
+
+	for(const auto& p2 : p2_v) {
+	  shower_p2_x_v.push_back(p2->x);
+	  shower_p2_y_v.push_back(p2->y);
+	  shower_p2_z_v.push_back(p2->z);
 	}
 
 	//
@@ -604,6 +649,7 @@ namespace llcv {
 	    if (px_y < 0) continue;
 	    if (px_x >= mat3d.rows) continue;
 	    if (px_y >= mat3d.cols) continue;
+	    
 	    mat3d.at<cv::Vec3b>(px_y,px_x) = {255,255,0};
 	  }
 	} // end sphere point
@@ -1107,6 +1153,18 @@ namespace llcv {
     _shower_skel_y_vv.clear();
     _shower_skel_z_vv.clear();
 
+    _shower_p0_x_vv.clear();
+    _shower_p0_y_vv.clear();
+    _shower_p0_z_vv.clear();
+
+    _shower_p1_x_vv.clear();
+    _shower_p1_y_vv.clear();
+    _shower_p1_z_vv.clear();
+
+    _shower_p2_x_vv.clear();
+    _shower_p2_y_vv.clear();
+    _shower_p2_z_vv.clear();
+
     _shower_start_x_vv.clear();
     _shower_start_y_vv.clear();
     _shower_start_z_vv.clear();
@@ -1205,6 +1263,18 @@ namespace llcv {
     _shower_x_vv.resize(sz);
     _shower_y_vv.resize(sz);
     _shower_z_vv.resize(sz);
+
+    _shower_p0_x_vv.resize(sz);
+    _shower_p0_y_vv.resize(sz);
+    _shower_p0_z_vv.resize(sz);
+
+    _shower_p1_x_vv.resize(sz);
+    _shower_p1_y_vv.resize(sz);
+    _shower_p1_z_vv.resize(sz);
+
+    _shower_p2_x_vv.resize(sz);
+    _shower_p2_y_vv.resize(sz);
+    _shower_p2_z_vv.resize(sz);
 
     _shower_skel_x_vv.resize(sz);
     _shower_skel_y_vv.resize(sz);

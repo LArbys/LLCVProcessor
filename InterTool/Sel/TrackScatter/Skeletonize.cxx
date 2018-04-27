@@ -59,9 +59,9 @@ namespace llcv {
   
   int Skeletonize::_LocationToVoxel(float x, float y, float z) const {
 
-    int x_loc = (int)(((x - _min_x) / _voxel_size) + 0.5);
-    int y_loc = (int)(((y - _min_y) / _voxel_size) + 0.5);
-    int z_loc = (int)(((z - _min_z) / _voxel_size) + 0.5);
+    int x_loc = (int)(((x - _min_x) / _voxel_size));
+    int y_loc = (int)(((y - _min_y) / _voxel_size));
+    int z_loc = (int)(((z - _min_z) / _voxel_size));
 
     assert (x_loc < _lX);
     assert (y_loc < _lY);

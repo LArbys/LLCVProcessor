@@ -92,6 +92,18 @@ namespace llcv {
     std::vector<std::vector<float> > _shower_y_vv;
     std::vector<std::vector<float> > _shower_z_vv;
 
+    std::vector<std::vector<float> > _shower_p0_x_vv;
+    std::vector<std::vector<float> > _shower_p0_y_vv;
+    std::vector<std::vector<float> > _shower_p0_z_vv;
+
+    std::vector<std::vector<float> > _shower_p1_x_vv;
+    std::vector<std::vector<float> > _shower_p1_y_vv;
+    std::vector<std::vector<float> > _shower_p1_z_vv;
+
+    std::vector<std::vector<float> > _shower_p2_x_vv;
+    std::vector<std::vector<float> > _shower_p2_y_vv;
+    std::vector<std::vector<float> > _shower_p2_z_vv;
+
     std::vector<std::vector<float> > _shower_skel_x_vv;
     std::vector<std::vector<float> > _shower_skel_y_vv;
     std::vector<std::vector<float> > _shower_skel_z_vv;
