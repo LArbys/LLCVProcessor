@@ -5,7 +5,6 @@
 
 #include "Triangle.h"
 
-
 #include "InterTool_Util/InterImageUtils.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
@@ -119,7 +118,7 @@ namespace llcv {
     
     for(size_t shrid=0; shrid < shr_v.size(); ++shrid) {
       const auto& shr = (*shr_v[shrid]);
-      
+
       auto theta_phi = ShowerAngle(shr);
       
       float pi8 = 3.14159 / 8;
@@ -166,7 +165,6 @@ namespace llcv {
       for(size_t plane=0; plane<3; ++plane)
 	timg3d_v[plane] = larocv::BlankImage(timg_v[plane],0);
 
-      
       for(size_t pid=0; pid < reg_v.size(); ++pid) {
 	const auto& pt = reg_v[pid];
 	for(size_t plane=0; plane<3; ++plane) {
@@ -214,8 +212,14 @@ namespace llcv {
 	if (!ctor_ptr) throw llcv_err("No contour found?");
 	LLCV_DEBUG() << "Close contour @" << ctor_ptr << " sz=" << ctor_ptr->size() << " dist=" << dist << std::endl;
 	
-	Triangle tri(*ctor_ptr);
-	
+	Triangle tri(*ctor_ptr,vertex_pt);
+	tri.Expand(timg3d,0.25);
+
+	auto& img3d = mat3d_v[plane];	
+
+	cv::line(img3d,tri.Base1(),tri.Base2(),cv::Scalar(238,130,238),1);
+	cv::line(img3d,tri.Apex() ,tri.Base1(),cv::Scalar(0,255,0),1);
+	cv::line(img3d,tri.Apex() ,tri.Base2(),cv::Scalar(0,255,0),1);
       }
       
       for(size_t plane=0; plane<3; ++plane) {
