@@ -83,6 +83,9 @@ namespace llcv {
 	const auto& par = par_v[plane];
 	if (par.empty()) continue;
 	
+	LLCV_CRITICAL() << "WARNING THIS MODULE IS NOT COMPATIBLE WITH 043018 UPDATE" << std::endl;
+	throw llcv_err("die");
+
 	auto ctor = AsContour(par,*meta);
 	
 	float trk_sz  = (float)larocv::CountNonZero(trk_mat,ctor,0);

@@ -1,21 +1,19 @@
-#ifndef __SELCLUSTER3D_H__
-#define __SELCLUSTER3D_H__
+#ifndef __SELTRIANGLESTUDY_H__
+#define __SELTRIANGLESTUDY_H__
 
 #include "InterTool_Core/InterSelBase.h"
-
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
-
 #include "TStopwatch.h"
+#include <array>
 
 namespace llcv {
-  
 
-  class SelCluster3D : public InterSelBase { 
+  class SelTriangleStudy : public InterSelBase { 
 
   public:
 
-  SelCluster3D(std::string name="SelCluster3D") : InterSelBase(name), _outtree(nullptr) {}
-    ~SelCluster3D(){}
+  SelTriangleStudy(std::string name="SelTriangleStudy") : InterSelBase(name), _outtree(nullptr) {}
+    ~SelTriangleStudy(){}
     
     void Configure (const larcv::PSet &pset);
     void Initialize();
@@ -40,6 +38,10 @@ namespace llcv {
     void ResizeOutput(size_t sz);
 
     std::pair<float,float> ShowerAngle(const larlite::shower& shower);
+    void FillNeighbors(const std::array<cv::Mat,3>& parent_v,
+		       std::array<cv::Mat,3>& child_v) const;
+
+    larocv::GEO2D_Contour_t Neighbors(const geo2d::Vector<int>& pt, const cv::Mat& mat) const;
 
     //
     // TTree
