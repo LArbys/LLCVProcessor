@@ -12,7 +12,6 @@
 
 #pragma link C++ class llcv::Object3D+;
 #pragma link C++ class llcv::SelTrackScatter+;
-
-
+#pragma link C++ class llcv::SelCluster3D+;
 
 #endif
