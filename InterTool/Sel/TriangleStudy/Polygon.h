@@ -11,8 +11,8 @@ namespace llcv {
     Polygon(const larocv::GEO2D_Contour_t& ctor, const geo2d::Vector<float>& start);
     ~Polygon(){}
     
-    int NumberDefects(float dist_thresh) const;
-    int NumberDefectsNoStart(float dist_thresh) const;
+    int NumberDefects(float dist_thresh=0.0) const;
+    int NumberDefectsNoStart(float dist_thresh=0.0) const;
 
     float LargestDefect() const;
     float SmallestDefect() const;

@@ -59,7 +59,7 @@ namespace llcv {
     return;
   }
 
-  int Polygon::NumberDefects(float dist_thresh=0.0) const {
+  int Polygon::NumberDefects(float dist_thresh) const {
     int res = 0;
     
     for(auto defect_dist : _defect_dist_v) {
@@ -72,7 +72,7 @@ namespace llcv {
   }
 
 
-  int Polygon::NumberDefectsNoStart(float dist_thresh=0.0) const {
+  int Polygon::NumberDefectsNoStart(float dist_thresh) const {
     int res = 0;
     
     for(size_t did=0; did<_defect_dist_v.size(); ++did) {
@@ -127,7 +127,7 @@ namespace llcv {
   float Polygon::SmallestDefect() const {
     float res = -1;
     
-    auto min_iter = std::max_element(_defect_dist_v.begin(),_defect_dist_v.end());
+    auto min_iter = std::min_element(_defect_dist_v.begin(),_defect_dist_v.end());
 
     res = *min_iter;
 
@@ -185,14 +185,16 @@ namespace llcv {
 
     for(const auto& defect_info : _defect_info_v) {
       larocv::GEO2D_Contour_t pocket;
-      pocket.reserve(defect_info[1] - defect_info[0]);
+      //pocket.reserve(defect_info[1] - defect_info[0]);
 
       for(int did=defect_info[0]; did<defect_info[1]; ++did)
 	pocket.emplace_back(_ctor.at(did));
       
-      pocket.emplace_back(pocket.front());
-      
-      res += larocv::ContourArea(pocket);
+      if (!pocket.empty()) {
+	pocket.emplace_back(pocket.front());
+	res += larocv::ContourArea(pocket);
+      }
+
     }
 
     return res;
@@ -209,14 +211,15 @@ namespace llcv {
       if (_veto_ctor_id >= start_idx and _veto_ctor_id <= end_idx) continue;
 
       larocv::GEO2D_Contour_t pocket;
-      pocket.reserve(end_idx - start_idx);
+      //pocket.reserve(end_idx - start_idx);
 
       for(int did=start_idx; did<end_idx; ++did)
 	pocket.emplace_back(_ctor.at(did));
       
-      pocket.emplace_back(pocket.front());
-      
-      res += larocv::ContourArea(pocket);
+      if (!pocket.empty()) {
+	pocket.emplace_back(pocket.front());
+	res += larocv::ContourArea(pocket);
+      }
     }
 
     return res;

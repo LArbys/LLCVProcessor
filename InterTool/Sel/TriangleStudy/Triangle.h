@@ -15,6 +15,7 @@ namespace llcv {
     void Expand(const cv::Mat& img, const float fraction);
     void Tighten(const cv::Mat& img, const float radius, const float fraction);
     float StraightLineTest(const cv::Mat& img) const;
+    void Extend(const float fraction);
 
   private:
     void Construct();
@@ -22,9 +23,20 @@ namespace llcv {
     geo2d::Vector<float> MidPoint(const geo2d::Vector<float>& pt1,const geo2d::Vector<float>& pt2) const;
 
   public:
+    const larocv::GEO2D_Contour_t& Contour() const { return _ctor; }
+    larocv::GEO2D_Contour_t AsContour() const;
     const geo2d::Vector<float>& Apex() const { return _apex;}
     const geo2d::Vector<float>& Base1() const { return _base_pt1; }
     const geo2d::Vector<float>& Base2() const { return _base_pt2; }
+
+    float Height() const;
+
+    float EmptyAreaRatio() const;
+    float EmptyArea() const;
+    
+    float BaseLength() const;
+    float Area() const;
+
 
   private:
     geo2d::Vector<float> _apex;

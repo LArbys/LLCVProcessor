@@ -12,6 +12,9 @@
 #endif
 #include <opencv2/core/core.hpp>
 
+#include "Geo2D/Core/Geo2D.h"
+
+
 namespace llcv { 
   
   Triangle::Triangle(const larocv::GEO2D_Contour_t& ctor,
@@ -98,6 +101,8 @@ namespace llcv {
     auto ctor_img = larocv::BlankImage(img,255);
     ctor_img = larocv::MaskImage(ctor_img,_ctor,-1,false);
 
+    auto ctor_img_noline = ctor_img.clone();
+
     //
     // Chop off the pixels along the apex line
     //
@@ -137,10 +142,14 @@ namespace llcv {
 	close_id = cid;
       }
     }
-
-    assert(close_id != larocv::kINVALID_SIZE);
     
-    const auto& far_ctor = ctor_v[close_id];
+    larocv::GEO2D_Contour_t far_ctor;
+    if (ctor_v.empty() or close_id == larocv::kINVALID_SIZE) {
+      ctor_img = ctor_img_noline.clone();
+      far_ctor = _ctor;
+    } else {
+      far_ctor = ctor_v[close_id];
+    }
 
     ctor_img = larocv::MaskImage(ctor_img,far_ctor,-1,false);
 
@@ -155,19 +164,26 @@ namespace llcv {
 
     geo2d::Vector<float> dir(0,0);
     bool right = false;
+    bool up = false;
 
     // input is base 1
     if (base_pt == _base_pt1) {
       dir = base_pt - _base_pt2;
+
       if (base_pt.x > _base_pt2.x)
 	right = true;
+      if (base_pt.y > _base_pt2.y)
+	up = true;
     }
     
     // input is base 2
     else { 
       dir = base_pt - _base_pt1;    
+
       if (base_pt.x > _base_pt1.x)
 	right = true;
+      if (base_pt.y > _base_pt1.y)
+	up = true;
     }
 
     bool isinf = false;
@@ -179,16 +195,20 @@ namespace llcv {
     while(larocv::Broken(ctor_img,_apex,base_pt,1)) {
 
       if (isinf) {
-	base_pt.y =+ 1;
-	continue;
+	if (up)
+	  base_pt.y += 1;
+	else
+	  base_pt.y -= 1;
       }
 
-      if (right)
-	base_pt.x += 1;
-      else
-	base_pt.x -= 1;
+      else {
+	if (right)
+	  base_pt.x += 1;
+	else
+	  base_pt.x -= 1;
 
-      base_pt.y  = line.y(base_pt.x);
+	base_pt.y  = line.y(base_pt.x);
+      }
 
       if (base_pt.x >= ctor_img.rows) break;
       if (base_pt.y >= ctor_img.cols) break;
@@ -215,8 +235,9 @@ namespace llcv {
     std::vector<geo2d::Vector<float> > base2_v(near_v.size());
 
     for(size_t nid=0; nid<near_v.size(); ++nid) {
+
       const auto& near = near_v[nid];
-      
+
       auto& area = area_v[nid];
       auto& base1 = base1_v[nid];
       auto& base2 = base2_v[nid];
@@ -233,6 +254,8 @@ namespace llcv {
       area = 0.5 * geo2d::dist(base1,base2) * geo2d::dist(_apex,MidPoint(base1,base2));
     }
 
+    if (area_v.empty()) return;
+      
     auto min_iter = std::min_element(area_v.begin(),area_v.end());
     auto min_idx = std::distance(area_v.begin(),min_iter);
 
@@ -275,12 +298,104 @@ namespace llcv {
     
     float nzero_before = (float) larocv::CountNonZero(white_img);
     
-    cv::line(white_img,_apex,mid_pt,cv::Scalar(0),2);
+    cv::line(white_img,_apex,mid_pt,cv::Scalar(0),3);
 
     float nzero_after = (float) larocv::CountNonZero(white_img);
     
     if (nzero_before != 0) 
       res = 1.0 - (nzero_after / nzero_before);
+    
+    return res;
+  }
+
+  larocv::GEO2D_Contour_t Triangle::AsContour() const {
+    larocv::GEO2D_Contour_t res(3);
+
+    res[0].x = (int)_apex.x;
+    res[0].y = (int)_apex.y;
+
+    res[1].x = (int)_base_pt1.x;
+    res[1].y = (int)_base_pt1.y;
+
+    res[2].x = (int)_base_pt2.x;
+    res[2].y = (int)_base_pt2.y;
+
+    return res;
+  }
+
+  void Triangle::Extend(const float fraction) {
+
+    assert (fraction>1);
+
+    //
+    // get the mid point length
+    //
+    auto mid_pt = MidPoint(_base_pt1,_base_pt2);
+    
+    auto mid_dir   = mid_pt - _apex;
+    auto edge1_dir = _base_pt1 - _apex;
+    auto edge2_dir = _base_pt2 - _apex;
+    auto base_dir  = _base_pt1 - _base_pt2;
+
+    auto new_mid = _apex + mid_dir*fraction;
+    
+    geo2d::Line<float> new_base_line(new_mid,base_dir);
+    geo2d::Line<float> edge1_line(_base_pt1,edge1_dir);
+    geo2d::Line<float> edge2_line(_base_pt2,edge2_dir);
+
+    auto base1_ipoint = geo2d::IntersectionPoint(new_base_line,edge1_line);
+    auto base2_ipoint = geo2d::IntersectionPoint(new_base_line,edge2_line);
+
+    _base_pt1 = base1_ipoint;
+    _base_pt2 = base2_ipoint;
+
+  }
+
+  float Triangle::Height() const {
+    float res = -1;
+    
+    auto mid_pt = MidPoint(_base_pt1,_base_pt2);
+    res = geo2d::dist(mid_pt,_apex);
+    
+    return res;
+  }
+  
+
+  float Triangle::EmptyAreaRatio() const {
+    float res = -1;
+
+    float tri_area = larocv::ContourArea(this->AsContour());
+    float ctor_area = larocv::ContourArea(_ctor);
+    
+    if (ctor_area > 0)
+      res = tri_area / ctor_area;
+    
+    return res;
+  }
+
+  float Triangle::EmptyArea() const {
+    float res = -1;
+    
+    float tri_area = larocv::ContourArea(this->AsContour());
+    float ctor_area = larocv::ContourArea(_ctor);
+
+    res = tri_area - ctor_area;
+    
+    return res;
+  }
+
+  float Triangle::BaseLength() const {
+    float res = -1;
+    
+    res = geo2d::dist(_base_pt1,_base_pt2);
+
+    return res;
+  }
+
+  float Triangle::Area() const {
+    float res = -1;
+
+    res = 0.5 * BaseLength() * Height();
     
     return res;
   }
