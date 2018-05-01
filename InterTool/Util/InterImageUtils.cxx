@@ -79,19 +79,29 @@ namespace llcv {
     return;
   }
 
-  larocv::GEO2D_Contour_t AsContour(const larcv::Pixel2DCluster& pcluster, const larocv::ImageMeta& meta)
-  {
+  larocv::GEO2D_Contour_t AsContour(const larcv::Pixel2DCluster& pcluster,
+				    const larocv::ImageMeta& meta) {
     larocv::GEO2D_Contour_t ctor;
     ctor.resize(pcluster.size());
     for(size_t pt_idx=0; pt_idx < pcluster.size(); ++pt_idx) {
       auto const& pt = pcluster[pt_idx];
-      ctor[pt_idx].x = (pt.Y()-2400) / meta.pixel_height();
-      ctor[pt_idx].y = pt.X();
+      
+      float x = pt.X();
+      float y = pt.Y();
+
+      x -= meta.origin().y;
+      y -= meta.origin().x;
+	
+      //x = x / meta.pixel_height();
+      y = y / meta.pixel_height();
+
+      ctor[pt_idx].x = y;
+      ctor[pt_idx].y = x;
     }
+
     return ctor;
   }
-
+  
 }
-
 
 #endif

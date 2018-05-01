@@ -255,8 +255,8 @@ namespace llcv {
 	std::vector<larcv::Pixel2D> px_pos_v;
 	px_pos_v.reserve(pix.size());
 	for(const auto& px : pix) {
-	  auto posx = pix_meta.pos_x(px.Y());
-	  auto posy = pix_meta.pos_y(px.X());
+	  auto posx = pix_meta.pos_x(px.X()); // note this is fucked for _img
+	  auto posy = pix_meta.pos_y(px.Y());
 	  px_pos_v.emplace_back(posx,posy);
 	}
 
@@ -283,7 +283,6 @@ namespace llcv {
     _subrun = kINVALID_INT;
     _event  = kINVALID_INT;
   }
-
 
   void InterDriver::Dump() {
     std::cout << _data_mgr_v.size() << " verticies" << std::endl;

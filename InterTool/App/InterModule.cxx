@@ -43,8 +43,8 @@ namespace llcv {
     LLCV_DEBUG() << "dead_img_prod........" << _dead_img_prod << std::endl;
     LLCV_DEBUG() << "pgraph_prod.........." << _pgraph_prod << std::endl;
     LLCV_DEBUG() << "pixel_prod..........." << _pixel_prod << std::endl;
-    LLCV_DEBUG() << "track_vertex_prod... " << _track_vertex_prod << std::endl;
-    LLCV_DEBUG() << "shower_vertex_prod.. " << _shower_vertex_prod << std::endl;
+    LLCV_DEBUG() << "track_vertex_prod...." << _track_vertex_prod << std::endl;
+    LLCV_DEBUG() << "shower_vertex_prod..." << _shower_vertex_prod << std::endl;
     LLCV_DEBUG() << "opflash_prod........." << _opflash_prod << std::endl;
     LLCV_DEBUG() << "rawhit_prod.........." << _rawhit_prod << std::endl;
     

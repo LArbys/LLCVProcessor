@@ -21,7 +21,8 @@ namespace llcv {
 		  double x,double y,double z,
 		  int& xx, int& yy);
 
-  larocv::GEO2D_Contour_t AsContour(const larcv::Pixel2DCluster& pcluster, const larocv::ImageMeta& meta);
+  larocv::GEO2D_Contour_t AsContour(const larcv::Pixel2DCluster& pcluster, 
+				    const larocv::ImageMeta& meta);
   
 }
 

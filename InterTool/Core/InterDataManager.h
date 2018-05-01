@@ -17,6 +17,7 @@
 //lcv
 #include "DataFormat/PGraph.h"
 #include "DataFormat/Pixel2DCluster.h"
+#include "DataFormat/ImageMeta.h"
 
 namespace llcv {
 
