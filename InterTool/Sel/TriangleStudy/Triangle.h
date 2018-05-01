@@ -13,9 +13,13 @@ namespace llcv {
     ~Triangle(){}
     
     void Expand(const cv::Mat& img, const float fraction);
-    
+    void Tighten(const cv::Mat& img, const float radius, const float fraction);
+    float StraightLineTest(const cv::Mat& img) const;
+
   private:
+    void Construct();
     void MovePt(const cv::Mat& ctor_img, geo2d::Vector<float>& base_pt);
+    geo2d::Vector<float> MidPoint(const geo2d::Vector<float>& pt1,const geo2d::Vector<float>& pt2) const;
 
   public:
     const geo2d::Vector<float>& Apex() const { return _apex;}

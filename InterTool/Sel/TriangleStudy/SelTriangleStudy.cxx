@@ -4,6 +4,7 @@
 #include "SelTriangleStudy.h"
 
 #include "Triangle.h"
+#include "Polygon.h"
 
 #include "InterTool_Util/InterImageUtils.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
@@ -24,6 +25,8 @@ namespace llcv {
     _cropy = 400;
 
     _twatch.Stop();
+
+    _n_neighbors = pset.get<size_t>("NNeighbors",3);
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -182,7 +185,8 @@ namespace llcv {
 
 
       // Fill
-      FillNeighbors(timg_v,timg3d_v);
+      for(size_t fnid=0; fnid<_n_neighbors; ++fnid)
+	FillNeighbors(timg_v,timg3d_v);
       
       // Cluster
       for(size_t plane=0; plane<3; ++plane) {
@@ -213,22 +217,17 @@ namespace llcv {
 	LLCV_DEBUG() << "Close contour @" << ctor_ptr << " sz=" << ctor_ptr->size() << " dist=" << dist << std::endl;
 	
 	Triangle tri(*ctor_ptr,vertex_pt);
-	tri.Expand(timg3d,0.25);
+	tri.Tighten(timg3d,3,0.25);
+	
+	Polygon poly(*ctor_ptr,vertex_pt);
 
 	auto& img3d = mat3d_v[plane];	
 
 	cv::line(img3d,tri.Base1(),tri.Base2(),cv::Scalar(238,130,238),1);
 	cv::line(img3d,tri.Apex() ,tri.Base1(),cv::Scalar(0,255,0),1);
 	cv::line(img3d,tri.Apex() ,tri.Base2(),cv::Scalar(0,255,0),1);
+
       }
-      
-      for(size_t plane=0; plane<3; ++plane) {
-	std::stringstream ss;
-	auto& img = timg3d_v[plane];
-	ss << "cpng/shr_" << shrid << "_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
-	cv::imwrite(ss.str(),img);
-      }
-      
 
     } // end shower
     

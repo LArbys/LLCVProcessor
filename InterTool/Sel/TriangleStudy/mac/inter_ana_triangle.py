@@ -76,7 +76,6 @@ proc.initialize()
 proc.batch_process_lcv_reverse(0,500)
 #proc.batch_process_lcv_reverse(191,1)
 
-
 proc.finalize()
 
 sys.exit(0)

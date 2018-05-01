@@ -38,6 +38,9 @@ namespace llcv {
     void ResizeOutput(size_t sz);
 
     std::pair<float,float> ShowerAngle(const larlite::shower& shower);
+
+    size_t _n_neighbors;
+
     void FillNeighbors(const std::array<cv::Mat,3>& parent_v,
 		       std::array<cv::Mat,3>& child_v) const;
 

@@ -16,8 +16,15 @@ namespace llcv {
   
   Triangle::Triangle(const larocv::GEO2D_Contour_t& ctor,
 		     const geo2d::Vector<float>& start) {
-    
-    auto min_rect  = larocv::MinAreaRect(ctor);
+    _ctor = ctor;
+    _apex = start;
+
+    Construct();
+  }
+
+  void Triangle::Construct() {
+
+    auto min_rect  = larocv::MinAreaRect(_ctor);
     geo2d::Vector<float> pt_v[4];
     min_rect.points(pt_v);
 
@@ -28,7 +35,7 @@ namespace llcv {
     size_t id2 = larocv::kINVALID_SIZE;
 
     for(size_t pid=0; pid<4; ++pid) {
-      auto dist_tmp = geo2d::dist(start,pt_v[pid]);
+      auto dist_tmp = geo2d::dist(_apex,pt_v[pid]);
       if (dist_tmp < dist) {
 	dist = dist_tmp;
 	id1 = pid;
@@ -39,7 +46,7 @@ namespace llcv {
 
     for(size_t pid=0; pid<4; ++pid) {
       if (pid == id1) continue;
-      auto dist_tmp = geo2d::dist(start,pt_v[pid]);
+      auto dist_tmp = geo2d::dist(_apex,pt_v[pid]);
       if (dist_tmp < dist) {
 	dist = dist_tmp;
 	id2 = pid;
@@ -66,8 +73,6 @@ namespace llcv {
     
     _base_pt1 = far_pt1;
     _base_pt2 = far_pt2;
-    _apex = start;
-    _ctor = ctor;
   }
 
   void Triangle::Expand(const cv::Mat& img, const float fraction) { 
@@ -78,21 +83,8 @@ namespace llcv {
     //
     // get the mid point between base1 and base2
     //
-    
-    auto bmax_x = std::max(_base_pt1.x,_base_pt2.x);
-    auto bmin_x = std::min(_base_pt1.x,_base_pt2.x);
+    auto mid_pt = MidPoint(_base_pt1,_base_pt2);
 
-    auto bmax_y = std::max(_base_pt1.y,_base_pt2.y);
-    auto bmin_y = std::min(_base_pt1.y,_base_pt2.y);
-
-    auto bdx = bmax_x - bmin_x;
-    auto bdy = bmax_y - bmin_y;
-    
-    bdx /= 2.0;
-    bdy /= 2.0;
-    
-    geo2d::Vector<float> mid_pt(bmin_x + bdx, bmin_y + bdy);
-    
     // 
     // find the point fraction * length
     //
@@ -208,6 +200,91 @@ namespace llcv {
     
     return;
   }
+
+  void Triangle::Tighten(const cv::Mat& img, const float radius, const float fraction) { 
+
+    //
+    // Get nearby nonzero pixels around the apex
+    //
+    geo2d::Circle<float> circle(_apex,radius);
+    auto near_v = larocv::FindNonZero(larocv::MaskImage(img,circle,-1,false));
+
+    std::vector<float> area_v(near_v.size(),-1);
+
+    std::vector<geo2d::Vector<float> > base1_v(near_v.size());
+    std::vector<geo2d::Vector<float> > base2_v(near_v.size());
+
+    for(size_t nid=0; nid<near_v.size(); ++nid) {
+      const auto& near = near_v[nid];
+      
+      auto& area = area_v[nid];
+      auto& base1 = base1_v[nid];
+      auto& base2 = base2_v[nid];
+      
+      _apex.x = near.x;
+      _apex.y = near.y;
+
+      Construct();
+      Expand(img,fraction);
+      
+      base1 = _base_pt1;
+      base2 = _base_pt2;
+
+      area = 0.5 * geo2d::dist(base1,base2) * geo2d::dist(_apex,MidPoint(base1,base2));
+    }
+
+    auto min_iter = std::min_element(area_v.begin(),area_v.end());
+    auto min_idx = std::distance(area_v.begin(),min_iter);
+
+    _base_pt1 = base1_v[min_idx];
+    _base_pt2 = base2_v[min_idx];
+    _apex.x   = near_v[min_idx].x;
+    _apex.y   = near_v[min_idx].y;
+  
+    return;
+  }
+
+  geo2d::Vector<float> Triangle::MidPoint(const geo2d::Vector<float>& pt1,const geo2d::Vector<float>& pt2) const {
+    geo2d::Vector<float> res;
+
+    auto bmax_x = std::max(pt1.x,pt2.x);
+    auto bmin_x = std::min(pt1.x,pt2.x);
+
+    auto bmax_y = std::max(pt1.y,pt2.y);
+    auto bmin_y = std::min(pt1.y,pt2.y);
+
+    auto bdx = bmax_x - bmin_x;
+    auto bdy = bmax_y - bmin_y;
+    
+    bdx /= 2.0;
+    bdy /= 2.0;
+    
+    res.x = bmin_x + bdx;
+    res.y = bmin_y + bdy;
+
+    return res;
+  }
+
+  float Triangle::StraightLineTest(const cv::Mat& img) const { 
+
+    float res = -1;
+
+    auto mid_pt = MidPoint(_base_pt1,_base_pt2);
+    auto white_img = larocv::MaskImage(img,_ctor,-1,false);
+    white_img = larocv::Threshold(white_img,10,255);
+    
+    float nzero_before = (float) larocv::CountNonZero(white_img);
+    
+    cv::line(white_img,_apex,mid_pt,cv::Scalar(0),2);
+
+    float nzero_after = (float) larocv::CountNonZero(white_img);
+    
+    if (nzero_before != 0) 
+      res = 1.0 - (nzero_after / nzero_before);
+    
+    return res;
+  }
+
 
 }
 
