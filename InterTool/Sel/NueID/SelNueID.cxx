@@ -50,12 +50,12 @@ namespace llcv {
 		 << Data().Vertex()->Y() << "," 
 		 << Data().Vertex()->Z() << ")" << std::endl;
 
-    int isnue = Tree().Scalar<int>("isnue");
-    LLCV_DEBUG() << "Is this nue?: " <<  isnue << std::endl;
-    if (isnue == 0)  {
-      LLCV_DEBUG() << "skip" << std::endl;
-      return 0.0;
-    }
+    // int isnue = Tree().Scalar<int>("isnue");
+    // LLCV_DEBUG() << "Is this nue?: " <<  isnue << std::endl;
+    // if (isnue == 0)  {
+    //   LLCV_DEBUG() << "skip" << std::endl;
+    //   return 0.0;
+    // }
     
     auto mat_v  = Image().Image<cv::Mat>(kImageADC,_cropx,_cropy);
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
