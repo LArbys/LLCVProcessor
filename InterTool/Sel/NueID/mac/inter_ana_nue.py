@@ -54,15 +54,15 @@ driver.AttachInterFile(INTER_FILE,"inter_tree")
 
 NUM = 1
 # NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-driver.SetOutputFilename("triangle_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM));
+driver.SetOutputFilename("nueid_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM));
 
-selection = llcv.SelTriangleStudy()
+selection = llcv.SelNueID()
 driver.AddSelection(selection);
 
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"inter_triangle.cfg"))
+proc.configure(os.path.join(BASE_PATH,"inter_nue.cfg"))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
@@ -73,7 +73,7 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-proc.batch_process_lcv_reverse(0,500)
+proc.batch_process_lcv_reverse(0,10)
 #proc.batch_process_lcv_reverse(191,1)
 
 proc.finalize()

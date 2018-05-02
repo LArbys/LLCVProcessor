@@ -93,7 +93,9 @@ namespace llcv {
 
 
   float Polygon::LargestDefect() const {
-    float res = -1;
+    float res = 0;
+
+    if (_defect_dist_v.empty()) return res;
 
     auto max_iter = std::max_element(_defect_dist_v.begin(),_defect_dist_v.end());
     
@@ -103,9 +105,11 @@ namespace llcv {
   }
 
   float Polygon::LargestDefectNoStart() const {
-    float res = -1;
+    float res = 0;
 
     float largest = -1*larocv::kINVALID_FLOAT;
+    
+    if (_defect_dist_v.empty()) return res;
 
     for(size_t did=0; did<_defect_dist_v.size(); ++did) {
       
@@ -125,8 +129,10 @@ namespace llcv {
 
 
   float Polygon::SmallestDefect() const {
-    float res = -1;
+    float res = 0;
     
+    if (_defect_dist_v.empty()) return res;
+
     auto min_iter = std::min_element(_defect_dist_v.begin(),_defect_dist_v.end());
 
     res = *min_iter;
@@ -135,9 +141,11 @@ namespace llcv {
   }
 
   float Polygon::SmallestDefectNoStart() const {
-    float res = -1;
+    float res = 0;
 
     float smallest = larocv::kINVALID_FLOAT;
+
+    if (_defect_dist_v.empty()) return res;
 
     for(size_t did=0; did<_defect_dist_v.size(); ++did) {
       

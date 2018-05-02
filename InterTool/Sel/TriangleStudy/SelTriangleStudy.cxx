@@ -169,7 +169,9 @@ namespace llcv {
       int px_y = kINVALID_INT;
 
       ProjectMat(img_v[plane]->meta(),
-    		 Data().Vertex()->X(),Data().Vertex()->Y(),Data().Vertex()->Z(),
+    		 Data().Vertex()->X(),
+		 Data().Vertex()->Y(),
+		 Data().Vertex()->Z(),
     		 px_x, px_y);
 
       vertex_ctor[plane] = cv::Point_<int>(px_y,px_x);
@@ -249,7 +251,6 @@ namespace llcv {
 	  if (px_y >= timg3d.cols) continue;
 
 	  timg3d.at<uchar>(px_y,px_x) = (uchar)255;
-
 	} // end plane
       } // end sphere point
 
@@ -290,7 +291,10 @@ namespace llcv {
 	  }
 	}
 	
-	if (close_id == larocv::kINVALID_SIZE) throw llcv_err("No contour found?");
+	if (close_id == larocv::kINVALID_SIZE) {
+	  LLCV_CRITICAL() << "No contour? Skip..." << std::endl;
+	  continue;
+	}
       
 	larocv::GEO2D_ContourArray_t other_ctor_v;
 	for(size_t cid=0; cid<ctor_v.size(); ++cid) {
