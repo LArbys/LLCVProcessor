@@ -5,5 +5,7 @@
 
 #pragma link C++ class llcv::TruncMean+;
 #pragma link C++ class llcv::dEdxCalculator+;
+#pragma link C++ class llcv::Triangle+;
+#pragma link C++ class llcv::Polygon+;
 
 #endif

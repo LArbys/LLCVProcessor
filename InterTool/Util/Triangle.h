@@ -28,6 +28,7 @@ namespace llcv {
     const geo2d::Vector<float>& Apex() const { return _apex;}
     const geo2d::Vector<float>& Base1() const { return _base_pt1; }
     const geo2d::Vector<float>& Base2() const { return _base_pt2; }
+    geo2d::Vector<float> MidPoint() const { return MidPoint(_base_pt1,_base_pt2); }
 
     float Height() const;
 

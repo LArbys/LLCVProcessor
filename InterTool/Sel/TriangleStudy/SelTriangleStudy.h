@@ -4,8 +4,8 @@
 #include "InterTool_Core/InterSelBase.h"
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
 #include "TStopwatch.h"
-#include "Triangle.h"
-#include "Polygon.h"
+#include "InterTool_Util/Triangle.h"
+#include "InterTool_Util/Polygon.h"
 #include <array>
 
 namespace llcv {
