@@ -1,20 +1,5 @@
 import os,sys,gc
 
-if len(sys.argv) != 9:
-    print
-    print
-    print "SSNET_FILE = str(sys.argv[1])"
-    print "VTX_FILE   = str(sys.argv[2])"
-    print "FLASH_FILE = str(sys.argv[3])"
-    print "SHR_FILE   = str(sys.argv[4])"
-    print "TRK_FILE   = str(sys.argv[5])"
-    print "INTER_FILE = str(sys.argv[6])"
-    print "IS_MC      = int(sys.argv[7])"
-    print "OUT_DIR    = str(sys.argv[8])"
-    print
-    print
-    sys.exit(1)
-
 SSNET_FILE = str(sys.argv[1])
 VTX_FILE   = str(sys.argv[2])
 FLASH_FILE = str(sys.argv[3])
@@ -23,6 +8,7 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 IS_MC      = int(str(sys.argv[7]))
 OUT_DIR    = str(sys.argv[8])
+EVENT = int(sys.argv[9])
 
 import ROOT
 from larlitecv import larlitecv
@@ -50,7 +36,7 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-driver.AttachInterFile(INTER_FILE,"inter_tree")
+# driver.AttachInterFile(INTER_FILE,"inter_tree")
 
 NUM = 1
 # NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
@@ -73,8 +59,7 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-proc.batch_process_lcv_reverse(0,10)
-#proc.batch_process_lcv_reverse(191,1)
+proc.batch_process_lcv_reverse(EVENT,1)
 
 proc.finalize()
 

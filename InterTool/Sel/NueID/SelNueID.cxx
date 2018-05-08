@@ -22,8 +22,10 @@ namespace llcv {
     _cropx = 400;
     _cropy = 400;
 
-    _twatch.Stop();
+    _extension_cutoff = pset.get<float>("ExtensionFraction",0.8);
 
+    _twatch.Stop();
+  
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -67,6 +69,11 @@ namespace llcv {
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
     auto img_v  = Image().Image<larcv::Image2D>(kImageADC,_cropx,_cropy);
     auto dead_v = Image().Image<cv::Mat>(kImageDead,_cropx,_cropy);
+
+    _white_img = larocv::BlankImage(*(mat_v.front()),0);
+    _white_img.setTo(cv::Scalar(0));
+
+    _ContourScan.Reset();
 
     for(const auto& meta : meta_v)
       _ContourScan.SetPlaneInfo(*meta);
@@ -117,9 +124,11 @@ namespace llcv {
     
     for(size_t plane=0; plane<3; ++plane) {
       const auto& timg = timg_v[plane];
+
       auto& vertex_ctor = vertex_ctor_v[plane];
+
       auto plane_ctor_v = larocv::FindContours(timg);
-      
+
       LLCV_DEBUG() << "@plane=" << plane << " found " << plane_ctor_v.size() << " ctors" << std::endl;
       
       const auto vertex_pt = vertex_pt_v[plane];
@@ -145,8 +154,6 @@ namespace llcv {
     // Recluster, choose vertex contour
     //
 
-    std::array<larocv::GEO2D_ContourArray_t,3> par_ctor_v;
-
     _nctor_v.clear();
     _line_frac_vv.clear();
     _line_len_vv.clear();
@@ -163,19 +170,30 @@ namespace llcv {
     _line_endx_vv.resize(3);
     _line_endy_vv.resize(3);
 
-    std::array<larocv::GEO2D_ContourArray_t,3> lc_v;
+    std::array<larocv::GEO2D_ContourArray_t,3> img_ctor_v;
+    std::array<size_t,3> close_id_v;
+
+    std::array<larocv::GEO2D_ContourArray_t,3> par_ctor_v;
+
+    std::array<larocv::GEO2D_ContourArray_t,3> line_contour_vv;
+    std::array<std::vector<Triangle>,3> triangle_vv;
+    std::array<geo2d::VectorArray<float>,3> edge_vv;
 
     for(size_t plane=0; plane<3; ++plane) {
       auto& timg3d = timg3d_v[plane];
-      auto& vertex_ctor = vertex_ctor_v[plane];
+      auto& plane_ctor_v = img_ctor_v[plane];
+      auto& vertex_ctor  = vertex_ctor_v[plane];
+      auto& close_id = close_id_v[plane];
 
-      auto plane_ctor_v = larocv::FindContours(timg3d);
+      plane_ctor_v = larocv::FindContours(timg3d);
       
-      LLCV_DEBUG() << "@plane=" << plane << " found " << plane_ctor_v.size() << " ctors" << std::endl;
+      LLCV_DEBUG() << "@plane=" << plane 
+		   << " found " << plane_ctor_v.size() 
+		   << " ctors" << std::endl;
       
       const auto vertex_pt = vertex_pt_v[plane];
       
-      auto close_id = FindClosestContour(plane_ctor_v,vertex_pt);
+      close_id = FindClosestContour(plane_ctor_v,vertex_pt);
 
       if (close_id == larocv::kINVALID_SIZE) {
 	LLCV_CRITICAL() << "No contour? Skip..." << std::endl;
@@ -197,90 +215,227 @@ namespace llcv {
       auto& nctor = _nctor_v[plane];
       nctor = par_ctor_v[plane].size();
       
-      auto& line_frac_v = _line_frac_vv[plane];
-      line_frac_v.resize(nctor);
-
-      auto& line_len_v = _line_len_vv[plane];
-      line_len_v.resize(nctor);
-      
-      auto& line_startx_v = _line_startx_vv[plane];
-      line_startx_v.resize(nctor);
-
-      auto& line_starty_v = _line_starty_vv[plane];
-      line_starty_v.resize(nctor);
-
-      auto& line_endx_v = _line_endx_vv[plane];
-      line_endx_v.resize(nctor);
-
-      auto& line_endy_v = _line_endy_vv[plane];
-      line_endy_v.resize(nctor);
+      auto& line_contour_v = line_contour_vv[plane];
+      auto& triangle_v     = triangle_vv[plane];
+      auto& edge_v         = edge_vv[plane];
+      line_contour_v.reserve(nctor);
+      triangle_v.reserve(nctor);
+      edge_v.reserve(nctor);
 
       for(size_t pid=0; pid<(size_t)nctor; ++pid) {
 
 	LLCV_DEBUG() << "@pid=" << pid << std::endl;
-
-	auto& line_frac = line_frac_v[pid];
-	auto& line_len = line_len_v[pid];
 	
-	line_frac = -1;
-	line_len  = -1;
-
 	auto par = par_ctor[pid];
 
 	// estimate the end point
 	llcv::Triangle triangle(par,vertex_pt);
 
-	float npar_pixels;
-	float nline_pixels;
 	geo2d::Vector<float> edge;
-
-	auto line_ctor = MaximizeLine(timg3d_mask,triangle,npar_pixels,nline_pixels,edge);
+	float nline_pixels = 0;
+	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
 	
 	if (line_ctor.empty()) continue;
 
-	lc_v[plane].push_back(line_ctor);
+	line_contour_v.emplace_back(std::move(line_ctor));
+	triangle_v.emplace_back(std::move(triangle));
 
-	float ratio = 0;
+	edge_v.emplace_back(std::move(edge));
+      } // end contour
+
+    } // end plane
+    
+    // get the max, min, time for contours
+    float tlo = larocv::kINVALID_FLOAT;
+    float thi = -1.0*larocv::kINVALID_FLOAT;
+    for(size_t plane=0; plane<3; ++plane) {
+      for (const auto& edge : edge_vv[plane]) {
+	tlo = std::min(tlo,edge.x);
+	thi = std::max(thi,edge.x);
+      }
+    }
+      
+    std::array<std::vector<std::vector<const larocv::GEO2D_Contour_t*> > ,3> ctor_overlap_vvv;
+
+    std::array<larocv::GEO2D_ContourArray_t,3> new_line_contour_vv;
+
+    // extend line to touch potential charge;
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& line_contour_v = line_contour_vv[plane];
+      const auto& triangle_v = triangle_vv[plane];
+      const auto& edge_v = edge_vv[plane];
+      auto& ctor_overlap_vv = ctor_overlap_vvv[plane];
+
+      const auto& plane_ctor_v = img_ctor_v[plane];
+      const auto& close_id = close_id_v[plane];
+
+      const auto& timg = timg_v[plane];
+      auto white_img = larocv::BlankImage(timg,0);
+      
+      ctor_overlap_vv.resize(line_contour_v.size());
+
+      for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
+	auto& ctor_overlap_v = ctor_overlap_vv[cid];
+	
+	white_img.setTo(cv::Scalar(0));
+
+	//determine the direction
+	const auto& edge = edge_v[cid];
+	const auto& triangle = triangle_v[cid];
+	
+	geo2d::Vector<float> new_edge;
+	geo2d::Line<float> line(triangle.Apex(),edge - triangle.Apex());
+	
+	// extend backwards
+	if (edge.x < triangle.Apex().x) {
+	  new_edge.x = tlo;
+	  new_edge.y = line.y(new_edge.x);
+	}
+
+	// extend forwards
+	else {
+	  new_edge.x = thi;
+	  new_edge.y = line.y(new_edge.x);
+	}
+	
+	// Determine if line intersects new charge
+	cv::line(white_img,triangle.Apex(),new_edge,cv::Scalar(255),3);
+	auto lc_v = larocv::FindContours(white_img);
+	if (lc_v.empty()) continue;
+
+	const auto& lc = lc_v.front();
+
+	new_line_contour_vv[plane].push_back(lc);
+
+	for(size_t ict=0; ict<plane_ctor_v.size(); ++ict) {
+	  if (ict == close_id) continue;
+	  if (!larocv::AreaOverlap(plane_ctor_v[ict],lc)) continue;
+	  ctor_overlap_v.push_back(&(plane_ctor_v[ict]));
+	} // end intersection
+      } // end this line
+    } // end this plane
+    
+    // Append new pixels
+    
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& timg = timg_v[plane];
+      const auto& line_contour_v = line_contour_vv[plane];
+      for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
+	for(const auto ctor : ctor_overlap_vvv[plane][cid]) {
+	  auto nz_pts = larocv::FindNonZero(larocv::MaskImage(timg,*ctor,-1,false));
+	  _ContourScan.AddPixels(nz_pts,plane);
+	}
+      }
+    }
+
+    // Re-scan
+    _ContourScan.Scan(timg_v,dimg_v,timg3d_v);
+    
+    // For each line determine what fraction the new contours are 3D -- if they
+    // are above threshold -- make a new line which connects them
+    
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& timg   = timg_v[plane];
+      const auto& timg3d = timg3d_v[plane];
+      auto& line_contour_v = line_contour_vv[plane];
+      auto& triangle_v = triangle_vv[plane];
+      auto& edge_v     = edge_vv[plane];
+
+      auto nlines = line_contour_v.size();
+
+      auto& line_frac_v   = _line_frac_vv[plane];
+      auto& line_len_v    = _line_len_vv[plane];
+      auto& line_startx_v = _line_startx_vv[plane];
+      auto& line_starty_v = _line_starty_vv[plane];
+      auto& line_endx_v   = _line_endx_vv[plane];
+      auto& line_endy_v   = _line_endy_vv[plane];
+
+      line_frac_v.resize(nlines);
+      line_len_v.resize(nlines);
+      line_startx_v.resize(nlines);
+      line_starty_v.resize(nlines);
+      line_endx_v.resize(nlines);
+      line_endy_v.resize(nlines);
+
+      for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
+
+	auto& triangle = triangle_v[cid];
+	auto& edge = edge_v[cid];
+
+	auto new_ctor = triangle.Contour();
+
+	float npar_pixels = (float)larocv::CountNonZero(larocv::MaskImage(timg,new_ctor,0,false));
+
+	for(const auto ctor : ctor_overlap_vvv[plane][cid]) {
+	  float total_plane = larocv::CountNonZero(larocv::MaskImage(timg,*ctor,0,false));
+	  float total_3d    = larocv::CountNonZero(larocv::MaskImage(timg3d,*ctor,0,false));
+	  float ratio = 0.0;
+	  if (total_plane > 0)
+	    ratio = (total_3d / total_plane);
+	  
+	  if (ratio < _extension_cutoff) continue;
+	  for(const auto& pt : *ctor)
+	    new_ctor.emplace_back(pt);
+
+	  npar_pixels += (float)larocv::CountNonZero(larocv::MaskImage(timg,*ctor,0,false));
+	}
+
+	triangle = Triangle(new_ctor,triangle.Apex());
+	float nline_pixels = 0.0;
+	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
+
+	if (line_ctor.empty()) continue;
+
+	line_contour_v[cid] = std::move(line_ctor);
+
+	float nratio = 0;
 	if (npar_pixels > 0)
-	  ratio = nline_pixels / npar_pixels;
+	  nratio = nline_pixels / npar_pixels;
 
-	line_frac = ratio;
+	auto& line_frac = line_frac_v[cid];
+	auto& line_len  = line_len_v[cid];
 
-	geo2d::Vector<int> edge_i;
-	edge_i.x = (int)edge.x;
-	edge_i.y = (int)edge.y;
-	line_len = (float)geo2d::dist(vertex_pt,edge_i);
+	line_frac = nratio;
+	
+	line_len = (float)geo2d::dist(triangle.Apex(),edge);
 
-	auto& line_startx = line_startx_v[pid];
-	auto& line_starty = line_starty_v[pid];
-
-	line_startx = vertex_pt.x;
-	line_starty = vertex_pt.y;
-
-	auto& line_endx = line_endx_v[pid];
-	auto& line_endy = line_endy_v[pid];
-
+	auto& line_startx = line_startx_v[cid];
+	auto& line_starty = line_starty_v[cid];
+	
+	line_startx = triangle.Apex().x;
+	line_starty = triangle.Apex().y;
+	
+	auto& line_endx = line_endx_v[cid];
+	auto& line_endy = line_endy_v[cid];
+	
 	line_endx = edge.x;
 	line_endy = edge.y;
-
-      }      
+      }
     }
-    
-    
-    // for(size_t plane=0; plane<3; ++plane) {
-    //   auto& mat3d = mat3d_v[plane];
-      
-    //   auto nzero = larocv::FindNonZero(timg3d_v[plane]);
-    //   for(auto nz : nzero)
-    // 	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
+  
 
-    //   cv::drawContours(mat3d,lc_v[plane],-1,cv::Scalar(0,0,255));
+
+
+    
+
+    //
+    // Debug print out
+    //
+    for(size_t plane=0; plane<3; ++plane) {
+      auto& mat3d = mat3d_v[plane];
       
-    //   std::stringstream ss;
-    //   ss.str("");
-    //   ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
-    //   cv::imwrite(ss.str(),mat3d);
-    // }
+      auto nzero = larocv::FindNonZero(timg3d_v[plane]);
+      for(auto nz : nzero)
+    	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
+      
+      cv::drawContours(mat3d,line_contour_vv[plane],-1,cv::Scalar(0,0,255));
+      cv::drawContours(mat3d,new_line_contour_vv[plane],-1,cv::Scalar(0,255,0));
+      
+      std::stringstream ss;
+      ss.str("");
+      ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
+      cv::imwrite(ss.str(),mat3d);
+    }
     
     _outtree->Fill();
 
@@ -311,7 +466,6 @@ namespace llcv {
   
   larocv::GEO2D_Contour_t SelNueID::MaximizeLine(const cv::Mat& timg3d_mask,
 						 const Triangle& triangle,
-						 float& npar_pixels,
 						 float& nline_pixels,
 						 geo2d::Vector<float>& edge) {
     
@@ -319,8 +473,8 @@ namespace llcv {
 
     auto timg3d_par   = larocv::MaskImage(timg3d_mask,triangle.Contour(),-1,false);
     auto timg3d_blank = larocv::BlankImage(timg3d_mask,0);
-
-    npar_pixels = (float)larocv::CountNonZero(timg3d_par);
+    
+    nline_pixels = -1*larocv::kINVALID_FLOAT;
 
     const geo2d::Vector<float>* base_left  = nullptr;
     const geo2d::Vector<float>* base_right = nullptr;
@@ -370,8 +524,6 @@ namespace llcv {
 
     geo2d::Vector<float> pt;
     
-    nline_pixels = -1*larocv::kINVALID_FLOAT;
-
     float step = 0.1;
     for(float rid=lo; rid<hi; rid+=step) {
       

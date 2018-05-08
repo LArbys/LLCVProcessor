@@ -28,10 +28,12 @@ namespace llcv {
     size_t _cropy;
     size_t _n_neighbors;
     
-
     ContourScan _ContourScan;
 
     TStopwatch _twatch;
+
+    cv::Mat _white_img;
+
 
   private:
     size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
@@ -39,11 +41,12 @@ namespace llcv {
 
     larocv::GEO2D_Contour_t MaximizeLine(const cv::Mat& timg3d_mask,
 					 const Triangle& triangle,
-					 float& npar_pixels,
 					 float& nline_pixels,
 					 geo2d::Vector<float>& edge);
 
   private:
+
+    float _extension_cutoff;
 
     float _vertex_x;
     float _vertex_y;

@@ -6,8 +6,8 @@
 namespace llcv {
   
   void ContourScan::Reset() {
-
-    
+    for(auto& ctor : _ctor_v)
+      ctor.clear();
     return;
   }
   
@@ -21,6 +21,11 @@ namespace llcv {
     return;
   }
   
+  void ContourScan::AddPixels(const larocv::GEO2D_Contour_t& pt_v, const size_t plane) {
+    for(const auto& pt : pt_v)
+      _ctor_v[plane].push_back(pt);
+  }
+
   void ContourScan::Scan(const std::array<cv::Mat,3>& in_img_v,
 			 const std::array<cv::Mat,3>& dead_img_v,
 			 std::array<cv::Mat,3>& out_img_v) {

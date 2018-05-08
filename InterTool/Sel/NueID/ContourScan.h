@@ -34,6 +34,9 @@ namespace llcv {
 			 const larocv::GEO2D_Contour_t& ctor,
 			 const size_t plane,
 			 const float rad);
+
+    void AddPixels(const larocv::GEO2D_Contour_t& pt_v,
+		   const size_t plane);
     
     void Scan(const std::array<cv::Mat,3>& in_img_v,
 	      const std::array<cv::Mat,3>& dead_img_v,
