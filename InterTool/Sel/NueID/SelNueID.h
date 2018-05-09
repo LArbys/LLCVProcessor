@@ -7,6 +7,7 @@
 #include "ContourScan.h"
 #include "InterTool_Util/Triangle.h"
 #include "MatchObjectAlgoTimeIOU.h"
+#include "Object2D.h"
 
 namespace llcv {
   
@@ -46,6 +47,13 @@ namespace llcv {
 					 float& nline_pixels,
 					 geo2d::Vector<float>& edge);
 
+    void ReconstructAngle(const std::array<cv::Mat,3>& img_v, Object2DCollection& obj_col);
+
+    void ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
+			   const std::array<cv::Mat,3>& aimg_v,
+			   Object2DCollection& obj_col);
+    
+    
   private:
 
     float _extension_cutoff;

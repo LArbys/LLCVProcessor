@@ -24,7 +24,7 @@ namespace llcv {
     virtual void Initialize() = 0;
     
     void Register(const Object2D& obj, size_t plane);
-    std::vector<std::vector<std::pair<size_t,size_t> > > MatchObjects();
+    std::vector<std::vector<std::pair<size_t,size_t> > > MatchObjects(std::vector<float>& score_v);
     const Object2D* Object(size_t plane,size_t id);
 
     void ClearMatch();

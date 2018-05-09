@@ -42,7 +42,7 @@ namespace llcv {
   }
   
   std::vector<std::vector<std::pair<size_t,size_t> > >
-  MatchObjectAlgoBase::MatchObjects() {
+  MatchObjectAlgoBase::MatchObjects(std::vector<float>& score_v) {
 
     std::vector<std::vector<std::pair<size_t,size_t> > > match_vv;
 
@@ -166,22 +166,24 @@ namespace llcv {
 
     } // end combos
 
-    LLCV_DEBUG() << "Found " << _MatchBookKeeper.GetResult().size() << " particle matches" << std::endl;
-    
-    match_vv.reserve(_MatchBookKeeper.GetResult().size());
-    
-    std::vector<std::pair<size_t,size_t> > res_match_v;    
-    for(const auto& match : _MatchBookKeeper.GetResult()) {
+    auto result_v = _MatchBookKeeper.GetResultAndScore(score_v);
+
+    LLCV_DEBUG() << "Found " << result_v.size() << " particle matches" << std::endl;
+
+    match_vv.reserve(result_v.size());
+
+    std::vector<std::pair<size_t,size_t> > res_match_v;
+    for(size_t mid=0; mid<result_v.size(); ++mid) {
+      const auto& match  = result_v[mid];
       res_match_v.clear();
       res_match_v.reserve(match.size()); // the number of matches contours
       for(auto par_id : match) 
 	res_match_v.emplace_back(_object_id_to_plane_v[par_id]);
-
       match_vv.emplace_back(std::move(res_match_v));
     }
 
     return match_vv;
-  } // end match()
+  } 
 
 }
 

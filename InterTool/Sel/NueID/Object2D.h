@@ -4,6 +4,8 @@
 #include "InterTool_Util/Triangle.h"
 #include "InterTool_Util/Polygon.h"
 
+#include "TVector3.h"
+
 namespace llcv {
 
   class Object2D {
@@ -20,7 +22,7 @@ namespace llcv {
 
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
-
+    const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
   };
 
   class Object2DCollection : public std::vector<Object2D> {
@@ -31,6 +33,29 @@ namespace llcv {
     bool HasObject(size_t plane) const;
     const Object2D& PlaneObject(size_t plane) const;
     
+    void SetTheta(float theta) { _theta = theta; }
+    void SetPhi(float phi)     { _phi = phi;     }
+    void SetStart(float x, float y, float z) 
+    { _start = TVector3(x,y,z); }
+    void SetLength(float length) { _length = length; };
+    void SetScore(float score) { _score = score; }
+
+    float Theta() const { return _theta; }
+    float Phi()   const { return _phi; }
+    const TVector3& Start() const { return _start; }
+    float Length() const { return _length; }
+    float Score() const { return _score; }
+
+    float dX() const { return std::cos(_theta) * std::sin(_phi); }
+    float dY() const { return std::sin(_theta);                  }
+    float dZ() const { return std::cos(_theta) * std::cos(_phi); }
+
+  private:
+    float _theta;
+    float _phi;
+    float _length;
+    TVector3 _start;
+    float _score;
   };
 
 }

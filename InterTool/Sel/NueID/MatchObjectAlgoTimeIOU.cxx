@@ -6,8 +6,8 @@
 namespace llcv {
   
   void MatchObjectAlgoTimeIOU::Configure(const larcv::PSet& pset) {
-    // this->set_verbosity((msg::Level_t)(pset.get<unsigned short>("Verbosity", (unsigned short)(this->logger().level()))));
-    this->set_verbosity((msg::Level_t)0);
+    this->set_verbosity((msg::Level_t)(pset.get<unsigned short>("Verbosity", (unsigned short)(this->logger().level()))));
+    //this->set_verbosity((msg::Level_t)0);
     _threshold = pset.get<float>("Threshold",0.1);
 
     _match_three_planes = pset.get<bool>  ("MatchThreePlanes",true);

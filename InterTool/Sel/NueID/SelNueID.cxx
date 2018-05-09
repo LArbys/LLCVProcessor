@@ -14,7 +14,10 @@
 
 #include "Geo2D/Core/LineSegment.h"
 
-#include "Object2D.h"
+#include "LArUtil/GeometryHelper.h"
+#include "Base/DataFormatConstants.h"
+
+#include "TVector2.h"
 
 namespace llcv {
 
@@ -81,12 +84,14 @@ namespace llcv {
     for(const auto& meta : meta_v)
       _ContourScan.SetPlaneInfo(*meta);
     
+    std::array<cv::Mat,3> aimg_v;
     std::array<cv::Mat,3> timg_v;
     std::array<cv::Mat,3> dimg_v;
     std::array<cv::Mat,3> timg3d_v;
     std::array<cv::Mat,3> mat3d_v;
 
     for(size_t plane=0; plane<3; ++plane) {
+      aimg_v[plane]    = *(mat_v[plane]);
       timg_v[plane]   = larocv::Threshold(*(mat_v[plane]),10,255);
       mat3d_v[plane]  = As8UC3(timg_v[plane]);
       timg3d_v[plane] = _white_img.clone();
@@ -395,17 +400,25 @@ namespace llcv {
       LLCV_DEBUG() << "num register=" << object_vv[plane].size() << std::endl;
     }
     
-    auto match_vv = _Match.MatchObjects();
+    std::vector<float> score_v;
+    auto match_vv = _Match.MatchObjects(score_v);
 
     LLCV_DEBUG() << "& recieved " << match_vv.size() << " matched particles" << std::endl;
-    
     
     std::vector<Object2DCollection> obj_col_v;
     obj_col_v.resize(match_vv.size());
 
     for(size_t mid=0; mid< match_vv.size(); ++mid) {
       auto match_v = match_vv[mid];
+      auto score = score_v[mid];
+
       auto& obj_col = obj_col_v[mid];
+      
+      obj_col.SetStart(Data().Vertex()->X(),
+		       Data().Vertex()->Y(),
+		       Data().Vertex()->Z());
+      
+      obj_col.SetScore(score);
 
       // Fill the match
       for (auto match : match_v) {
@@ -414,10 +427,14 @@ namespace llcv {
 	LLCV_DEBUG() << "@plane=" << plane << " id=" << id << std::endl;
 	obj_col.emplace_back(object_vv[plane][id]);
       }
+      ReconstructAngle(aimg_v,obj_col);
+      ReconstructLength(img_v,aimg_v,obj_col);
+      LLCV_DEBUG() << "theta=" << obj_col.Theta() << " phi=" << obj_col.Phi() << std::endl;
+      LLCV_DEBUG() << "(" << obj_col.dX() << "," << obj_col.dY() << "," << obj_col.dZ() << ")" << std::endl;
+      LLCV_DEBUG() << "length=" << obj_col.Length() << std::endl;
+      LLCV_DEBUG() << "score=" << score << std::endl;
       LLCV_DEBUG() << "..." << std::endl;
     }
-    
-    
     
     
     // _line_frac_vv.clear();
@@ -584,6 +601,215 @@ namespace llcv {
     return res;
   }
   
+
+  //
+  // adapted from https://goo.gl/Q7MBpE
+  //
+  void SelNueID::ReconstructAngle(const std::array<cv::Mat,3>& img_v,
+				  Object2DCollection& obj_col) {
+
+    auto geomH = larutil::GeometryHelper::GetME();
+    
+    // planes with largest number of hits used to get 3D direction
+    std::vector<int> planeHits(3,0);
+    std::vector<larutil::Point2D> planeDir(3);
+    
+    for(const auto& obj : obj_col) {
+
+      const auto pl = obj._plane;
+      
+      larutil::Point2D weightedDir;
+      weightedDir.w = 0;
+      weightedDir.t = 0;
+      float Qtot = 0;
+      
+      int nhits = 0;
+      for(const auto& poly : obj._polygon_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(img_v[pl],poly.Contour(),-1,false));
+	
+	for (const auto& nz_pt  : nz_pt_v){
+	  float charge = (float) (img_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
+	  weightedDir.w += (nz_pt.y - obj.Start().y) * charge;
+	  weightedDir.t += (nz_pt.x - obj.Start().x) * charge;
+	  Qtot += charge;
+	  nhits++;
+	}
+      }
+      
+      weightedDir.w /= Qtot;
+      weightedDir.t /= Qtot;
+
+      planeHits[pl] = nhits;
+      planeDir[pl]  = weightedDir;
+    }
+
+    int pl_max = larlite::data::kINVALID_INT;
+    int pl_mid = larlite::data::kINVALID_INT;
+    int pl_min = larlite::data::kINVALID_INT;
+
+    int n_max  = -1.0*larlite::data::kINVALID_INT;
+    int n_min  =      larlite::data::kINVALID_INT;
+
+    for (size_t pl=0; pl < planeHits.size(); pl++){
+      if (planeHits[pl] > n_max){
+	pl_max = pl;
+	n_max  = planeHits[pl];
+      }
+      if (planeHits[pl] < n_min){
+	pl_min = pl;
+	n_min  = planeHits[pl];
+      }
+    }
+
+    assert(pl_max != larlite::data::kINVALID_INT);
+    assert(pl_min != larlite::data::kINVALID_INT);
+
+    // find the medium plane
+    for(int pp=0; pp<3; ++pp) {
+      if (pp == pl_max) continue;
+      if (pp == pl_min) continue;
+      pl_mid = pp;
+    }
+
+    assert(pl_mid != larlite::data::kINVALID_INT);
+
+    float slope_max, slope_mid;
+    float angle_max, angle_mid;
+    slope_max = planeDir[pl_max].t / planeDir[pl_max].w;
+    angle_max = std::atan(slope_max);
+    angle_max = std::atan2( planeDir[pl_max].t , planeDir[pl_max].w );
+    slope_mid = planeDir[pl_mid].t / planeDir[pl_mid].w;
+    angle_mid = std::atan(slope_mid);
+    angle_mid = std::atan2( planeDir[pl_mid].t , planeDir[pl_mid].w );
+    
+    double theta, phi;
+    geomH->Get3DAxisN(pl_max, pl_mid,
+		      angle_max, angle_mid,
+		      phi, theta);
+    
+    obj_col.SetTheta(theta);
+    obj_col.SetPhi(phi);
+    
+  }
+
+  // adapted from https://goo.gl/1pCDEa
+
+  void SelNueID::ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
+				   const std::array<cv::Mat,3>& aimg_v,
+				   Object2DCollection& obj_col) {
+    
+    auto geomH = larutil::GeometryHelper::GetME();
+
+    // output
+    std::array<double,3> length_v;
+
+    // geometry
+    std::array<double,3> plane_f_v;
+    std::array<TVector2,3> line_dir_v;
+
+    //initialize
+    for(auto& v : length_v) 
+      v = -1.0*::larlite::data::kINVALID_DOUBLE;
+    
+    plane_f_v = length_v;
+    
+    // calcluate line
+    float alpha = 5;
+
+    TVector3 dir3D(obj_col.dX(),obj_col.dY(),obj_col.dZ());
+    
+    for(size_t plane=0; plane<3; ++plane) {
+      plane_f_v[plane] = geomH->Project_3DLine_OnPlane(dir3D, plane).Mag();
+      
+      const auto& startPoint2D = obj_col.front().Start();
+      TVector3 secondPoint3D = obj_col.Start() + alpha * dir3D;
+      
+      int px_x, px_y;
+      ProjectMat(img_v[plane]->meta(),
+		 secondPoint3D.X(),secondPoint3D.Y(),secondPoint3D.Z(),
+		 px_x, px_y);
+      
+      geo2d::Vector<float> secondPoint2D(px_y,px_x);
+      std::cout << "@plane=" << plane << " start=" << startPoint2D << " end=" << secondPoint2D << std::endl;
+
+      TVector2 dir(secondPoint2D.y - startPoint2D.y, secondPoint2D.x - startPoint2D.x);
+      dir *= 1.0 / dir.Mod();
+      line_dir_v[plane] = dir;
+    }
+
+    // calculate the length
+    for(const auto& obj : obj_col) {
+
+      const auto pl = obj._plane;
+
+      const auto& dr_w = line_dir_v[pl].X();
+      const auto& dr_t = line_dir_v[pl].Y();
+      
+      std::vector<std::pair<float,float> > dist_v;
+
+      float qsum = 0;
+      float d2D = 0;
+      
+      for(const auto& poly : obj._polygon_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
+	for (const auto& nz_pt  : nz_pt_v)
+	  qsum += (float) (aimg_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
+      }
+
+      for(const auto& poly : obj._polygon_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
+     
+	for(size_t nid=0; nid < nz_pt_v.size(); ++nid) {
+	  auto nz_pt = nz_pt_v[nid];
+
+	  float charge = (float) (aimg_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
+
+	  float ptw = (nz_pt.y - obj.Start().y)*0.3;
+	  float ptt = (nz_pt.x - obj.Start().x)*0.3;
+	
+	  // calculate distance along the line
+	  d2D  = (ptw * dr_w) + (ptt * dr_t);
+	  d2D  = std::abs(d2D);
+	  dist_v.emplace_back(std::make_pair(d2D, charge / qsum));
+	}
+      } // end "hit" loop
+      
+      std::sort(std::begin(dist_v),std::end(dist_v),
+		[](const std::pair<float,float>& lhs, const std::pair<float,float>& rhs)
+		{ return lhs.first < rhs.first; });
+      
+      qsum = 0;
+      d2D = 0;
+      float _qfraction = 1.0;
+      for(const auto& dist_pair : dist_v) {
+	d2D   = dist_pair.first;
+	qsum += dist_pair.second;
+	if (qsum>_qfraction) break;
+      }
+      
+      auto f = plane_f_v.at(pl);
+      
+      double length = d2D / f;
+
+      std::cout << "@pl=" << pl << " f=" << f << " length=" << length << std::endl;
+      length_v[pl] = length;
+    }
+    
+    // auto length = *(std::max_element(std::begin(length_v),std::end(length_v)));
+
+    float sum = 0.0;
+    for(auto length : length_v)  {
+      if (length == -1.0*::larlite::data::kINVALID_DOUBLE)
+	continue;
+
+      sum += (float)length;
+    }
+    
+    sum /= ((float)length_v.size());
+
+    obj_col.SetLength(sum);
+  }
+
   void SelNueID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
     _outtree->Write();

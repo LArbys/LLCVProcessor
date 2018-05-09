@@ -8,6 +8,7 @@ namespace llcv {
 
   class Polygon {
   public:
+    Polygon(){}
     Polygon(const larocv::GEO2D_Contour_t& ctor, const geo2d::Vector<float>& start);
     ~Polygon(){}
     
@@ -25,7 +26,8 @@ namespace llcv {
 
     float PocketArea() const;
     float PocketAreaNoStart() const;
-    
+
+    const larocv::GEO2D_Contour_t Contour() const { return _ctor; }
     const larocv::GEO2D_Contour_t Hull() const { return _hull; }
 
   private:

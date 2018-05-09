@@ -8,6 +8,7 @@ namespace llcv {
 
   class Triangle {
   public:
+    Triangle(){}
     Triangle(const larocv::GEO2D_Contour_t& ctor,
 	     const geo2d::Vector<float>& start);
     ~Triangle(){}
