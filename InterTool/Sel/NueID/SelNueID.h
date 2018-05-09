@@ -6,6 +6,7 @@
 #include <array>
 #include "ContourScan.h"
 #include "InterTool_Util/Triangle.h"
+#include "MatchObjectAlgoTimeIOU.h"
 
 namespace llcv {
   
@@ -34,6 +35,7 @@ namespace llcv {
 
     cv::Mat _white_img;
 
+    MatchObjectAlgoTimeIOU _Match;
 
   private:
     size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,

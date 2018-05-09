@@ -14,6 +14,8 @@
 
 #include "Geo2D/Core/LineSegment.h"
 
+#include "Object2D.h"
+
 namespace llcv {
 
   void SelNueID::Configure (const larcv::PSet &pset) {
@@ -23,6 +25,7 @@ namespace llcv {
     _cropy = 400;
 
     _extension_cutoff = pset.get<float>("ExtensionFraction",0.8);
+    _Match.Configure(pset.get<larcv::PSet>("MatchIOU"));
 
     _twatch.Stop();
   
@@ -86,7 +89,7 @@ namespace llcv {
     for(size_t plane=0; plane<3; ++plane) {
       timg_v[plane]   = larocv::Threshold(*(mat_v[plane]),10,255);
       mat3d_v[plane]  = As8UC3(timg_v[plane]);
-      timg3d_v[plane] = larocv::BlankImage(*(mat_v[plane]),0);
+      timg3d_v[plane] = _white_img.clone();
       dimg_v[plane]   = *(dead_v[plane]);
     }
     
@@ -119,18 +122,13 @@ namespace llcv {
     //
     // Find contours, get closest to vertex
     //
-    
     std::array<larocv::GEO2D_Contour_t,3> vertex_ctor_v;
     
     for(size_t plane=0; plane<3; ++plane) {
       const auto& timg = timg_v[plane];
-
       auto& vertex_ctor = vertex_ctor_v[plane];
 
       auto plane_ctor_v = larocv::FindContours(timg);
-
-      LLCV_DEBUG() << "@plane=" << plane << " found " << plane_ctor_v.size() << " ctors" << std::endl;
-      
       const auto vertex_pt = vertex_pt_v[plane];
       
       auto close_id = FindClosestContour(plane_ctor_v,vertex_pt);
@@ -141,9 +139,9 @@ namespace llcv {
       }
 
       vertex_ctor = plane_ctor_v[close_id];
-
       _ContourScan.RegisterContour(timg,vertex_ctor,plane,200);
-    } // end plane
+    }    
+    
     
     //
     // Make a 3D image using vertex contour points
@@ -154,31 +152,17 @@ namespace llcv {
     // Recluster, choose vertex contour
     //
 
-    _nctor_v.clear();
-    _line_frac_vv.clear();
-    _line_len_vv.clear();
-    _line_startx_vv.clear();;
-    _line_starty_vv.clear();
-    _line_endx_vv.clear();
-    _line_endy_vv.clear();
-
-    _nctor_v.resize(3);
-    _line_frac_vv.resize(3);
-    _line_len_vv.resize(3);
-    _line_startx_vv.resize(3);
-    _line_starty_vv.resize(3);
-    _line_endx_vv.resize(3);
-    _line_endy_vv.resize(3);
-
     std::array<larocv::GEO2D_ContourArray_t,3> img_ctor_v;
     std::array<size_t,3> close_id_v;
-
     std::array<larocv::GEO2D_ContourArray_t,3> par_ctor_v;
-
     std::array<larocv::GEO2D_ContourArray_t,3> line_contour_vv;
     std::array<std::vector<Triangle>,3> triangle_vv;
     std::array<geo2d::VectorArray<float>,3> edge_vv;
 
+
+    _nctor_v.clear();
+    _nctor_v.resize(3);
+    
     for(size_t plane=0; plane<3; ++plane) {
       auto& timg3d = timg3d_v[plane];
       auto& plane_ctor_v = img_ctor_v[plane];
@@ -229,7 +213,7 @@ namespace llcv {
 	auto par = par_ctor[pid];
 
 	// estimate the end point
-	llcv::Triangle triangle(par,vertex_pt);
+	Triangle triangle(par,vertex_pt);
 
 	geo2d::Vector<float> edge;
 	float nline_pixels = 0;
@@ -242,10 +226,12 @@ namespace llcv {
 
 	edge_v.emplace_back(std::move(edge));
       } // end contour
-
     } // end plane
     
+
+    //
     // get the max, min, time for contours
+    //
     float tlo = larocv::kINVALID_FLOAT;
     float thi = -1.0*larocv::kINVALID_FLOAT;
     for(size_t plane=0; plane<3; ++plane) {
@@ -254,12 +240,16 @@ namespace llcv {
 	thi = std::max(thi,edge.x);
       }
     }
-      
+
+    // per plane, per line, collection of contours
     std::array<std::vector<std::vector<const larocv::GEO2D_Contour_t*> > ,3> ctor_overlap_vvv;
 
-    std::array<larocv::GEO2D_ContourArray_t,3> new_line_contour_vv;
+    //
+    // extend line to touch potential charge
+    // if line is left, go -x
+    // if line is right, go +x
+    //
 
-    // extend line to touch potential charge;
     for(size_t plane=0; plane<3; ++plane) {
       const auto& line_contour_v = line_contour_vv[plane];
       const auto& triangle_v = triangle_vv[plane];
@@ -268,18 +258,15 @@ namespace llcv {
 
       const auto& plane_ctor_v = img_ctor_v[plane];
       const auto& close_id = close_id_v[plane];
-
-      const auto& timg = timg_v[plane];
-      auto white_img = larocv::BlankImage(timg,0);
       
       ctor_overlap_vv.resize(line_contour_v.size());
 
       for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
 	auto& ctor_overlap_v = ctor_overlap_vv[cid];
 	
-	white_img.setTo(cv::Scalar(0));
+	_white_img.setTo(cv::Scalar(0));
 
-	//determine the direction
+	// determine the direction
 	const auto& edge = edge_v[cid];
 	const auto& triangle = triangle_v[cid];
 	
@@ -299,13 +286,11 @@ namespace llcv {
 	}
 	
 	// Determine if line intersects new charge
-	cv::line(white_img,triangle.Apex(),new_edge,cv::Scalar(255),3);
-	auto lc_v = larocv::FindContours(white_img);
+	cv::line(_white_img,triangle.Apex(),new_edge,cv::Scalar(255),3);
+	auto lc_v = larocv::FindContours(_white_img);
 	if (lc_v.empty()) continue;
 
 	const auto& lc = lc_v.front();
-
-	new_line_contour_vv[plane].push_back(lc);
 
 	for(size_t ict=0; ict<plane_ctor_v.size(); ++ict) {
 	  if (ict == close_id) continue;
@@ -314,9 +299,10 @@ namespace llcv {
 	} // end intersection
       } // end this line
     } // end this plane
-    
+
+    //
     // Append new pixels
-    
+    //
     for(size_t plane=0; plane<3; ++plane) {
       const auto& timg = timg_v[plane];
       const auto& line_contour_v = line_contour_vv[plane];
@@ -328,34 +314,29 @@ namespace llcv {
       }
     }
 
+    //
     // Re-scan
+    //
     _ContourScan.Scan(timg_v,dimg_v,timg3d_v);
     
+    //
     // For each line determine what fraction the new contours are 3D -- if they
     // are above threshold -- make a new line which connects them
-    
+    // and fill out Object2D
+    //
+
+    std::array<std::vector<Object2D>,3> object_vv;
+
     for(size_t plane=0; plane<3; ++plane) {
       const auto& timg   = timg_v[plane];
       const auto& timg3d = timg3d_v[plane];
+
       auto& line_contour_v = line_contour_vv[plane];
-      auto& triangle_v = triangle_vv[plane];
-      auto& edge_v     = edge_vv[plane];
+      auto& triangle_v     = triangle_vv[plane];
+      auto& edge_v         = edge_vv[plane];
+      auto& object_v       = object_vv[plane];
 
-      auto nlines = line_contour_v.size();
-
-      auto& line_frac_v   = _line_frac_vv[plane];
-      auto& line_len_v    = _line_len_vv[plane];
-      auto& line_startx_v = _line_startx_vv[plane];
-      auto& line_starty_v = _line_starty_vv[plane];
-      auto& line_endx_v   = _line_endx_vv[plane];
-      auto& line_endy_v   = _line_endy_vv[plane];
-
-      line_frac_v.resize(nlines);
-      line_len_v.resize(nlines);
-      line_startx_v.resize(nlines);
-      line_starty_v.resize(nlines);
-      line_endx_v.resize(nlines);
-      line_endy_v.resize(nlines);
+      object_v.resize(line_contour_v.size());
 
       for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
 
@@ -363,6 +344,9 @@ namespace llcv {
 	auto& edge = edge_v[cid];
 
 	auto new_ctor = triangle.Contour();
+	auto& object = object_v[cid];
+
+	object._polygon_v.emplace_back(new_ctor,triangle.Apex());
 
 	float npar_pixels = (float)larocv::CountNonZero(larocv::MaskImage(timg,new_ctor,0,false));
 
@@ -376,48 +360,81 @@ namespace llcv {
 	  if (ratio < _extension_cutoff) continue;
 	  for(const auto& pt : *ctor)
 	    new_ctor.emplace_back(pt);
-
+	  
 	  npar_pixels += (float)larocv::CountNonZero(larocv::MaskImage(timg,*ctor,0,false));
+	  object._polygon_v.emplace_back(*ctor,triangle.Apex());
 	}
 
 	triangle = Triangle(new_ctor,triangle.Apex());
+
 	float nline_pixels = 0.0;
 	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
-
-	if (line_ctor.empty()) continue;
-
-	line_contour_v[cid] = std::move(line_ctor);
 
 	float nratio = 0;
 	if (npar_pixels > 0)
 	  nratio = nline_pixels / npar_pixels;
 
-	auto& line_frac = line_frac_v[cid];
-	auto& line_len  = line_len_v[cid];
-
-	line_frac = nratio;
-	
-	line_len = (float)geo2d::dist(triangle.Apex(),edge);
-
-	auto& line_startx = line_startx_v[cid];
-	auto& line_starty = line_starty_v[cid];
-	
-	line_startx = triangle.Apex().x;
-	line_starty = triangle.Apex().y;
-	
-	auto& line_endx = line_endx_v[cid];
-	auto& line_endy = line_endy_v[cid];
-	
-	line_endx = edge.x;
-	line_endy = edge.y;
+	object._triangle  = triangle;
+	object._line      = line_ctor;
+	object._line_frac = nratio;
+	object._edge      = edge;
+	object._plane     = plane;
+     
       }
     }
-  
 
+    _Match.ClearEvent();
+    _Match.ClearMatch();
 
-
+    LLCV_DEBUG() << "Match lines" << std::endl;
+    for(size_t plane=0; plane<3; ++plane) {
+      LLCV_DEBUG() << "@plane=" << plane << std::endl;
+      for(const auto& object : object_vv[plane]) {
+	_Match.Register(object,plane);
+      }
+      LLCV_DEBUG() << "num register=" << object_vv[plane].size() << std::endl;
+    }
     
+    auto match_vv = _Match.MatchObjects();
 
+    LLCV_DEBUG() << "& recieved " << match_vv.size() << " matched particles" << std::endl;
+    
+    
+    std::vector<Object2DCollection> obj_col_v;
+    obj_col_v.resize(match_vv.size());
+
+    for(size_t mid=0; mid< match_vv.size(); ++mid) {
+      auto match_v = match_vv[mid];
+      auto& obj_col = obj_col_v[mid];
+
+      // Fill the match
+      for (auto match : match_v) {
+	auto plane = match.first;
+	auto id    = match.second;
+	LLCV_DEBUG() << "@plane=" << plane << " id=" << id << std::endl;
+	obj_col.emplace_back(object_vv[plane][id]);
+      }
+      LLCV_DEBUG() << "..." << std::endl;
+    }
+    
+    
+    
+    
+    // _line_frac_vv.clear();
+    // _line_len_vv.clear();
+    // _line_startx_vv.clear();;
+    // _line_starty_vv.clear();
+    // _line_endx_vv.clear();
+    // _line_endy_vv.clear();
+
+    // _line_frac_vv.resize(3);
+    // _line_len_vv.resize(3);
+    // _line_startx_vv.resize(3);
+    // _line_starty_vv.resize(3);
+    // _line_endx_vv.resize(3);
+    // _line_endy_vv.resize(3);
+    
+    
     //
     // Debug print out
     //
@@ -429,7 +446,6 @@ namespace llcv {
     	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
       
       cv::drawContours(mat3d,line_contour_vv[plane],-1,cv::Scalar(0,0,255));
-      cv::drawContours(mat3d,new_line_contour_vv[plane],-1,cv::Scalar(0,255,0));
       
       std::stringstream ss;
       ss.str("");
@@ -472,7 +488,6 @@ namespace llcv {
     larocv::GEO2D_Contour_t res;
 
     auto timg3d_par   = larocv::MaskImage(timg3d_mask,triangle.Contour(),-1,false);
-    auto timg3d_blank = larocv::BlankImage(timg3d_mask,0);
     
     nline_pixels = -1*larocv::kINVALID_FLOAT;
 
@@ -527,7 +542,7 @@ namespace llcv {
     float step = 0.1;
     for(float rid=lo; rid<hi; rid+=step) {
       
-      timg3d_blank.setTo(cv::Scalar(0));
+      _white_img.setTo(cv::Scalar(0));
       
       if (!isinf) {
 	pt.x = rid;
@@ -546,10 +561,10 @@ namespace llcv {
       }
 
       // draw a line
-      cv::line(timg3d_blank,triangle.Apex(),pt,cv::Scalar(255),3);
+      cv::line(_white_img,triangle.Apex(),pt,cv::Scalar(255),3);
       
       // find the contour
-      auto line_ctor_v = larocv::FindContours(timg3d_blank);
+      auto line_ctor_v = larocv::FindContours(_white_img);
       if (line_ctor_v.empty()) continue;
       const auto& line_ctor = line_ctor_v.front();
       
@@ -563,7 +578,7 @@ namespace llcv {
 	edge = pt;
 	res = line_ctor;
       }
-
+      
     }
 
     return res;
