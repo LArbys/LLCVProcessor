@@ -28,6 +28,17 @@ namespace llcv {
     return (*this)[res];
   }
   
+  std::vector<int> Object2DCollection::Planes() const {
+    std::vector<int> res_v(3,0);
+    
+    for(size_t plane=0; plane<3; ++plane) {
+      if(!HasObject(plane)) continue;
+      res_v[plane] = 1;
+    }
+    
+    return res_v;
+  }
+
 }
 
 #endif

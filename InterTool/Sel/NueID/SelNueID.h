@@ -23,12 +23,15 @@ namespace llcv {
     double Select();
     void Finalize();
 
-
   private:
+    
     TTree* _outtree;
+    
     size_t _cropx;
     size_t _cropy;
     size_t _n_neighbors;
+
+    float _extension_cutoff;
     
     ContourScan _ContourScan;
 
@@ -39,6 +42,12 @@ namespace llcv {
     MatchObjectAlgoTimeIOU _Match;
 
   private:
+
+    void ResetEvent();
+    void ResizePlanePolygon(size_t sz);
+    void SetParticlePlane(size_t pid, size_t plane);
+    void SetParticle(size_t pid);
+
     size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
 			      const geo2d::Vector<float>& pt);
 
@@ -53,25 +62,181 @@ namespace llcv {
 			   const std::array<cv::Mat,3>& aimg_v,
 			   Object2DCollection& obj_col);
     
-    
   private:
-
-    float _extension_cutoff;
-
+    
     float _vertex_x;
     float _vertex_y;
     float _vertex_z;
     
-    std::vector<int> _nctor_v;
+    int _n_par;
     
-    std::vector<std::vector<float> > _line_frac_vv;
-    std::vector<std::vector<float> > _line_len_vv;
+    float _par1_theta;
+    float _par1_phi;
+    float _par1_length;
+    float _par1_score;
+    float _par1_dx;
+    float _par1_dy;
+    float _par1_dz;
+    int   _par1_nplanes;
+    std::vector<int> _par1_planes_v;
 
-    std::vector<std::vector<float> >_line_startx_vv;
-    std::vector<std::vector<float> >_line_starty_vv;
-    std::vector<std::vector<float> >_line_endx_vv;
-    std::vector<std::vector<float> >_line_endy_vv;
+    float _par2_theta;
+    float _par2_phi;
+    float _par2_length;
+    float _par2_score;
+    float _par2_dx;
+    float _par2_dy;
+    float _par2_dz;
+    int   _par2_nplanes;
+    std::vector<int> _par2_planes_v;
+
+    float* _par_theta;
+    float* _par_phi;
+    float* _par_length;
+    float* _par_score;
+    float* _par_dx;
+    float* _par_dy;
+    float* _par_dz;
+    int*   _par_nplanes;
+    std::vector<int>* _par_planes_v;
+
+    int _par1_n_polygons_U;
+    int _par1_n_polygons_V;
+    int _par1_n_polygons_Y;
+    int _par2_n_polygons_U;
+    int _par2_n_polygons_V;
+    int _par2_n_polygons_Y;
+    int* _par_n_polygons;
+
+    float _par1_linelength_U;
+    float _par1_linelength_V;
+    float _par1_linelength_Y;
+    float _par2_linelength_U;
+    float _par2_linelength_V;
+    float _par2_linelength_Y;
+    float* _par_linelength;
+
+    float _par1_triangle_height_U;
+    float _par1_triangle_height_V;
+    float _par1_triangle_height_Y;
+    float _par2_triangle_height_U;
+    float _par2_triangle_height_V;
+    float _par2_triangle_height_Y;
+    float* _par_triangle_height;
+
+    float _par1_triangle_emptyarearatio_U;
+    float _par1_triangle_emptyarearatio_V;
+    float _par1_triangle_emptyarearatio_Y;
+    float _par2_triangle_emptyarearatio_U;
+    float _par2_triangle_emptyarearatio_V;
+    float _par2_triangle_emptyarearatio_Y;
+    float* _par_triangle_emptyarearatio;
+
+    float _par1_triangle_emptyarea_U;
+    float _par1_triangle_emptyarea_V;
+    float _par1_triangle_emptyarea_Y;
+    float _par2_triangle_emptyarea_U;
+    float _par2_triangle_emptyarea_V;
+    float _par2_triangle_emptyarea_Y;
+    float* _par_triangle_emptyarea;
+
+    float _par1_triangle_baselength_U;
+    float _par1_triangle_baselength_V;
+    float _par1_triangle_baselength_Y;
+    float _par2_triangle_baselength_U;
+    float _par2_triangle_baselength_V;
+    float _par2_triangle_baselength_Y;
+    float* _par_triangle_baselength;
+
+    float _par1_triangle_area_U;
+    float _par1_triangle_area_V;
+    float _par1_triangle_area_Y;
+    float _par2_triangle_area_U;
+    float _par2_triangle_area_V;
+    float _par2_triangle_area_Y;
+    float* _par_triangle_area;
+
+    std::vector<int> _par1_numberdefects_U_v;
+    std::vector<int> _par1_numberdefects_V_v;
+    std::vector<int> _par1_numberdefects_Y_v;
+    std::vector<int> _par2_numberdefects_U_v;
+    std::vector<int> _par2_numberdefects_V_v;
+    std::vector<int> _par2_numberdefects_Y_v;
+    std::vector<int>* _par_numberdefects_v;
+
+    std::vector<int> _par1_numberdefects_ns_U_v;
+    std::vector<int> _par1_numberdefects_ns_V_v;
+    std::vector<int> _par1_numberdefects_ns_Y_v;
+    std::vector<int> _par2_numberdefects_ns_U_v;
+    std::vector<int> _par2_numberdefects_ns_V_v;
+    std::vector<int> _par2_numberdefects_ns_Y_v;
+    std::vector<int>* _par_numberdefects_ns_v;
     
+    std::vector<float> _par1_largestdefect_U_v;
+    std::vector<float> _par1_largestdefect_V_v;
+    std::vector<float> _par1_largestdefect_Y_v;
+    std::vector<float> _par2_largestdefect_U_v;
+    std::vector<float> _par2_largestdefect_V_v;
+    std::vector<float> _par2_largestdefect_Y_v;
+    std::vector<float>* _par_largestdefect_v;
+
+    std::vector<float> _par1_smallestdefect_U_v;
+    std::vector<float> _par1_smallestdefect_V_v;
+    std::vector<float> _par1_smallestdefect_Y_v;
+    std::vector<float> _par2_smallestdefect_U_v;
+    std::vector<float> _par2_smallestdefect_V_v;
+    std::vector<float> _par2_smallestdefect_Y_v;
+    std::vector<float>* _par_smallestdefect_v;
+
+    std::vector<float> _par1_largestdefect_ns_U_v;
+    std::vector<float> _par1_largestdefect_ns_V_v;
+    std::vector<float> _par1_largestdefect_ns_Y_v;
+    std::vector<float> _par2_largestdefect_ns_U_v;
+    std::vector<float> _par2_largestdefect_ns_V_v;
+    std::vector<float> _par2_largestdefect_ns_Y_v;
+    std::vector<float>* _par_largestdefect_ns_v;
+
+    std::vector<float> _par1_smallestdefect_ns_U_v;
+    std::vector<float> _par1_smallestdefect_ns_V_v;
+    std::vector<float> _par1_smallestdefect_ns_Y_v;
+    std::vector<float> _par2_smallestdefect_ns_U_v;
+    std::vector<float> _par2_smallestdefect_ns_V_v;
+    std::vector<float> _par2_smallestdefect_ns_Y_v;
+    std::vector<float>* _par_smallestdefect_ns_v;
+
+    std::vector<float> _par1_emptyarearatio_U_v;
+    std::vector<float> _par1_emptyarearatio_V_v;
+    std::vector<float> _par1_emptyarearatio_Y_v;
+    std::vector<float> _par2_emptyarearatio_U_v;
+    std::vector<float> _par2_emptyarearatio_V_v;
+    std::vector<float> _par2_emptyarearatio_Y_v;
+    std::vector<float>* _par_emptyarearatio_v;
+
+    std::vector<float> _par1_emptyarea_U_v;
+    std::vector<float> _par1_emptyarea_V_v;
+    std::vector<float> _par1_emptyarea_Y_v;
+    std::vector<float> _par2_emptyarea_U_v;
+    std::vector<float> _par2_emptyarea_V_v;
+    std::vector<float> _par2_emptyarea_Y_v;
+    std::vector<float>* _par_emptyarea_v;
+
+    std::vector<float> _par1_pocketarea_U_v;
+    std::vector<float> _par1_pocketarea_V_v;
+    std::vector<float> _par1_pocketarea_Y_v;
+    std::vector<float> _par2_pocketarea_U_v;
+    std::vector<float> _par2_pocketarea_V_v;
+    std::vector<float> _par2_pocketarea_Y_v;
+    std::vector<float>* _par_pocketarea_v;
+
+    std::vector<float> _par1_pocketarea_ns_U_v;
+    std::vector<float> _par1_pocketarea_ns_V_v;
+    std::vector<float> _par1_pocketarea_ns_Y_v;
+    std::vector<float> _par2_pocketarea_ns_U_v;
+    std::vector<float> _par2_pocketarea_ns_V_v;
+    std::vector<float> _par2_pocketarea_ns_Y_v;
+    std::vector<float>* _par_pocketarea_ns_v;
+
+
   };
 
 }

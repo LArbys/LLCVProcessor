@@ -43,13 +43,155 @@ namespace llcv {
     _outtree->Branch("vertex_y", &_vertex_y, "vertex_y/F");
     _outtree->Branch("vertex_z", &_vertex_z, "vertex_z/F");
 
-    _outtree->Branch("nctor_v"       , &_nctor_v);
-    _outtree->Branch("line_frac_vv"  , &_line_frac_vv);
-    _outtree->Branch("line_len_vv"   , &_line_len_vv);
-    _outtree->Branch("line_startx_vv", &_line_startx_vv);
-    _outtree->Branch("line_starty_vv", &_line_starty_vv);
-    _outtree->Branch("line_endx_vv"  , &_line_endx_vv);
-    _outtree->Branch("line_endy_vv"  , &_line_endy_vv);
+    _outtree->Branch("n_par", &_n_par, "n_par/I");
+
+    //
+    // 3D information
+    //
+
+    _outtree->Branch("par1_theta"    , &_par1_theta  , "par1_theta/F");
+    _outtree->Branch("par1_phi"      , &_par1_phi    , "par1_phi/F");
+    _outtree->Branch("par1_length"   , &_par1_length , "par1_length/F");
+    _outtree->Branch("par1_score"    , &_par1_score  , "par1_score/F");
+    _outtree->Branch("par1_dx"       , &_par1_dx     , "par1_dx/F");
+    _outtree->Branch("par1_dy"       , &_par1_dy     , "par1_dy/F");
+    _outtree->Branch("par1_dz"       , &_par1_dz     , "par1_dz/F");
+    _outtree->Branch("par1_nplanes"  , &_par1_nplanes, "par1_nplanes/I");
+    _outtree->Branch("par1_planes_v" , &_par1_planes_v);
+
+    _outtree->Branch("par2_theta"    , &_par2_theta  , "par2_theta/F");
+    _outtree->Branch("par2_phi"      , &_par2_phi    , "par2_phi/F");
+    _outtree->Branch("par2_length"   , &_par2_length , "par2_length/F");
+    _outtree->Branch("par2_score"    , &_par2_score  , "par2_score/F");
+    _outtree->Branch("par2_dx"       , &_par2_dx     , "par2_dx/F");
+    _outtree->Branch("par2_dy"       , &_par2_dy     , "par2_dy/F");
+    _outtree->Branch("par2_dz"       , &_par2_dz     , "par2_dz/F");
+    _outtree->Branch("par2_nplanes"  , &_par2_nplanes, "par2_nplanes/I");
+    _outtree->Branch("par2_planes_v" , &_par2_planes_v);
+
+    //
+    // 2D information
+    //
+    
+    _outtree->Branch("par1_n_polygons_U", &_par1_n_polygons_U, "par1_n_polygons_U/I");
+    _outtree->Branch("par1_n_polygons_V", &_par1_n_polygons_V, "par1_n_polygons_V/I");
+    _outtree->Branch("par1_n_polygons_Y", &_par1_n_polygons_Y, "par1_n_polygons_Y/I");
+    _outtree->Branch("par2_n_polygons_U", &_par2_n_polygons_U, "par2_n_polygons_U/I");
+    _outtree->Branch("par2_n_polygons_V", &_par2_n_polygons_V, "par2_n_polygons_V/I");
+    _outtree->Branch("par2_n_polygons_Y", &_par2_n_polygons_Y, "par2_n_polygons_Y/I");
+
+    _outtree->Branch("par1_linelength_U", &_par1_linelength_U, "par1_linelength_U/F");
+    _outtree->Branch("par1_linelength_V", &_par1_linelength_V, "par1_linelength_V/F");
+    _outtree->Branch("par1_linelength_Y", &_par1_linelength_Y, "par1_linelength_Y/F");
+    _outtree->Branch("par2_linelength_U", &_par2_linelength_U, "par2_linelength_U/F");
+    _outtree->Branch("par2_linelength_V", &_par2_linelength_V, "par2_linelength_V/F");
+    _outtree->Branch("par2_linelength_Y", &_par2_linelength_Y, "par2_linelength_Y/F");
+
+    _outtree->Branch("par1_triangle_height_U", &_par1_triangle_height_U, "par1_triangle_height_U/F");
+    _outtree->Branch("par1_triangle_height_V", &_par1_triangle_height_V, "par1_triangle_height_V/F");
+    _outtree->Branch("par1_triangle_height_Y", &_par1_triangle_height_Y, "par1_triangle_height_Y/F");
+    _outtree->Branch("par2_triangle_height_U", &_par2_triangle_height_U, "par2_triangle_height_U/F");
+    _outtree->Branch("par2_triangle_height_V", &_par2_triangle_height_V, "par2_triangle_height_V/F");
+    _outtree->Branch("par2_triangle_height_Y", &_par2_triangle_height_Y, "par2_triangle_height_Y/F");
+
+    _outtree->Branch("par1_triangle_emptyarearatio_U", &_par1_triangle_emptyarearatio_U, "par1_triangle_emptyarearatio_U/F");
+    _outtree->Branch("par1_triangle_emptyarearatio_V", &_par1_triangle_emptyarearatio_V, "par1_triangle_emptyarearatio_V/F");
+    _outtree->Branch("par1_triangle_emptyarearatio_Y", &_par1_triangle_emptyarearatio_Y, "par1_triangle_emptyarearatio_Y/F");
+    _outtree->Branch("par2_triangle_emptyarearatio_U", &_par2_triangle_emptyarearatio_U, "par2_triangle_emptyarearatio_U/F");
+    _outtree->Branch("par2_triangle_emptyarearatio_V", &_par2_triangle_emptyarearatio_V, "par2_triangle_emptyarearatio_V/F");
+    _outtree->Branch("par2_triangle_emptyarearatio_Y", &_par2_triangle_emptyarearatio_Y, "par2_triangle_emptyarearatio_Y/F");
+
+    _outtree->Branch("par1_triangle_emptyarea_U", &_par1_triangle_emptyarea_U, "par1_triangle_emptyarea_U/F");
+    _outtree->Branch("par1_triangle_emptyarea_V", &_par1_triangle_emptyarea_V, "par1_triangle_emptyarea_V/F");
+    _outtree->Branch("par1_triangle_emptyarea_Y", &_par1_triangle_emptyarea_Y, "par1_triangle_emptyarea_Y/F");
+    _outtree->Branch("par2_triangle_emptyarea_U", &_par2_triangle_emptyarea_U, "par2_triangle_emptyarea_U/F");
+    _outtree->Branch("par2_triangle_emptyarea_V", &_par2_triangle_emptyarea_V, "par2_triangle_emptyarea_V/F");
+    _outtree->Branch("par2_triangle_emptyarea_Y", &_par2_triangle_emptyarea_Y, "par2_triangle_emptyarea_Y/F");
+
+    _outtree->Branch("par1_triangle_baselength_U", &_par1_triangle_baselength_U, "par1_triangle_baselength_U/F");
+    _outtree->Branch("par1_triangle_baselength_V", &_par1_triangle_baselength_V, "par1_triangle_baselength_V/F");
+    _outtree->Branch("par1_triangle_baselength_Y", &_par1_triangle_baselength_Y, "par1_triangle_baselength_Y/F");
+    _outtree->Branch("par2_triangle_baselength_U", &_par2_triangle_baselength_U, "par2_triangle_baselength_U/F");
+    _outtree->Branch("par2_triangle_baselength_V", &_par2_triangle_baselength_V, "par2_triangle_baselength_V/F");
+    _outtree->Branch("par2_triangle_baselength_Y", &_par2_triangle_baselength_Y, "par2_triangle_baselength_Y/F");
+
+    _outtree->Branch("par1_triangle_area_U", &_par1_triangle_area_U, "par1_triangle_area_U/F");
+    _outtree->Branch("par1_triangle_area_V", &_par1_triangle_area_V, "par1_triangle_area_V/F");
+    _outtree->Branch("par1_triangle_area_Y", &_par1_triangle_area_Y, "par1_triangle_area_Y/F");
+    _outtree->Branch("par2_triangle_area_U", &_par2_triangle_area_U, "par2_triangle_area_U/F");
+    _outtree->Branch("par2_triangle_area_V", &_par2_triangle_area_V, "par2_triangle_area_V/F");
+    _outtree->Branch("par2_triangle_area_Y", &_par2_triangle_area_Y, "par2_triangle_area_Y/F");
+    
+    _outtree->Branch("par1_numberdefects_U_v", &_par1_numberdefects_U_v);
+    _outtree->Branch("par1_numberdefects_V_v", &_par1_numberdefects_V_v);
+    _outtree->Branch("par1_numberdefects_Y_v", &_par1_numberdefects_Y_v);
+    _outtree->Branch("par2_numberdefects_U_v", &_par2_numberdefects_U_v);
+    _outtree->Branch("par2_numberdefects_V_v", &_par2_numberdefects_V_v);
+    _outtree->Branch("par2_numberdefects_Y_v", &_par2_numberdefects_Y_v);
+    
+    _outtree->Branch("par1_numberdefects_ns_U_v", &_par1_numberdefects_ns_U_v);
+    _outtree->Branch("par1_numberdefects_ns_V_v", &_par1_numberdefects_ns_V_v);
+    _outtree->Branch("par1_numberdefects_ns_Y_v", &_par1_numberdefects_ns_Y_v);
+    _outtree->Branch("par2_numberdefects_ns_U_v", &_par2_numberdefects_ns_U_v);
+    _outtree->Branch("par2_numberdefects_ns_V_v", &_par2_numberdefects_ns_V_v);
+    _outtree->Branch("par2_numberdefects_ns_Y_v", &_par2_numberdefects_ns_Y_v);
+    
+    _outtree->Branch("par1_largestdefect_U_v", &_par1_largestdefect_U_v);
+    _outtree->Branch("par1_largestdefect_V_v", &_par1_largestdefect_V_v);
+    _outtree->Branch("par1_largestdefect_Y_v", &_par1_largestdefect_Y_v);
+    _outtree->Branch("par2_largestdefect_U_v", &_par2_largestdefect_U_v);
+    _outtree->Branch("par2_largestdefect_V_v", &_par2_largestdefect_V_v);
+    _outtree->Branch("par2_largestdefect_Y_v", &_par2_largestdefect_Y_v);
+
+    _outtree->Branch("par1_smallestdefect_U_v", &_par1_smallestdefect_U_v);
+    _outtree->Branch("par1_smallestdefect_V_v", &_par1_smallestdefect_V_v);
+    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
+    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
+    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
+    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
+
+    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
+    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
+    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);
+    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
+    _outtree->Branch("par2_largestdefect_ns_V_v", &_par2_largestdefect_ns_V_v);
+    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);
+    
+    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
+    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
+    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
+    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);
+    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);
+    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
+
+    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
+    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
+    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
+    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
+    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);
+    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);
+
+    _outtree->Branch("par1_emptyarea_U_v", &_par1_emptyarea_U_v);
+    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);
+    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
+    _outtree->Branch("par2_emptyarea_U_v", &_par2_emptyarea_U_v);
+    _outtree->Branch("par2_emptyarea_V_v", &_par2_emptyarea_V_v);
+    _outtree->Branch("par2_emptyarea_Y_v", &_par2_emptyarea_Y_v);
+
+    _outtree->Branch("par1_pocketarea_U_v", &_par1_pocketarea_U_v);
+    _outtree->Branch("par1_pocketarea_V_v", &_par1_pocketarea_V_v);
+    _outtree->Branch("par1_pocketarea_Y_v", &_par1_pocketarea_Y_v);
+    _outtree->Branch("par2_pocketarea_U_v", &_par2_pocketarea_U_v);
+    _outtree->Branch("par2_pocketarea_V_v", &_par2_pocketarea_V_v);
+    _outtree->Branch("par2_pocketarea_Y_v", &_par2_pocketarea_Y_v);
+
+    _outtree->Branch("par1_pocketarea_ns_U_v", &_par1_pocketarea_ns_U_v);
+    _outtree->Branch("par1_pocketarea_ns_V_v", &_par1_pocketarea_ns_V_v);
+    _outtree->Branch("par1_pocketarea_ns_Y_v", &_par1_pocketarea_ns_Y_v);
+    _outtree->Branch("par2_pocketarea_ns_U_v", &_par2_pocketarea_ns_U_v);
+    _outtree->Branch("par2_pocketarea_ns_V_v", &_par2_pocketarea_ns_V_v);
+    _outtree->Branch("par2_pocketarea_ns_Y_v", &_par2_pocketarea_ns_Y_v);
+    
 
     return;
   }
@@ -164,10 +306,6 @@ namespace llcv {
     std::array<std::vector<Triangle>,3> triangle_vv;
     std::array<geo2d::VectorArray<float>,3> edge_vv;
 
-
-    _nctor_v.clear();
-    _nctor_v.resize(3);
-    
     for(size_t plane=0; plane<3; ++plane) {
       auto& timg3d = timg3d_v[plane];
       auto& plane_ctor_v = img_ctor_v[plane];
@@ -201,8 +339,7 @@ namespace llcv {
       auto& par_ctor = par_ctor_v[plane];
       par_ctor = larocv::FindContours(timg3d_mask);
 
-      auto& nctor = _nctor_v[plane];
-      nctor = par_ctor_v[plane].size();
+      auto nctor = par_ctor_v[plane].size();
       
       auto& line_contour_v = line_contour_vv[plane];
       auto& triangle_v     = triangle_vv[plane];
@@ -427,8 +564,10 @@ namespace llcv {
 	LLCV_DEBUG() << "@plane=" << plane << " id=" << id << std::endl;
 	obj_col.emplace_back(object_vv[plane][id]);
       }
+     
       ReconstructAngle(aimg_v,obj_col);
       ReconstructLength(img_v,aimg_v,obj_col);
+      
       LLCV_DEBUG() << "theta=" << obj_col.Theta() << " phi=" << obj_col.Phi() << std::endl;
       LLCV_DEBUG() << "(" << obj_col.dX() << "," << obj_col.dY() << "," << obj_col.dZ() << ")" << std::endl;
       LLCV_DEBUG() << "length=" << obj_col.Length() << std::endl;
@@ -437,20 +576,73 @@ namespace llcv {
     }
     
     
-    // _line_frac_vv.clear();
-    // _line_len_vv.clear();
-    // _line_startx_vv.clear();;
-    // _line_starty_vv.clear();
-    // _line_endx_vv.clear();
-    // _line_endy_vv.clear();
-
-    // _line_frac_vv.resize(3);
-    // _line_len_vv.resize(3);
-    // _line_startx_vv.resize(3);
-    // _line_starty_vv.resize(3);
-    // _line_endx_vv.resize(3);
-    // _line_endy_vv.resize(3);
     
+    //
+    // Write out
+    //
+    ResetEvent();
+
+    _n_par = (int)obj_col_v.size();
+
+    for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
+      const auto& obj_col = obj_col_v[oid];
+      
+      LLCV_DEBUG() << "@oid=" << oid << std::endl;
+
+      SetParticle(oid);
+      
+      *_par_theta    = obj_col.Theta();
+      *_par_phi      = obj_col.Phi();
+      *_par_length   = obj_col.Length();
+      *_par_score    = obj_col.Score();
+      *_par_dx       = obj_col.dX();
+      *_par_dy       = obj_col.dY();
+      *_par_dz       = obj_col.dZ();
+      *_par_nplanes  = (int)obj_col.size();
+      *_par_planes_v = obj_col.Planes();
+      
+      for(size_t plane=0; plane<3; ++plane) {
+	LLCV_DEBUG() << "@plane=" << plane << std::endl;
+	if (!obj_col.HasObject(plane)) continue;
+	LLCV_DEBUG() << "...exists" << std::endl;
+
+	const auto& obj2d = obj_col.PlaneObject(plane);
+
+	size_t npolygons = obj2d.NPolygons();
+
+	SetParticlePlane(oid,plane);
+	
+	*_par_n_polygons              = obj2d.NPolygons();
+	*_par_linelength              = obj2d.LineLength();
+
+	*_par_triangle_height         = obj2d.triangle().Height();
+	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
+	*_par_triangle_emptyarea      = obj2d.triangle().EmptyArea();
+	*_par_triangle_baselength     = obj2d.triangle().BaseLength();
+	*_par_triangle_area           = obj2d.triangle().Area();
+	
+	ResizePlanePolygon(npolygons);
+
+	for(size_t polyid=0; polyid<npolygons; ++polyid) {
+	  const auto& polygon = obj2d.Polygons()[polyid];
+	  (*_par_numberdefects_v)[polyid]     = polygon.NumberDefects(5);
+	  (*_par_numberdefects_ns_v)[polyid]  = polygon.NumberDefectsNoStart(5);
+	  (*_par_largestdefect_v)[polyid]     = polygon.LargestDefect();
+	  (*_par_smallestdefect_v)[polyid]    = polygon.SmallestDefect();
+	  (*_par_largestdefect_ns_v)[polyid]  = polygon.LargestDefectNoStart();
+	  (*_par_smallestdefect_ns_v)[polyid] = polygon.SmallestDefectNoStart();
+	  (*_par_emptyarearatio_v)[polyid]    = polygon.EmptyAreaRatio();
+	  (*_par_emptyarea_v)[polyid]         = polygon.EmptyArea();
+	  (*_par_pocketarea_v)[polyid]        = polygon.PocketArea();
+	  (*_par_pocketarea_ns_v)[polyid]     = polygon.PocketAreaNoStart();
+	}
+
+      }
+
+    }
+
+    _outtree->Fill();
+
     
     //
     // Debug print out
@@ -470,8 +662,6 @@ namespace llcv {
       cv::imwrite(ss.str(),mat3d);
     }
     
-    _outtree->Fill();
-
     LLCV_DEBUG() << "end" << std::endl;
     return 0.0;
   }
@@ -730,7 +920,7 @@ namespace llcv {
 		 px_x, px_y);
       
       geo2d::Vector<float> secondPoint2D(px_y,px_x);
-      std::cout << "@plane=" << plane << " start=" << startPoint2D << " end=" << secondPoint2D << std::endl;
+      LLCV_DEBUG() << "@plane=" << plane << " start=" << startPoint2D << " end=" << secondPoint2D << std::endl;
 
       TVector2 dir(secondPoint2D.y - startPoint2D.y, secondPoint2D.x - startPoint2D.x);
       dir *= 1.0 / dir.Mod();
@@ -791,7 +981,7 @@ namespace llcv {
       
       double length = d2D / f;
 
-      std::cout << "@pl=" << pl << " f=" << f << " length=" << length << std::endl;
+      LLCV_DEBUG() << "@pl=" << pl << " f=" << f << " length=" << length << std::endl;
       length_v[pl] = length;
     }
     
@@ -808,6 +998,438 @@ namespace llcv {
     sum /= ((float)length_v.size());
 
     obj_col.SetLength(sum);
+  }
+
+  void SelNueID::ResetEvent() {
+    
+    _n_par = larocv::kINVALID_INT;
+
+    //
+    // 3D information
+    //
+    _par1_theta = larocv::kINVALID_FLOAT;
+    _par1_phi = larocv::kINVALID_FLOAT;
+    _par1_length = larocv::kINVALID_FLOAT;
+    _par1_score = larocv::kINVALID_FLOAT;
+    _par1_dx = larocv::kINVALID_FLOAT;
+    _par1_dy = larocv::kINVALID_FLOAT;
+    _par1_dz = larocv::kINVALID_FLOAT;
+    _par1_nplanes = larocv::kINVALID_INT;
+    _par1_planes_v.clear();
+    _par1_planes_v.resize(3,-1);
+    
+    _par2_theta = larocv::kINVALID_FLOAT;
+    _par2_phi = larocv::kINVALID_FLOAT;
+    _par2_length = larocv::kINVALID_FLOAT;
+    _par2_score = larocv::kINVALID_FLOAT;
+    _par2_dx = larocv::kINVALID_FLOAT;
+    _par2_dy = larocv::kINVALID_FLOAT;
+    _par2_dz = larocv::kINVALID_FLOAT;
+    _par2_nplanes = larocv::kINVALID_INT;
+    _par2_planes_v.clear();
+    _par2_planes_v.resize(3,-1);
+    
+    _par_theta    = nullptr;
+    _par_phi      = nullptr;
+    _par_length   = nullptr;
+    _par_score    = nullptr;
+    _par_dx       = nullptr;
+    _par_dy       = nullptr;
+    _par_dz       = nullptr;
+    _par_nplanes  = nullptr;
+    _par_planes_v = nullptr;
+
+    //
+    // 2D information
+    //
+
+    _par1_n_polygons_U = larocv::kINVALID_INT;
+    _par1_n_polygons_V = larocv::kINVALID_INT;
+    _par1_n_polygons_Y = larocv::kINVALID_INT;
+    _par2_n_polygons_U = larocv::kINVALID_INT;
+    _par2_n_polygons_V = larocv::kINVALID_INT;
+    _par2_n_polygons_Y = larocv::kINVALID_INT;
+    _par_n_polygons = nullptr;
+
+    _par1_linelength_U = larocv::kINVALID_FLOAT;
+    _par1_linelength_V = larocv::kINVALID_FLOAT;
+    _par1_linelength_Y = larocv::kINVALID_FLOAT;
+    _par2_linelength_U = larocv::kINVALID_FLOAT;
+    _par2_linelength_V = larocv::kINVALID_FLOAT;
+    _par2_linelength_Y = larocv::kINVALID_FLOAT;
+    _par_linelength = nullptr;
+
+    _par1_triangle_height_U = larocv::kINVALID_FLOAT;
+    _par1_triangle_height_V = larocv::kINVALID_FLOAT;
+    _par1_triangle_height_Y = larocv::kINVALID_FLOAT;
+    _par2_triangle_height_U = larocv::kINVALID_FLOAT;
+    _par2_triangle_height_V = larocv::kINVALID_FLOAT;
+    _par2_triangle_height_Y = larocv::kINVALID_FLOAT;
+    _par_triangle_height = nullptr;
+
+    _par1_triangle_emptyarearatio_U = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarearatio_V = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarearatio_Y = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_U = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_V = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_Y = larocv::kINVALID_FLOAT;
+    _par_triangle_emptyarearatio = nullptr;
+
+    _par1_triangle_emptyarea_U = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarea_V = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarea_Y = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_U = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_V = larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_Y = larocv::kINVALID_FLOAT;
+    _par_triangle_emptyarea = nullptr;
+    
+    _par1_triangle_baselength_U = larocv::kINVALID_FLOAT;
+    _par1_triangle_baselength_V = larocv::kINVALID_FLOAT;
+    _par1_triangle_baselength_Y = larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_U = larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_V = larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_Y = larocv::kINVALID_FLOAT;
+    _par_triangle_baselength = nullptr;
+
+    _par1_triangle_area_U = larocv::kINVALID_FLOAT;
+    _par1_triangle_area_V = larocv::kINVALID_FLOAT;
+    _par1_triangle_area_Y = larocv::kINVALID_FLOAT;
+    _par2_triangle_area_U = larocv::kINVALID_FLOAT;
+    _par2_triangle_area_V = larocv::kINVALID_FLOAT;
+    _par2_triangle_area_Y = larocv::kINVALID_FLOAT;
+    _par_triangle_area = nullptr;
+
+    _par1_numberdefects_U_v.clear();
+    _par1_numberdefects_V_v.clear();
+    _par1_numberdefects_Y_v.clear();
+    _par2_numberdefects_U_v.clear();
+    _par2_numberdefects_V_v.clear();
+    _par2_numberdefects_Y_v.clear();
+    _par_numberdefects_v = nullptr;
+
+    _par1_numberdefects_ns_U_v.clear();
+    _par1_numberdefects_ns_V_v.clear();
+    _par1_numberdefects_ns_Y_v.clear();
+    _par2_numberdefects_ns_U_v.clear();
+    _par2_numberdefects_ns_V_v.clear();
+    _par2_numberdefects_ns_Y_v.clear();
+    _par_numberdefects_ns_v = nullptr;
+    
+    _par1_largestdefect_U_v.clear();
+    _par1_largestdefect_V_v.clear();
+    _par1_largestdefect_Y_v.clear();
+    _par2_largestdefect_U_v.clear();
+    _par2_largestdefect_V_v.clear();
+    _par2_largestdefect_Y_v.clear();
+    _par_largestdefect_v = nullptr;
+
+    _par1_smallestdefect_U_v.clear();
+    _par1_smallestdefect_V_v.clear();
+    _par1_smallestdefect_Y_v.clear();
+    _par2_smallestdefect_U_v.clear();
+    _par2_smallestdefect_V_v.clear();
+    _par2_smallestdefect_Y_v.clear();
+    _par_smallestdefect_v = nullptr;
+
+    _par1_largestdefect_ns_U_v.clear();
+    _par1_largestdefect_ns_V_v.clear();
+    _par1_largestdefect_ns_Y_v.clear();
+    _par2_largestdefect_ns_U_v.clear();
+    _par2_largestdefect_ns_V_v.clear();
+    _par2_largestdefect_ns_Y_v.clear();
+    _par_largestdefect_ns_v = nullptr;
+
+    _par1_smallestdefect_ns_U_v.clear();
+    _par1_smallestdefect_ns_V_v.clear();
+    _par1_smallestdefect_ns_Y_v.clear();
+    _par2_smallestdefect_ns_U_v.clear();
+    _par2_smallestdefect_ns_V_v.clear();
+    _par2_smallestdefect_ns_Y_v.clear();
+    _par_smallestdefect_ns_v = nullptr;
+
+    _par1_emptyarearatio_U_v.clear();
+    _par1_emptyarearatio_V_v.clear();
+    _par1_emptyarearatio_Y_v.clear();
+    _par2_emptyarearatio_U_v.clear();
+    _par2_emptyarearatio_V_v.clear();
+    _par2_emptyarearatio_Y_v.clear();
+    _par_emptyarearatio_v = nullptr;
+
+    _par1_emptyarea_U_v.clear();
+    _par1_emptyarea_V_v.clear();
+    _par1_emptyarea_Y_v.clear();
+    _par2_emptyarea_U_v.clear();
+    _par2_emptyarea_V_v.clear();
+    _par2_emptyarea_Y_v.clear();
+    _par_emptyarea_v = nullptr;
+
+    _par1_pocketarea_U_v.clear();
+    _par1_pocketarea_V_v.clear();
+    _par1_pocketarea_Y_v.clear();
+    _par2_pocketarea_U_v.clear();
+    _par2_pocketarea_V_v.clear();
+    _par2_pocketarea_Y_v.clear();
+    _par_pocketarea_v = nullptr;
+
+    _par1_pocketarea_ns_U_v.clear();
+    _par1_pocketarea_ns_V_v.clear();
+    _par1_pocketarea_ns_Y_v.clear();
+    _par2_pocketarea_ns_U_v.clear();
+    _par2_pocketarea_ns_V_v.clear();
+    _par2_pocketarea_ns_Y_v.clear();
+    _par_pocketarea_ns_v = nullptr;
+
+    return;
+  }
+
+  void SelNueID::ResizePlanePolygon(size_t sz) {
+
+    if(!_par_numberdefects_v) {
+      LLCV_CRITICAL() << "ptr to _par_numberdefects_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_numberdefects_ns_v) {
+      LLCV_CRITICAL() << "ptr to _par_numberdefects_ns_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_largestdefect_v) {
+      LLCV_CRITICAL() << "ptr to _par_largestdefect_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_smallestdefect_v) {
+      LLCV_CRITICAL() << "ptr to _par_smallestdefect_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_largestdefect_ns_v) {
+      LLCV_CRITICAL() << "ptr to _par_largestdefect_ns_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_smallestdefect_ns_v) {
+      LLCV_CRITICAL() << "ptr to _par_smallestdefect_ns_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_emptyarearatio_v) {
+      LLCV_CRITICAL() << "ptr to _par_emptyarearatio_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_emptyarea_v) {
+      LLCV_CRITICAL() << "ptr to _par_emptyarea_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_pocketarea_v) {
+      LLCV_CRITICAL() << "ptr to _par_pocketarea_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_pocketarea_ns_v) {
+      LLCV_CRITICAL() << "ptr to _par_pocketarea_ns_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+
+    
+    _par_numberdefects_v->resize(sz,larocv::kINVALID_INT);
+
+    _par_numberdefects_ns_v->resize(sz,larocv::kINVALID_INT);
+
+    _par_largestdefect_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_smallestdefect_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_largestdefect_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_smallestdefect_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_emptyarearatio_v->resize(sz,larocv::kINVALID_FLOAT);
+    
+    _par_emptyarea_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_pocketarea_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    _par_pocketarea_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+
+    return;
+  }
+  
+  void SelNueID::SetParticle(size_t pid) {
+
+    switch(pid) {
+    case 0 : {
+      _par_theta    = &_par1_theta;
+      _par_phi      = &_par1_phi;
+      _par_length   = &_par1_length;
+      _par_score    = &_par1_score;
+      _par_dx       = &_par1_dx;
+      _par_dy       = &_par1_dy;
+      _par_dz       = &_par1_dz;
+      _par_nplanes  = &_par1_nplanes;
+      _par_planes_v = &_par1_planes_v;
+      break;
+    }
+    case 1 : {
+      _par_theta    = &_par2_theta;
+      _par_phi      = &_par2_phi;
+      _par_length   = &_par2_length;
+      _par_score    = &_par2_score;
+      _par_dx       = &_par2_dx;
+      _par_dy       = &_par2_dy;
+      _par_dz       = &_par2_dz;
+      _par_nplanes  = &_par2_nplanes;
+      _par_planes_v = &_par2_planes_v;
+      break;
+    }
+    default : { break; }
+    }
+
+    return;
+  }
+
+  void SelNueID::SetParticlePlane(size_t pid, size_t plane) {
+
+    LLCV_DEBUG() << "@pid=" << pid << " @plane=" << plane << std::endl;
+
+    switch(pid) {
+    case 0 : {
+      switch(plane) {
+      case 0 : {
+	_par_n_polygons              = &_par1_n_polygons_U;
+	_par_linelength              = &_par1_linelength_U;
+	_par_triangle_height         = &_par1_triangle_height_U;
+	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_U;
+	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_U;
+	_par_triangle_baselength     = &_par1_triangle_baselength_U;
+	_par_triangle_area           = &_par1_triangle_area_U;
+	
+	_par_numberdefects_v     = &_par1_numberdefects_U_v;
+	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_U_v;
+	_par_largestdefect_v     = &_par1_largestdefect_U_v;
+	_par_smallestdefect_v    = &_par1_smallestdefect_U_v;
+	_par_largestdefect_ns_v  = &_par1_largestdefect_ns_U_v;
+	_par_smallestdefect_ns_v = &_par1_smallestdefect_ns_U_v;
+	_par_emptyarearatio_v    = &_par1_emptyarearatio_U_v;
+	_par_emptyarea_v         = &_par1_emptyarea_U_v;
+	_par_pocketarea_v        = &_par1_pocketarea_U_v;
+	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_U_v;
+	break;
+      }
+      case 1: {
+	_par_n_polygons              = &_par1_n_polygons_V;
+	_par_linelength              = &_par1_linelength_V;
+	_par_triangle_height         = &_par1_triangle_height_V;
+	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_V;
+	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_V;
+	_par_triangle_baselength     = &_par1_triangle_baselength_V;
+	_par_triangle_area           = &_par1_triangle_area_V;
+
+	_par_numberdefects_v     = &_par1_numberdefects_V_v;
+	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_V_v;
+	_par_largestdefect_v     = &_par1_largestdefect_V_v;
+	_par_smallestdefect_v    = &_par1_smallestdefect_V_v;
+	_par_largestdefect_ns_v  = &_par1_largestdefect_ns_V_v;
+	_par_smallestdefect_ns_v = &_par1_smallestdefect_ns_V_v;
+	_par_emptyarearatio_v    = &_par1_emptyarearatio_V_v;
+	_par_emptyarea_v         = &_par1_emptyarea_V_v;
+	_par_pocketarea_v        = &_par1_pocketarea_V_v;
+	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_V_v;
+	break;
+      }
+      case 2: {
+	_par_n_polygons              = &_par1_n_polygons_Y;
+	_par_linelength              = &_par1_linelength_Y;
+	_par_triangle_height         = &_par1_triangle_height_Y;
+	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_Y;
+	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_Y;
+	_par_triangle_baselength     = &_par1_triangle_baselength_Y;
+	_par_triangle_area           = &_par1_triangle_area_Y;
+
+	_par_numberdefects_v     = &_par1_numberdefects_Y_v;
+	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_Y_v;
+	_par_largestdefect_v     = &_par1_largestdefect_Y_v;
+	_par_smallestdefect_v    = &_par1_smallestdefect_Y_v;
+	_par_largestdefect_ns_v  = &_par1_largestdefect_ns_Y_v;
+	_par_smallestdefect_ns_v = &_par1_smallestdefect_ns_Y_v;
+	_par_emptyarearatio_v    = &_par1_emptyarearatio_Y_v;
+	_par_emptyarea_v         = &_par1_emptyarea_Y_v;
+	_par_pocketarea_v        = &_par1_pocketarea_Y_v;
+	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_Y_v;
+	break;
+      }
+      default : { break; }
+      } // end plane
+      break;
+    } // end particle 1
+
+    case 1 : {
+      switch(plane) {
+      case 0 : {
+	_par_n_polygons              = &_par2_n_polygons_U;
+	_par_linelength              = &_par2_linelength_U;
+	_par_triangle_height         = &_par2_triangle_height_U;
+	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_U;
+	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_U;
+	_par_triangle_baselength     = &_par2_triangle_baselength_U;
+	_par_triangle_area           = &_par2_triangle_area_U;
+
+	_par_numberdefects_v     = &_par2_numberdefects_U_v;
+	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_U_v;
+	_par_largestdefect_v     = &_par2_largestdefect_U_v;
+	_par_smallestdefect_v    = &_par2_smallestdefect_U_v;
+	_par_largestdefect_ns_v  = &_par2_largestdefect_ns_U_v;
+	_par_smallestdefect_ns_v = &_par2_smallestdefect_ns_U_v;
+	_par_emptyarearatio_v    = &_par2_emptyarearatio_U_v;
+	_par_emptyarea_v         = &_par2_emptyarea_U_v;
+	_par_pocketarea_v        = &_par2_pocketarea_U_v;
+	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_U_v;
+	break;
+      }
+      case 1: {
+	_par_n_polygons              = &_par2_n_polygons_V;
+	_par_linelength              = &_par2_linelength_V;
+	_par_triangle_height         = &_par2_triangle_height_V;
+	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_V;
+	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_V;
+	_par_triangle_baselength     = &_par2_triangle_baselength_V;
+	_par_triangle_area           = &_par2_triangle_area_V;
+
+	_par_numberdefects_v     = &_par2_numberdefects_V_v;
+	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_V_v;
+	_par_largestdefect_v     = &_par2_largestdefect_V_v;
+	_par_smallestdefect_v    = &_par2_smallestdefect_V_v;
+	_par_largestdefect_ns_v  = &_par2_largestdefect_ns_V_v;
+	_par_smallestdefect_ns_v = &_par2_smallestdefect_ns_V_v;
+	_par_emptyarearatio_v    = &_par2_emptyarearatio_V_v;
+	_par_emptyarea_v         = &_par2_emptyarea_V_v;
+	_par_pocketarea_v        = &_par2_pocketarea_V_v;
+	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_V_v;
+	break;
+      }
+      case 2: {
+	_par_n_polygons              = &_par2_n_polygons_Y;
+	_par_linelength              = &_par2_linelength_Y;
+	_par_triangle_height         = &_par2_triangle_height_Y;
+	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_Y;
+	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_Y;
+	_par_triangle_baselength     = &_par2_triangle_baselength_Y;
+	_par_triangle_area           = &_par2_triangle_area_Y;
+
+	_par_numberdefects_v     = &_par2_numberdefects_Y_v;
+	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_Y_v;
+	_par_largestdefect_v     = &_par2_largestdefect_Y_v;
+	_par_smallestdefect_v    = &_par2_smallestdefect_Y_v;
+	_par_largestdefect_ns_v  = &_par2_largestdefect_ns_Y_v;
+	_par_smallestdefect_ns_v = &_par2_smallestdefect_ns_Y_v;
+	_par_emptyarearatio_v    = &_par2_emptyarearatio_Y_v;
+	_par_emptyarea_v         = &_par2_emptyarea_Y_v;
+	_par_pocketarea_v        = &_par2_pocketarea_Y_v;
+	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_Y_v;
+	break;
+      }
+      default : { break; }
+      } // end plane
+      break;
+    } // end particle 2
+    default : { break; }
+    } // end particle
+
+    return;
   }
 
   void SelNueID::Finalize() {

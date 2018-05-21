@@ -23,9 +23,18 @@ namespace llcv {
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
     const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
+    int NPolygons() const { return (int)(_polygon_v.size()); }
+    int LineFrac() const { return _line_frac; }
+
+    const Triangle& triangle() const { return _triangle; }
+    const std::vector<Polygon>& Polygons() const { return _polygon_v; }
+    const larocv::GEO2D_Contour_t& Line() const { return _line; }
+    size_t Plane() const { return _plane; }
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {
+
   public:
     Object2DCollection() {}
     ~Object2DCollection() {}
@@ -49,13 +58,16 @@ namespace llcv {
     float dX() const { return std::cos(_theta) * std::sin(_phi); }
     float dY() const { return std::sin(_theta);                  }
     float dZ() const { return std::cos(_theta) * std::cos(_phi); }
-
+    
+    std::vector<int> Planes() const;
+    
   private:
     float _theta;
     float _phi;
     float _length;
     TVector3 _start;
     float _score;
+
   };
 
 }
