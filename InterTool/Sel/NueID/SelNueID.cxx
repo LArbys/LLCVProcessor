@@ -377,7 +377,6 @@ namespace llcv {
       } // end contour
     } // end plane
     
-
     //
     // get the max, min, time for contours
     //
@@ -388,6 +387,7 @@ namespace llcv {
 	tlo = std::min(tlo,edge.x);
 	thi = std::max(thi,edge.x);
       }
+      LLCV_DEBUG() << "@plane=" << plane << " tlo=" << tlo << " thi=" << thi << std::endl;
     }
 
     // per plane, per line, collection of contours
@@ -422,12 +422,14 @@ namespace llcv {
 	geo2d::Vector<float> new_edge;
 	geo2d::Line<float> line(triangle.Apex(),edge - triangle.Apex());
 	
+	if (triangle.Apex().x == edge.x)
+	  continue;
+	
 	// extend backwards
 	if (edge.x < triangle.Apex().x) {
 	  new_edge.x = tlo;
 	  new_edge.y = line.y(new_edge.x);
 	}
-
 	// extend forwards
 	else {
 	  new_edge.x = thi;
