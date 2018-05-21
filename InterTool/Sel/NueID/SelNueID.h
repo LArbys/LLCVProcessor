@@ -116,6 +116,14 @@ namespace llcv {
     float _par2_linelength_Y;
     float* _par_linelength;
 
+    float _par1_linefrac_U;
+    float _par1_linefrac_V;
+    float _par1_linefrac_Y;
+    float _par2_linefrac_U;
+    float _par2_linefrac_V;
+    float _par2_linefrac_Y;
+    float* _par_linefrac;
+
     float _par1_triangle_height_U;
     float _par1_triangle_height_V;
     float _par1_triangle_height_Y;

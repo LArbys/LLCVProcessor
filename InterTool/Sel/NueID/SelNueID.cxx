@@ -87,6 +87,13 @@ namespace llcv {
     _outtree->Branch("par2_linelength_V", &_par2_linelength_V, "par2_linelength_V/F");
     _outtree->Branch("par2_linelength_Y", &_par2_linelength_Y, "par2_linelength_Y/F");
 
+    _outtree->Branch("par1_linefrac_U", &_par1_linefrac_U, "par1_linefrac_U/F");
+    _outtree->Branch("par1_linefrac_V", &_par1_linefrac_V, "par1_linefrac_V/F");
+    _outtree->Branch("par1_linefrac_Y", &_par1_linefrac_Y, "par1_linefrac_Y/F");
+    _outtree->Branch("par2_linefrac_U", &_par2_linefrac_U, "par2_linefrac_U/F");
+    _outtree->Branch("par2_linefrac_V", &_par2_linefrac_V, "par2_linefrac_V/F");
+    _outtree->Branch("par2_linefrac_Y", &_par2_linefrac_Y, "par2_linefrac_Y/F");
+
     _outtree->Branch("par1_triangle_height_U", &_par1_triangle_height_U, "par1_triangle_height_U/F");
     _outtree->Branch("par1_triangle_height_V", &_par1_triangle_height_V, "par1_triangle_height_V/F");
     _outtree->Branch("par1_triangle_height_Y", &_par1_triangle_height_Y, "par1_triangle_height_Y/F");
@@ -513,6 +520,8 @@ namespace llcv {
 	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
 
 	float nratio = 0;
+	LLCV_DEBUG() << "npar_pixels=" << npar_pixels << std::endl;
+	LLCV_DEBUG() << "nline_pixels=" << nline_pixels << std::endl;
 	if (npar_pixels > 0)
 	  nratio = nline_pixels / npar_pixels;
 
@@ -612,8 +621,9 @@ namespace llcv {
 
 	SetParticlePlane(oid,plane);
 	
-	*_par_n_polygons              = obj2d.NPolygons();
-	*_par_linelength              = obj2d.LineLength();
+	*_par_n_polygons  = obj2d.NPolygons();
+	*_par_linelength  = obj2d.LineLength();
+	*_par_linefrac    = obj2d.LineFrac();   
 
 	*_par_triangle_height         = obj2d.triangle().Height();
 	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
@@ -1007,25 +1017,25 @@ namespace llcv {
     //
     // 3D information
     //
-    _par1_theta = larocv::kINVALID_FLOAT;
-    _par1_phi = larocv::kINVALID_FLOAT;
-    _par1_length = larocv::kINVALID_FLOAT;
-    _par1_score = larocv::kINVALID_FLOAT;
-    _par1_dx = larocv::kINVALID_FLOAT;
-    _par1_dy = larocv::kINVALID_FLOAT;
-    _par1_dz = larocv::kINVALID_FLOAT;
-    _par1_nplanes = larocv::kINVALID_INT;
+    _par1_theta    = -1.0*larocv::kINVALID_FLOAT;
+    _par1_phi      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_length   = -1.0*larocv::kINVALID_FLOAT;
+    _par1_score    = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dx       = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dy       = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dz       = -1.0*larocv::kINVALID_FLOAT;
+    _par1_nplanes  = -1*larocv::kINVALID_INT;
     _par1_planes_v.clear();
     _par1_planes_v.resize(3,-1);
     
-    _par2_theta = larocv::kINVALID_FLOAT;
-    _par2_phi = larocv::kINVALID_FLOAT;
-    _par2_length = larocv::kINVALID_FLOAT;
-    _par2_score = larocv::kINVALID_FLOAT;
-    _par2_dx = larocv::kINVALID_FLOAT;
-    _par2_dy = larocv::kINVALID_FLOAT;
-    _par2_dz = larocv::kINVALID_FLOAT;
-    _par2_nplanes = larocv::kINVALID_INT;
+    _par2_theta   = -1.0*larocv::kINVALID_FLOAT;
+    _par2_phi     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_length  = -1.0*larocv::kINVALID_FLOAT;
+    _par2_score   = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dx      = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dy      = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dz      = -1.0*larocv::kINVALID_FLOAT;
+    _par2_nplanes = -1*larocv::kINVALID_INT;
     _par2_planes_v.clear();
     _par2_planes_v.resize(3,-1);
     
@@ -1043,60 +1053,68 @@ namespace llcv {
     // 2D information
     //
 
-    _par1_n_polygons_U = larocv::kINVALID_INT;
-    _par1_n_polygons_V = larocv::kINVALID_INT;
-    _par1_n_polygons_Y = larocv::kINVALID_INT;
-    _par2_n_polygons_U = larocv::kINVALID_INT;
-    _par2_n_polygons_V = larocv::kINVALID_INT;
-    _par2_n_polygons_Y = larocv::kINVALID_INT;
+    _par1_n_polygons_U = -1*larocv::kINVALID_INT;
+    _par1_n_polygons_V = -1*larocv::kINVALID_INT;
+    _par1_n_polygons_Y = -1*larocv::kINVALID_INT;
+    _par2_n_polygons_U = -1*larocv::kINVALID_INT;
+    _par2_n_polygons_V = -1*larocv::kINVALID_INT;
+    _par2_n_polygons_Y = -1*larocv::kINVALID_INT;
     _par_n_polygons = nullptr;
 
-    _par1_linelength_U = larocv::kINVALID_FLOAT;
-    _par1_linelength_V = larocv::kINVALID_FLOAT;
-    _par1_linelength_Y = larocv::kINVALID_FLOAT;
-    _par2_linelength_U = larocv::kINVALID_FLOAT;
-    _par2_linelength_V = larocv::kINVALID_FLOAT;
-    _par2_linelength_Y = larocv::kINVALID_FLOAT;
+    _par1_linelength_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linelength_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linelength_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linelength_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linelength_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linelength_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_linelength = nullptr;
 
-    _par1_triangle_height_U = larocv::kINVALID_FLOAT;
-    _par1_triangle_height_V = larocv::kINVALID_FLOAT;
-    _par1_triangle_height_Y = larocv::kINVALID_FLOAT;
-    _par2_triangle_height_U = larocv::kINVALID_FLOAT;
-    _par2_triangle_height_V = larocv::kINVALID_FLOAT;
-    _par2_triangle_height_Y = larocv::kINVALID_FLOAT;
+    _par1_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_linefrac = nullptr;
+
+    _par1_triangle_height_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_height_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_height_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_height_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_height_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_height_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_height = nullptr;
 
-    _par1_triangle_emptyarearatio_U = larocv::kINVALID_FLOAT;
-    _par1_triangle_emptyarearatio_V = larocv::kINVALID_FLOAT;
-    _par1_triangle_emptyarearatio_Y = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarearatio_U = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarearatio_V = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarearatio_Y = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarearatio_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarearatio_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarearatio_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarearatio_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_emptyarearatio = nullptr;
 
-    _par1_triangle_emptyarea_U = larocv::kINVALID_FLOAT;
-    _par1_triangle_emptyarea_V = larocv::kINVALID_FLOAT;
-    _par1_triangle_emptyarea_Y = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarea_U = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarea_V = larocv::kINVALID_FLOAT;
-    _par2_triangle_emptyarea_Y = larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarea_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarea_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_emptyarea_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_emptyarea_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_emptyarea = nullptr;
     
-    _par1_triangle_baselength_U = larocv::kINVALID_FLOAT;
-    _par1_triangle_baselength_V = larocv::kINVALID_FLOAT;
-    _par1_triangle_baselength_Y = larocv::kINVALID_FLOAT;
-    _par2_triangle_baselength_U = larocv::kINVALID_FLOAT;
-    _par2_triangle_baselength_V = larocv::kINVALID_FLOAT;
-    _par2_triangle_baselength_Y = larocv::kINVALID_FLOAT;
+    _par1_triangle_baselength_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_baselength_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_baselength_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_baselength_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_baselength = nullptr;
 
-    _par1_triangle_area_U = larocv::kINVALID_FLOAT;
-    _par1_triangle_area_V = larocv::kINVALID_FLOAT;
-    _par1_triangle_area_Y = larocv::kINVALID_FLOAT;
-    _par2_triangle_area_U = larocv::kINVALID_FLOAT;
-    _par2_triangle_area_V = larocv::kINVALID_FLOAT;
-    _par2_triangle_area_Y = larocv::kINVALID_FLOAT;
+    _par1_triangle_area_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_area_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_triangle_area_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_area_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_area_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_triangle_area_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_area = nullptr;
 
     _par1_numberdefects_U_v.clear();
@@ -1226,25 +1244,25 @@ namespace llcv {
     }
 
     
-    _par_numberdefects_v->resize(sz,larocv::kINVALID_INT);
+    _par_numberdefects_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
-    _par_numberdefects_ns_v->resize(sz,larocv::kINVALID_INT);
+    _par_numberdefects_ns_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
-    _par_largestdefect_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_largestdefect_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_smallestdefect_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_smallestdefect_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_largestdefect_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_largestdefect_ns_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_smallestdefect_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_smallestdefect_ns_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_emptyarearatio_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_emptyarearatio_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
     
-    _par_emptyarea_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_emptyarea_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_pocketarea_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_pocketarea_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
-    _par_pocketarea_ns_v->resize(sz,larocv::kINVALID_FLOAT);
+    _par_pocketarea_ns_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
     return;
   }
@@ -1292,6 +1310,7 @@ namespace llcv {
       case 0 : {
 	_par_n_polygons              = &_par1_n_polygons_U;
 	_par_linelength              = &_par1_linelength_U;
+	_par_linefrac                = &_par1_linefrac_U;
 	_par_triangle_height         = &_par1_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_U;
@@ -1313,6 +1332,7 @@ namespace llcv {
       case 1: {
 	_par_n_polygons              = &_par1_n_polygons_V;
 	_par_linelength              = &_par1_linelength_V;
+	_par_linefrac                = &_par1_linefrac_V;
 	_par_triangle_height         = &_par1_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_V;
@@ -1334,6 +1354,7 @@ namespace llcv {
       case 2: {
 	_par_n_polygons              = &_par1_n_polygons_Y;
 	_par_linelength              = &_par1_linelength_Y;
+	_par_linefrac                = &_par1_linefrac_Y;
 	_par_triangle_height         = &_par1_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_Y;
@@ -1362,6 +1383,7 @@ namespace llcv {
       case 0 : {
 	_par_n_polygons              = &_par2_n_polygons_U;
 	_par_linelength              = &_par2_linelength_U;
+	_par_linefrac                = &_par2_linefrac_U;
 	_par_triangle_height         = &_par2_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_U;
@@ -1383,6 +1405,7 @@ namespace llcv {
       case 1: {
 	_par_n_polygons              = &_par2_n_polygons_V;
 	_par_linelength              = &_par2_linelength_V;
+	_par_linefrac                = &_par2_linefrac_V;
 	_par_triangle_height         = &_par2_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_V;
@@ -1404,6 +1427,7 @@ namespace llcv {
       case 2: {
 	_par_n_polygons              = &_par2_n_polygons_Y;
 	_par_linelength              = &_par2_linelength_Y;
+	_par_linefrac                = &_par2_linefrac_Y;
 	_par_triangle_height         = &_par2_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_Y;

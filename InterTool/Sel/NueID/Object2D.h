@@ -24,7 +24,7 @@ namespace llcv {
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
     const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
     int NPolygons() const { return (int)(_polygon_v.size()); }
-    int LineFrac() const { return _line_frac; }
+    float LineFrac() const { return _line_frac; }
 
     const Triangle& triangle() const { return _triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
