@@ -49,7 +49,11 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"inter_nue.cfg"))
+if IS_MC == 1:
+    proc.configure(os.path.join(BASE_PATH,"inter_nue_mc.cfg"))
+else:
+    proc.configure(os.path.join(BASE_PATH,"inter_nue_data.cfg"))
+
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
