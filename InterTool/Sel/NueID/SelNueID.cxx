@@ -198,7 +198,34 @@ namespace llcv {
     _outtree->Branch("par2_pocketarea_ns_U_v", &_par2_pocketarea_ns_U_v);
     _outtree->Branch("par2_pocketarea_ns_V_v", &_par2_pocketarea_ns_V_v);
     _outtree->Branch("par2_pocketarea_ns_Y_v", &_par2_pocketarea_ns_Y_v);
-    
+
+    //
+    // segment information
+    //
+    _outtree->Branch("par1_electron_frac_U", &_par1_electron_frac_U, "par1_electron_frac_U/F");
+    _outtree->Branch("par1_electron_frac_V", &_par1_electron_frac_V, "par1_electron_frac_V/F");
+    _outtree->Branch("par1_electron_frac_Y", &_par1_electron_frac_Y, "par1_electron_frac_Y/F");
+
+    _outtree->Branch("par2_electron_frac_U", &_par2_electron_frac_U, "par2_electron_frac_U/F");
+    _outtree->Branch("par2_electron_frac_V", &_par2_electron_frac_V, "par2_electron_frac_V/F");
+    _outtree->Branch("par2_electron_frac_Y", &_par2_electron_frac_Y, "par2_electron_frac_Y/F");
+
+    _outtree->Branch("par1_muon_frac_U", &_par1_muon_frac_U, "par1_muon_frac_U/F");
+    _outtree->Branch("par1_muon_frac_V", &_par1_muon_frac_V, "par1_muon_frac_V/F");
+    _outtree->Branch("par1_muon_frac_Y", &_par1_muon_frac_Y, "par1_muon_frac_Y/F");
+
+    _outtree->Branch("par2_muon_frac_U", &_par2_muon_frac_U, "par2_muon_frac_U/F");
+    _outtree->Branch("par2_muon_frac_V", &_par2_muon_frac_V, "par2_muon_frac_V/F");
+    _outtree->Branch("par2_muon_frac_Y", &_par2_muon_frac_Y, "par2_muon_frac_Y/F");
+
+    _outtree->Branch("par1_proton_frac_U", &_par1_proton_frac_U, "par1_proton_frac_U/F");
+    _outtree->Branch("par1_proton_frac_V", &_par1_proton_frac_V, "par1_proton_frac_V/F");
+    _outtree->Branch("par1_proton_frac_Y", &_par1_proton_frac_Y, "par1_proton_frac_Y/F");
+
+    _outtree->Branch("par2_proton_frac_U", &_par2_proton_frac_U, "par2_proton_frac_U/F");
+    _outtree->Branch("par2_proton_frac_V", &_par2_proton_frac_V, "par2_proton_frac_V/F");
+    _outtree->Branch("par2_proton_frac_Y", &_par2_proton_frac_Y, "par2_proton_frac_Y/F");
+
 
     return;
   }
@@ -587,7 +614,6 @@ namespace llcv {
     }
     
     
-    
     //
     // Write out
     //
@@ -653,8 +679,71 @@ namespace llcv {
 
     }
 
-    _outtree->Fill();
 
+
+    if (_ismc) {
+
+      auto seg_mat_v = Image().Image<cv::Mat>(kImageTrack,_cropx,_cropy);
+      
+      std::array<cv::Mat,3> electron_mat_v;
+      std::array<cv::Mat,3> muon_mat_v;
+      std::array<cv::Mat,3> proton_mat_v;
+
+      for(size_t plane=0; plane<3; ++plane) {
+	const auto& seg_mat = *(seg_mat_v[plane]);
+
+	auto& electron_mat = electron_mat_v[plane];
+	auto& muon_mat     = muon_mat_v[plane];
+	auto& proton_mat   = proton_mat_v[plane];
+	
+	electron_mat = larocv::BlankImage(seg_mat,0);
+	muon_mat     = larocv::BlankImage(seg_mat,0);
+	proton_mat   = larocv::BlankImage(seg_mat,0);
+
+	cv::inRange(seg_mat,3,3,electron_mat);
+	cv::inRange(seg_mat,6,6,muon_mat);
+	cv::inRange(seg_mat,9,9,proton_mat);
+      }
+
+      for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
+	const auto& obj_col = obj_col_v[oid];
+	for(size_t plane=0; plane<3; ++plane) {
+	  if (!obj_col.HasObject(plane)) continue;
+	  
+	  const auto& obj2d = obj_col.PlaneObject(plane);
+	  SetSegmentPlane(oid,plane);	  
+	  
+	  const auto& adc_mat      = timg_v[plane];
+
+	  const auto& electron_mat = electron_mat_v[plane];
+	  const auto& muon_mat     = muon_mat_v[plane];
+	  const auto& proton_mat   = proton_mat_v[plane];
+
+	  // get the area fraction
+	  float poly_area     = 0.0;
+	  float electron_area = 0.0;
+	  float muon_area     = 0.0;
+	  float proton_area   = 0.0;
+
+	  for(const auto& poly : obj2d.Polygons()) {
+	    poly_area     += larocv::CountNonZero(larocv::MaskImage(adc_mat,poly.Contour(),-1,false));
+	    electron_area += larocv::CountNonZero(larocv::MaskImage(electron_mat,poly.Contour(),-1,false));
+	    muon_area     += larocv::CountNonZero(larocv::MaskImage(muon_mat,poly.Contour(),-1,false));
+	    proton_area   += larocv::CountNonZero(larocv::MaskImage(proton_mat,poly.Contour(),-1,false));
+	  }
+
+	  *_par_electron_frac = electron_area / poly_area;
+	  *_par_muon_frac     = muon_area / poly_area;
+	  *_par_proton_frac   = proton_area / poly_area;
+
+	} // end plane
+	
+      } // end obj_col     
+      
+    } // end ismc
+
+    _outtree->Fill();
+    
     
     //
     // Debug print out
@@ -1199,6 +1288,30 @@ namespace llcv {
     _par2_pocketarea_ns_Y_v.clear();
     _par_pocketarea_ns_v = nullptr;
 
+    _par1_electron_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_electron_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_electron_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_electron_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_electron_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_electron_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_electron_frac = nullptr;
+
+    _par1_muon_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_muon_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_muon_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_muon_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_muon_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_muon_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_muon_frac = nullptr;
+
+    _par1_proton_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_proton_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_proton_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_proton_frac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_proton_frac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_proton_frac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_proton_frac = nullptr;
+
     return;
   }
 
@@ -1446,6 +1559,65 @@ namespace llcv {
 	_par_emptyarea_v         = &_par2_emptyarea_Y_v;
 	_par_pocketarea_v        = &_par2_pocketarea_Y_v;
 	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_Y_v;
+	break;
+      }
+      default : { break; }
+      } // end plane
+      break;
+    } // end particle 2
+    default : { break; }
+    } // end particle
+    return;
+  }
+
+void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
+
+    LLCV_DEBUG() << "@pid=" << pid << " @plane=" << plane << std::endl;
+
+    switch(pid) {
+    case 0 : {
+      switch(plane) {
+      case 0 : {
+	_par_electron_frac = &_par1_electron_frac_U;
+	_par_muon_frac     = &_par1_muon_frac_U;
+	_par_proton_frac   = &_par1_proton_frac_U;
+	break;
+      }
+      case 1: {
+	_par_electron_frac = &_par1_electron_frac_V;
+	_par_muon_frac     = &_par1_muon_frac_V;
+	_par_proton_frac   = &_par1_proton_frac_V;
+	break;
+      }
+      case 2: {
+	_par_electron_frac = &_par1_electron_frac_Y;
+	_par_muon_frac     = &_par1_muon_frac_Y;
+	_par_proton_frac   = &_par1_proton_frac_Y;
+	break;
+      }
+      default : { break; }
+      } // end plane
+      break;
+    } // end particle 1
+
+    case 1 : {
+      switch(plane) {
+      case 0 : {
+	_par_electron_frac = &_par2_electron_frac_U;
+	_par_muon_frac     = &_par2_muon_frac_U;
+	_par_proton_frac   = &_par2_proton_frac_U;
+	break;
+      }
+      case 1: {
+	_par_electron_frac = &_par2_electron_frac_V;
+	_par_muon_frac     = &_par2_muon_frac_V;
+	_par_proton_frac   = &_par2_proton_frac_V;
+	break;
+      }
+      case 2: {
+	_par_electron_frac = &_par2_electron_frac_Y;
+	_par_muon_frac     = &_par2_muon_frac_Y;
+	_par_proton_frac   = &_par2_proton_frac_Y;
 	break;
       }
       default : { break; }

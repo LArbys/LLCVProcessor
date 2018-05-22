@@ -15,13 +15,17 @@ namespace llcv {
 
   public:
 
-  SelNueID(std::string name="SelNueID") : InterSelBase(name), _outtree(nullptr) {}
+  SelNueID(std::string name="SelNueID") : InterSelBase(name), _outtree(nullptr) 
+    { _ismc = false; }
+
     ~SelNueID(){}
       
     void Configure (const larcv::PSet &pset);
     void Initialize();
     double Select();
     void Finalize();
+
+    void SetIsMC(bool ismc) { _ismc = ismc; }
 
   private:
     
@@ -46,6 +50,7 @@ namespace llcv {
     void ResetEvent();
     void ResizePlanePolygon(size_t sz);
     void SetParticlePlane(size_t pid, size_t plane);
+    void SetSegmentPlane(size_t pid, size_t plane);
     void SetParticle(size_t pid);
 
     size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
@@ -63,6 +68,8 @@ namespace llcv {
 			   Object2DCollection& obj_col);
     
   private:
+    
+    bool _ismc;
     
     float _vertex_x;
     float _vertex_y;
@@ -244,6 +251,29 @@ namespace llcv {
     std::vector<float> _par2_pocketarea_ns_Y_v;
     std::vector<float>* _par_pocketarea_ns_v;
 
+    float _par1_electron_frac_U;
+    float _par1_electron_frac_V;
+    float _par1_electron_frac_Y;
+    float _par2_electron_frac_U;
+    float _par2_electron_frac_V;
+    float _par2_electron_frac_Y;
+    float* _par_electron_frac;
+
+    float _par1_muon_frac_U;
+    float _par1_muon_frac_V;
+    float _par1_muon_frac_Y;
+    float _par2_muon_frac_U;
+    float _par2_muon_frac_V;
+    float _par2_muon_frac_Y;
+    float* _par_muon_frac;
+
+    float _par1_proton_frac_U;
+    float _par1_proton_frac_V;
+    float _par1_proton_frac_Y;
+    float _par2_proton_frac_U;
+    float _par2_proton_frac_V;
+    float _par2_proton_frac_Y;
+    float* _par_proton_frac;
 
   };
 

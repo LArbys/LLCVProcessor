@@ -43,6 +43,7 @@ NUM = 1
 driver.SetOutputFilename("nueid_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM));
 
 selection = llcv.SelNueID()
+selection.SetIsMC(IS_MC)
 driver.AddSelection(selection);
 
 # process
