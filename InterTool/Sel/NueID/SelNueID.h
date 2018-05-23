@@ -66,6 +66,8 @@ namespace llcv {
     void ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
 			   const std::array<cv::Mat,3>& aimg_v,
 			   Object2DCollection& obj_col);
+
+    float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
   private:
     
@@ -76,6 +78,7 @@ namespace llcv {
     float _vertex_z;
     
     int _n_par;
+    std::vector<float> _edge_dist_v;
     
     float _par1_theta;
     float _par1_phi;
@@ -86,6 +89,7 @@ namespace llcv {
     float _par1_dz;
     int   _par1_nplanes;
     std::vector<int> _par1_planes_v;
+    std::vector<int> _par1_xdead_v;
 
     float _par2_theta;
     float _par2_phi;
@@ -96,6 +100,7 @@ namespace llcv {
     float _par2_dz;
     int   _par2_nplanes;
     std::vector<int> _par2_planes_v;
+    std::vector<int> _par2_xdead_v;
 
     float* _par_theta;
     float* _par_phi;
@@ -106,6 +111,7 @@ namespace llcv {
     float* _par_dz;
     int*   _par_nplanes;
     std::vector<int>* _par_planes_v;
+    std::vector<int>* _par_xdead_v;
 
     int _par1_n_polygons_U;
     int _par1_n_polygons_V;

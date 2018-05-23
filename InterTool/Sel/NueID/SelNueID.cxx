@@ -43,8 +43,13 @@ namespace llcv {
     _outtree->Branch("vertex_y", &_vertex_y, "vertex_y/F");
     _outtree->Branch("vertex_z", &_vertex_z, "vertex_z/F");
 
-    _outtree->Branch("n_par", &_n_par, "n_par/I");
-
+    //
+    // vertex information
+    //
+    _outtree->Branch("n_par"      , &_n_par    , "n_par/I");
+    _outtree->Branch("edge_dist_v", &_edge_dist_v);
+    
+    
     //
     // 3D information
     //
@@ -58,6 +63,7 @@ namespace llcv {
     _outtree->Branch("par1_dz"       , &_par1_dz     , "par1_dz/F");
     _outtree->Branch("par1_nplanes"  , &_par1_nplanes, "par1_nplanes/I");
     _outtree->Branch("par1_planes_v" , &_par1_planes_v);
+    _outtree->Branch("par1_xdead_v"  , &_par1_xdead_v);
 
     _outtree->Branch("par2_theta"    , &_par2_theta  , "par2_theta/F");
     _outtree->Branch("par2_phi"      , &_par2_phi    , "par2_phi/F");
@@ -68,6 +74,7 @@ namespace llcv {
     _outtree->Branch("par2_dz"       , &_par2_dz     , "par2_dz/F");
     _outtree->Branch("par2_nplanes"  , &_par2_nplanes, "par2_nplanes/I");
     _outtree->Branch("par2_planes_v" , &_par2_planes_v);
+    _outtree->Branch("par2_xdead_v"  , &_par2_xdead_v);
 
     //
     // 2D information
@@ -341,10 +348,10 @@ namespace llcv {
     std::array<geo2d::VectorArray<float>,3> edge_vv;
 
     for(size_t plane=0; plane<3; ++plane) {
-      auto& timg3d = timg3d_v[plane];
-      auto& plane_ctor_v = img_ctor_v[plane];
+      auto& timg3d       = timg3d_v[plane];
+      auto& close_id     = close_id_v[plane];
       auto& vertex_ctor  = vertex_ctor_v[plane];
-      auto& close_id = close_id_v[plane];
+      auto& plane_ctor_v = img_ctor_v[plane];
 
       plane_ctor_v = larocv::FindContours(timg3d);
       
@@ -353,7 +360,7 @@ namespace llcv {
 		   << " ctors" << std::endl;
       
       const auto vertex_pt = vertex_pt_v[plane];
-      
+
       close_id = FindClosestContour(plane_ctor_v,vertex_pt);
 
       if (close_id == larocv::kINVALID_SIZE) {
@@ -365,45 +372,96 @@ namespace llcv {
       
       // mask all but vertex_ctor
       timg3d = larocv::MaskImage(timg3d,vertex_ctor,-1,false);
-      
-      // mask out the vertex from image
-      auto timg3d_mask = larocv::MaskImage(timg3d,geo2d::Circle<float>(vertex_pt,5),-1,true);
-      
-      // find contours
-      auto& par_ctor = par_ctor_v[plane];
-      par_ctor = larocv::FindContours(timg3d_mask);
 
-      auto nctor = par_ctor_v[plane].size();
+      // minimize over circle of radius 4
+      auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(timg3d,geo2d::Circle<float>(vertex_pt,4),-1,false));
+
+      float nratio_max = -1.0*larocv::kINVALID_FLOAT;
+
+      for(const auto& nz_pt : nz_pt_v) {
+
+	// mask out the vertex from image
+	auto timg3d_mask = larocv::MaskImage(timg3d,geo2d::Circle<float>(nz_pt,5),-1,true);
       
-      auto& line_contour_v = line_contour_vv[plane];
-      auto& triangle_v     = triangle_vv[plane];
-      auto& edge_v         = edge_vv[plane];
-      line_contour_v.reserve(nctor);
-      triangle_v.reserve(nctor);
-      edge_v.reserve(nctor);
+	// find contours
+	auto& par_ctor = par_ctor_v[plane];
+	par_ctor = larocv::FindContours(timg3d_mask);
 
-      for(size_t pid=0; pid<(size_t)nctor; ++pid) {
-
-	LLCV_DEBUG() << "@pid=" << pid << std::endl;
+	auto nctor = par_ctor_v[plane].size();
 	
-	auto par = par_ctor[pid];
-
-	// estimate the end point
-	Triangle triangle(par,vertex_pt);
-
-	geo2d::Vector<float> edge;
-	float nline_pixels = 0;
-	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
 	
-	if (line_ctor.empty()) continue;
+	// wtf this is assigning reference on gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
+	// auto local_line_contour_v = line_contour_vv[plane];
+	// auto local_triangle_v     = triangle_vv[plane];
+	// auto local_edge_v         = edge_vv[plane];
 
-	line_contour_v.emplace_back(std::move(line_ctor));
-	triangle_v.emplace_back(std::move(triangle));
+	larocv::GEO2D_ContourArray_t local_line_contour_v;
+	std::vector<Triangle>        local_triangle_v;
+	geo2d::VectorArray<float>    local_edge_v;
+	local_line_contour_v.reserve(nctor);
+	local_triangle_v.reserve(nctor);
+	local_edge_v.reserve(nctor);
 
-	edge_v.emplace_back(std::move(edge));
-      } // end contour
+	std::vector<float> local_line_frac_v;
+	local_line_frac_v.reserve(nctor);
+
+	// number particles == 1 veto
+	if (nctor < 2) continue;
+
+	for(size_t pid=0; pid<(size_t)nctor; ++pid) {
+
+	  auto par = par_ctor[pid];
+
+	  // estimate the end point
+	  Triangle local_triangle(par,nz_pt);
+
+	  geo2d::Vector<float> local_edge;
+	  float nline_pixels = 0;
+	  auto local_line_ctor = MaximizeLine(timg3d,local_triangle,nline_pixels,local_edge);
+	
+	  if (local_line_ctor.empty()) continue;
+	  
+	  float npar_pixels = larocv::CountNonZero(larocv::MaskImage(timg3d,par,-1,false));
+
+	  float nratio = 0;
+	  if (npar_pixels > 0)
+	    nratio = nline_pixels / npar_pixels;
+	  else
+	    continue;
+	  
+	  local_line_frac_v.emplace_back(nratio);
+	 
+	  local_line_contour_v.emplace_back(local_line_ctor);
+	  local_triangle_v.emplace_back(local_triangle);
+	  local_edge_v.emplace_back(local_edge);
+	  
+	} // end contour
+
+	// number particles == 1 veto
+	if (local_line_frac_v.size() < 2) 
+	  continue;
+
+	// check ratio product
+	float ratio_prod = 1;
+	for(auto local_line_frac : local_line_frac_v)
+	  ratio_prod *= local_line_frac;
+	
+	// if it's higher, save
+	if (ratio_prod > nratio_max) {
+	  line_contour_vv[plane] = local_line_contour_v;
+	  triangle_vv[plane]     = local_triangle_v;
+	  edge_vv[plane]         = local_edge_v;
+	  
+	  nratio_max = ratio_prod;
+	  LLCV_DEBUG() << "saved r=" << ratio_prod << std::endl;
+	}
+
+      } // end nz_pt
+
     } // end plane
+
     
+
     //
     // get the max, min, time for contours
     //
@@ -428,8 +486,9 @@ namespace llcv {
 
     for(size_t plane=0; plane<3; ++plane) {
       const auto& line_contour_v = line_contour_vv[plane];
-      const auto& triangle_v = triangle_vv[plane];
-      const auto& edge_v = edge_vv[plane];
+      const auto& triangle_v     = triangle_vv[plane];
+      const auto& edge_v         = edge_vv[plane];
+
       auto& ctor_overlap_vv = ctor_overlap_vvv[plane];
 
       const auto& plane_ctor_v = img_ctor_v[plane];
@@ -545,12 +604,11 @@ namespace llcv {
 
 	triangle = Triangle(new_ctor,triangle.Apex());
 
-	float nline_pixels = 0.0;
+	float nline_pixels = 0;
 	auto line_ctor = MaximizeLine(timg3d,triangle,nline_pixels,edge);
 
 	float nratio = 0;
-	LLCV_DEBUG() << "npar_pixels=" << npar_pixels << std::endl;
-	LLCV_DEBUG() << "nline_pixels=" << nline_pixels << std::endl;
+
 	if (npar_pixels > 0)
 	  nratio = nline_pixels / npar_pixels;
 
@@ -613,13 +671,30 @@ namespace llcv {
       LLCV_DEBUG() << "..." << std::endl;
     }
     
+    //
+    // search out in 3D direction for 3D consistent charge -- identify brem
+    //
+    
+    // Detect brem function in SelTriangleStudy
+    
+    
+
     
     //
     // Write out
     //
     ResetEvent();
 
+    // number of matched particles
     _n_par = (int)obj_col_v.size();
+
+    // distance of vertex contour to edge
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& vertex_ctor = vertex_ctor_v[plane];
+      auto& edge_dist = _edge_dist_v[plane];
+      edge_dist = MinimizeToEdge(vertex_ctor);
+    }
+
 
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       const auto& obj_col = obj_col_v[oid];
@@ -637,6 +712,9 @@ namespace llcv {
       *_par_dz       = obj_col.dZ();
       *_par_nplanes  = (int)obj_col.size();
       *_par_planes_v = obj_col.Planes();
+
+      _white_img.setTo(cv::Scalar(1));
+      *_par_xdead_v  = obj_col.XDead(dimg_v,_white_img);
       
       for(size_t plane=0; plane<3; ++plane) {
 	LLCV_DEBUG() << "@plane=" << plane << std::endl;
@@ -755,8 +833,19 @@ namespace llcv {
       for(auto nz : nzero)
     	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
       
-      cv::drawContours(mat3d,line_contour_vv[plane],-1,cv::Scalar(0,0,255));
       
+      for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
+	const auto& obj_col = obj_col_v[oid];
+	if (!obj_col.HasObject(plane)) continue;
+	const auto& obj2d = obj_col.PlaneObject(plane);
+	
+	cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(0,0,255));
+
+	for(const auto& poly : obj2d.Polygons()) 
+	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
+
+      }
+
       std::stringstream ss;
       ss.str("");
       ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
@@ -817,7 +906,6 @@ namespace llcv {
     }
     // it's infinity
     else {
-      LLCV_WARNING() << "isinf detected" << std::endl;
       isinf = true;
       if (triangle.Base1().y < triangle.Base2().y) {
 	base_down = &triangle.Base1();
@@ -1103,7 +1191,9 @@ namespace llcv {
 
   void SelNueID::ResetEvent() {
     
-    _n_par = larocv::kINVALID_INT;
+    _n_par     = -1.0*larocv::kINVALID_INT;
+    _edge_dist_v.clear();
+    _edge_dist_v.resize(3,-1);
 
     //
     // 3D information
@@ -1118,6 +1208,8 @@ namespace llcv {
     _par1_nplanes  = -1*larocv::kINVALID_INT;
     _par1_planes_v.clear();
     _par1_planes_v.resize(3,-1);
+    _par1_xdead_v.clear();
+    _par1_xdead_v.resize(3,-1);
     
     _par2_theta   = -1.0*larocv::kINVALID_FLOAT;
     _par2_phi     = -1.0*larocv::kINVALID_FLOAT;
@@ -1129,6 +1221,8 @@ namespace llcv {
     _par2_nplanes = -1*larocv::kINVALID_INT;
     _par2_planes_v.clear();
     _par2_planes_v.resize(3,-1);
+    _par2_xdead_v.clear();
+    _par2_xdead_v.resize(3,-1);
     
     _par_theta    = nullptr;
     _par_phi      = nullptr;
@@ -1139,6 +1233,7 @@ namespace llcv {
     _par_dz       = nullptr;
     _par_nplanes  = nullptr;
     _par_planes_v = nullptr;
+    _par_xdead_v  = nullptr;
 
     //
     // 2D information
@@ -1395,6 +1490,7 @@ namespace llcv {
       _par_dz       = &_par1_dz;
       _par_nplanes  = &_par1_nplanes;
       _par_planes_v = &_par1_planes_v;
+      _par_xdead_v  = &_par1_xdead_v;
       break;
     }
     case 1 : {
@@ -1407,6 +1503,7 @@ namespace llcv {
       _par_dz       = &_par2_dz;
       _par_nplanes  = &_par2_nplanes;
       _par_planes_v = &_par2_planes_v;
+      _par_xdead_v  = &_par2_xdead_v;
       break;
     }
     default : { break; }
@@ -1628,6 +1725,17 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     } // end particle
 
     return;
+  }
+
+  float SelNueID::MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor) {
+    float res = larocv::kINVALID_FLOAT;
+    for(const auto& pt : ctor) {
+      res = std::min(res,(float)pt.x);
+      res = std::min(res,(float)pt.y);
+      res = std::min(res,(float)_cropx - (float)pt.x);
+      res = std::min(res,(float)_cropy - (float)pt.y);
+    }
+    return res;
   }
 
   void SelNueID::Finalize() {

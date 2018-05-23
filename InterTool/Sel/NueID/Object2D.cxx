@@ -39,6 +39,46 @@ namespace llcv {
     return res_v;
   }
 
+  std::vector<int> Object2DCollection::XDead(const std::array<cv::Mat,3>& dimg_v,
+					     const cv::Mat& white_img,
+					     float radius) const {
+    std::vector<int> res_v(3,0);
+    
+    for(size_t plane=0; plane<3; ++plane) {
+      if (!HasObject(plane)) continue;
+
+      const auto obj2d = PlaneObject(plane);
+
+      auto& xdead = res_v[plane];
+      const auto& dimg = dimg_v[plane];
+      
+      int nz_white = larocv::CountNonZero(larocv::MaskImage(white_img,obj2d.Line(),-1,false));
+      int nz_dead  = larocv::CountNonZero(larocv::MaskImage(dimg,obj2d.Line(),-1,false));
+      if (nz_white != nz_dead) xdead = 1;
+      if (xdead == 1) continue;
+      
+      //does this line lie @ dead region boundary;
+      geo2d::Vector<float> edge1,edge2;
+      larocv::FindEdges(obj2d.Line(),edge1,edge2);
+
+      // check edge1
+      auto circle = geo2d::Circle<float>(edge1,radius);
+      nz_white = larocv::CountNonZero(larocv::MaskImage(white_img,circle,-1,false));
+      nz_dead =  larocv::CountNonZero(larocv::MaskImage(dimg,circle,-1,false));
+
+      if (nz_white != nz_dead) xdead = 1;
+      if (xdead == 1) continue;
+
+      // check edge2
+      circle = geo2d::Circle<float>(edge2,radius);
+      nz_white = larocv::CountNonZero(larocv::MaskImage(white_img,circle,-1,false));
+      nz_dead =  larocv::CountNonZero(larocv::MaskImage(dimg,circle,-1,false));
+      if (nz_white != nz_dead) xdead = 1;
+    } // end plane
+
+    return res_v;
+  }
+
 }
 
 #endif

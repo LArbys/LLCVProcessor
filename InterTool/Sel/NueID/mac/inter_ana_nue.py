@@ -64,7 +64,8 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-proc.batch_process_lcv_reverse(EVENT,1)
+#proc.batch_process_lcv_reverse(EVENT,1)
+proc.batch_process_lcv_reverse()
 
 proc.finalize()
 

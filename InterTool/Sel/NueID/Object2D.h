@@ -31,6 +31,7 @@ namespace llcv {
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
     size_t Plane() const { return _plane; }
 
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {
@@ -60,6 +61,10 @@ namespace llcv {
     float dZ() const { return std::cos(_theta) * std::cos(_phi); }
     
     std::vector<int> Planes() const;
+
+    std::vector<int> XDead(const std::array<cv::Mat,3>& dimg_v,
+			   const cv::Mat& white_img,
+			   float radius=3) const;
     
   private:
     float _theta;
