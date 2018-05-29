@@ -19,6 +19,8 @@
 
 #include "TVector2.h"
 
+#include "LineFollow.h"
+
 namespace llcv {
 
   void SelNueID::Configure (const larcv::PSet &pset) {
@@ -53,7 +55,6 @@ namespace llcv {
     //
     // 3D information
     //
-
     _outtree->Branch("par1_theta"    , &_par1_theta  , "par1_theta/F");
     _outtree->Branch("par1_phi"      , &_par1_phi    , "par1_phi/F");
     _outtree->Branch("par1_length"   , &_par1_length , "par1_length/F");
@@ -678,7 +679,6 @@ namespace llcv {
     // Detect brem function in SelTriangleStudy
     
     
-
     
     //
     // Write out
@@ -694,7 +694,6 @@ namespace llcv {
       auto& edge_dist = _edge_dist_v[plane];
       edge_dist = MinimizeToEdge(vertex_ctor);
     }
-
 
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       const auto& obj_col = obj_col_v[oid];
@@ -756,7 +755,6 @@ namespace llcv {
       }
 
     }
-
 
 
     if (_ismc) {
@@ -833,7 +831,6 @@ namespace llcv {
       for(auto nz : nzero)
     	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
       
-      
       for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
 	const auto& obj_col = obj_col_v[oid];
 	if (!obj_col.HasObject(plane)) continue;
@@ -843,8 +840,25 @@ namespace llcv {
 
 	for(const auto& poly : obj2d.Polygons()) 
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
-
+	
       }
+      
+
+      if (plane==1)  {
+	LLCV_DEBUG() << "Following Line" << std::endl;
+	LineFollow lf;
+	lf.SetImageDimension(timg_v[plane]);
+	auto lf_vv = lf.FollowEdgeLine(geo2d::Vector<float>(93,0));
+	for(const auto& lf_v : lf_vv) {
+	  for(const auto& lf : lf_v) {
+	    LLCV_DEBUG() << "set (" << lf.x << "," << lf.y << ")" << std::endl;
+	    mat3d.at<cv::Vec3b>(lf.y,lf.x) = {255,0,255};
+	  }
+	}
+
+	LLCV_DEBUG() << "done" << std::endl;
+      }
+
 
       std::stringstream ss;
       ss.str("");

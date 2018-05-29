@@ -66,6 +66,8 @@ namespace llcv {
 			   const cv::Mat& white_img,
 			   float radius=3) const;
     
+    
+    
   private:
     float _theta;
     float _phi;
