@@ -15,12 +15,11 @@ namespace llcv {
     ~LineFollow() {}
 
     larocv::GEO2D_ContourArray_t FollowEdgeLine(const geo2d::Vector<float>& start);
-    
+
     void SetImageDimension(const cv::Mat& img);
 
-    larocv::GEO2D_Contour_t AsLine(geo2d::Vector<float> pt1, geo2d::Vector<float> pt2);
+    larocv::GEO2D_Contour_t EdgePoints();
 
-    bool InitializeFirstPoint(geo2d::Vector<float> start, geo2d::Vector<float>& init_pt);
 
   private:
 
@@ -29,7 +28,13 @@ namespace llcv {
     cv::Mat _white_img;
     
     int _thickness;
+    float _radius;
+    std::vector<float> _radius_v;
 
+  private:
+    bool InitializeFirstPoint(geo2d::Vector<float> start, geo2d::Vector<float>& init_pt);
+    larocv::GEO2D_Contour_t AsLine(geo2d::Vector<float> pt1, geo2d::Vector<float> pt2);
+    float DistanceToEdge(const geo2d::Vector<float>& pt) const;
     
   };
 

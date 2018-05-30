@@ -843,24 +843,43 @@ namespace llcv {
 	
       }
       
+      LLCV_DEBUG() << "Following Line" << std::endl;
+	
+      LineFollow lf;
 
-      if (plane==1)  {
-	LLCV_DEBUG() << "Following Line" << std::endl;
-	LineFollow lf;
-	lf.SetImageDimension(timg_v[plane]);
-	auto lf_vv = lf.FollowEdgeLine(geo2d::Vector<float>(93,0));
-	for(const auto& lf_v : lf_vv) {
-	  for(const auto& lf : lf_v) {
-	    LLCV_DEBUG() << "set (" << lf.x << "," << lf.y << ")" << std::endl;
-	    mat3d.at<cv::Vec3b>(lf.y,lf.x) = {255,0,255};
-	  }
+      auto this_img  = timg_v[plane].clone();
+
+      auto this_mat3d = As8UC3(this_img);
+
+      lf.SetImageDimension(this_img);
+	
+      auto edge_v = lf.EdgePoints();      
+
+      for(const auto& edge : edge_v) {
+	LLCV_DEBUG() << "@edge=" << edge << std::endl;
+
+	auto lf_vv = lf.FollowEdgeLine(geo2d::Vector<float>(edge.x,edge.y));
+	
+	LLCV_DEBUG() << "ret sz=" << lf_vv.size() << std::endl;
+
+	for(size_t lid=0; lid < lf_vv.size(); ++lid) {
+	  const auto& lf_v = lf_vv[lid];
+	  LLCV_DEBUG() << "@lid=" << lid << std::endl;
+	  if (lid == 0)
+	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(255,0,255));
+	  else
+	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(0,0,255));
 	}
 
-	LLCV_DEBUG() << "done" << std::endl;
       }
 
-
       std::stringstream ss;
+
+      ss.str("");
+      ss << "cpng/cosmic_img_" << plane << ".png";
+      cv::imwrite(ss.str(),this_mat3d);
+      LLCV_DEBUG() << "done" << std::endl;
+      
       ss.str("");
       ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
       cv::imwrite(ss.str(),mat3d);
@@ -1751,6 +1770,7 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     }
     return res;
   }
+
 
   void SelNueID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
