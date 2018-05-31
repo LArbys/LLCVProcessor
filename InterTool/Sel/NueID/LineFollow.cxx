@@ -19,10 +19,12 @@ namespace llcv {
     return;
   }
   
-  void LineFollow::SetImageDimension(const cv::Mat& img) {
+  void LineFollow::SetImageDimension(const cv::Mat& img, const cv::Mat& dead) {
     _img       = img.clone();
+    _dead_img  = dead.clone();
     _black_img = larocv::BlankImage(img,0);
     _white_img = larocv::BlankImage(img,255);
+    _bond_img  = _DeadWirePatch.WireBondage(_img,_dead_img);
   }
 
   larocv::GEO2D_ContourArray_t LineFollow::FollowEdgeLine(const geo2d::Vector<float>& start) {
@@ -38,6 +40,7 @@ namespace llcv {
 
     geo2d::Vector<float> init_pt;
     auto first_exists = InitializeFirstPoint(start,init_pt);
+    if (!first_exists) return ret_v;
 
     ret_v.emplace_back(AsLine(start,init_pt));
     
@@ -57,27 +60,41 @@ namespace llcv {
 
     bool first = true;
     std::vector<float> radius_v;
-    _radius_v = {8,10,12,14,16};
+
+    _radius_v.clear();
+    _radius_v.resize(7);
+    _radius_v[0] = 8;
+    _radius_v[1] = 10;
+    _radius_v[2] = 12;
+    _radius_v[3] = 14;
+    _radius_v[4] = 16;
+    _radius_v[5] = 18;
+    _radius_v[6] = 20;
     
     while(1) {
       ctr+=1;
-      LLCV_DEBUG() << "@ctr=" << ctr << std::endl;
+      // LLCV_DEBUG() << "@ctr=" << ctr << std::endl;
+
       //
       // get distance to edge
       //
       auto edge_dist = DistanceToEdge(center_pt);
 
-      if (edge_dist < _radius)
-	radius = edge_dist - 1;
-      else
-	radius = _radius;
+      if (edge_dist==0) break;
+
+      radius_v.clear();
+      radius_v.reserve(_radius_v.size());
+      for(auto rad : _radius_v) {
+	if (edge_dist < rad)
+	  radius_v.push_back(edge_dist - 1);
+	else
+	  radius_v.push_back(rad);
+      }
+
       
       circle.center = center_pt;
-      circle.radius = radius;
-
-      auto pt_v = larocv::OnCircleGroups(_img,circle);
-      //auto pt_vv = larocv::OneCircleGroupsOnCircleArray(_img,circle.center,radius_v);
-      if (pt_v.size() == 1) break;
+      //auto pt_vv = larocv::OnCircleGroupsOnCircleArray(_img,circle.center,radius_v);
+      auto pt_vv = larocv::OnCircleGroupsOnCircleArray(_bond_img,circle.center,radius_v);
       
       //
       // choose the comparison point
@@ -88,61 +105,81 @@ namespace llcv {
 	first = false;
       } 
 
-      size_t mpid2 = larocv::kINVALID_SIZE;
-      float min_dist = larocv::kINVALID_FLOAT;
-      for(size_t pid=0; pid<pt_v.size(); ++pid) {
-	float distance = geo2d::dist(pt_v[pid],prev_pt);
-	if (distance < min_dist) {
-	  min_dist = distance;
-	  mpid2 = pid;
-	}
-      }
+      float mmin_angle = larocv::kINVALID_FLOAT;
+      size_t mmpid1 = larocv::kINVALID_SIZE;
+      geo2d::Vector<float> far_pt;
+      std::vector<float> ignore_v;
+
+      geo2d::Line<float> line2(circle.center, prev_pt - circle.center);
+      _PiRange.SetAngle(Angle(circle.center,prev_pt),45,45);
       
-      if (min_dist > _dist_tol) {
-	LLCV_DEBUG() << "exit min_dist=" << min_dist << " _dist_tol=" << _dist_tol << std::endl;
-	break;
-      }
-      
-      geo2d::Vector<float> pt2 = pt_v[mpid2];
-      
-      geo2d::Line<float> line2(pt2, pt2 - circle.center);
+      // LLCV_DEBUG() << "start=(" << start.x << "," << start.y << ")" << std::endl;
+      // LLCV_DEBUG() << "center=(" << circle.center.x << "," << circle.center.y << ")" << std::endl;
+      // LLCV_DEBUG() << "prev_pt=(" << prev_pt.x << "," << prev_pt.y << ")" << std::endl;
+      // LLCV_DEBUG() << "line2 angle=" << Angle(circle.center,prev_pt) << std::endl;
+
+      for(size_t rid=0; rid < radius_v.size(); ++rid) {
+	const auto& pt_v = pt_vv[rid];
+
+	// LLCV_DEBUG() << "@rid=" << rid << " rad=" << radius_v[rid] << " pt_v sz=" << pt_v.size() << std::endl;
 	
-      //
-      // minimize angle between crossing points (closest to 180)
-      //
-      min_angle = larocv::kINVALID_FLOAT;
-
-      size_t mpid1 = larocv::kINVALID_SIZE;
-
-      for(size_t pid=0; pid < pt_v.size(); ++pid) {
-	if (pid==mpid2) continue;
-	const auto& pt1 = pt_v[pid];
-	auto line1 = geo2d::Line<float>(pt1, pt1 - circle.center);
-	float angle = std::fabs(geo2d::angle(line1) - geo2d::angle(line2));
-	if (angle > 90) angle = std::fabs(180 - angle);
-	LLCV_DEBUG() << "(" << pid << "," << mpid2 << ") (" << pt1.x << "," << pt1.y << ")&(" << pt2.x << "," << pt2.y << ") a=" << angle << std::endl;
-	if (angle < min_angle) {
-	  min_angle = angle;
-	  mpid1 = pid;
-	  LLCV_DEBUG() << "...accepted (" << min_angle << "," << mpid1 << ")" << std::endl;
+	if (pt_v.size()<2) continue;
+	
+	ignore_v.clear();
+	ignore_v.resize(pt_v.size(),false);
+	
+	for(size_t pid=0; pid<pt_v.size(); ++pid) {
+	  const auto& pt = pt_v[pid];
+	  geo2d::Line<float> line(circle.center, pt - circle.center);
+	  auto angle = Angle(circle.center,pt);
+	  // LLCV_DEBUG() << "@pid= " << pid << " (" << pt.x << "," << pt.y << ") a=" << angle << std::endl;
+	  if (_PiRange.Inside(angle)) {
+	    // LLCV_DEBUG() << "...inside" << std::endl;
+	    ignore_v.at(pid) = true;
+	  }
 	}
+	
+	//
+	// minimize angle between crossing points (closest to 180)
+	//
+	min_angle = larocv::kINVALID_FLOAT;
+	
+	size_t mpid1 = larocv::kINVALID_SIZE;
+	
+	for(size_t pid=0; pid < pt_v.size(); ++pid) {
+	  if (ignore_v[pid]) continue;
+	  const auto& pt1 = pt_v[pid];
+	  auto line1 = geo2d::Line<float>(pt1, pt1 - circle.center);
+	  float angle = std::fabs(geo2d::angle(line1) - geo2d::angle(line2));
+	  if (angle > 90) angle = std::fabs(180 - angle);
+	  // LLCV_DEBUG() << "(" << pid << ") (" << pt1.x << "," << pt1.y << ")&(" << prev_pt.x << "," << prev_pt.y << ") a=" << angle << std::endl;
+	  if (angle < min_angle) {
+	    min_angle = angle;
+	    mpid1 = pid;
+	    // LLCV_DEBUG() << "...accepted (" << min_angle << "," << mpid1 << ")" << std::endl;
+	  }
+	}
+
+	if (min_angle < mmin_angle) {
+	  mmin_angle = min_angle;
+	  far_pt     = pt_v[mpid1];
+	}
+
       }
-      
-      if (min_angle > _angle_tol) {
-	LLCV_DEBUG() << "exit angle" << std::endl;
+
+      if (mmin_angle > _angle_tol) {
+	// LLCV_DEBUG() << "exit angle" << std::endl;
 	break;
       }
 
-      ret_v.emplace_back(AsLine(circle.center,pt_v[mpid1]));
+      ret_v.emplace_back(AsLine(circle.center,far_pt));
 
       prev_pt   = circle.center;
-      center_pt = pt_v[mpid1];
+      center_pt = far_pt;
 
       if (ctr>100) break;
     }
     
-    cv::imwrite("test.png",_img);
-
     LLCV_DEBUG() << "end" << std::endl;
     return ret_v;
   }
@@ -165,7 +202,6 @@ namespace llcv {
 
     LLCV_DEBUG() << "start=(" << start.x << "," << start.y << ") : m=(" << min_x << "," << min_y << ") : d=(" << dx << "," << dy << ")" << std::endl;
     auto small_img = larocv::SmallImg(_img,geo2d::Vector<float>(min_x,min_y),dx,dy);
-    cv::imwrite("test0a.png",small_img);
 
     float ddx = min_x-dx;
     float ddy = min_y-dy;
@@ -173,10 +209,11 @@ namespace llcv {
     int ecase = -1;
     bool repo1 = false;
     bool repo2 = false;
+    bool repo3 = false;
 
     if (start.x  < (_img.cols-1) and start.y == 0) {
       
-      if (start.x > (_img.rows - 1 - dx)) {
+      if (start.x > (_img.rows - 1 - dx/2.0)) {
       	start.x *= -1;
       	start.x += (_img.rows - 1);
 	start.x *= -1;
@@ -193,7 +230,7 @@ namespace llcv {
     }
     else if (start.x < (_img.cols-1) and start.y >= (_img.rows-1)) {
 
-      if (start.x > (_img.rows - 1 - dx)) {
+      if (start.x > (_img.rows - 1 - dx/2.0)) {
       	start.x *= -1;
       	start.x += (_img.rows - 1);
 	start.x *= -1;
@@ -212,7 +249,7 @@ namespace llcv {
     }
     else if (start.x == 0 and start.y < (_img.rows-1)) {
 
-      if (start.y > (_img.rows - 1 - dy)) {
+      if (start.y > (_img.rows - 1 - dy/2.0)) {
 	start.y *= -1;
 	start.y += (_img.rows - 1);
 	start.y *= -1;
@@ -231,7 +268,7 @@ namespace llcv {
 
       start.x  = small_img.cols-1;
 
-      if (start.y > (_img.rows - 1 - dy)) {
+      if (start.y > (_img.rows - 1 - dy/2.0)) {
 	start.y *= -1;
 	start.y += (_img.rows - 1);
 	start.y *= -1;
@@ -249,6 +286,7 @@ namespace llcv {
 
     
     else {
+      return false;
       throw std::runtime_error("unhandled case");
     }
 
@@ -259,7 +297,6 @@ namespace llcv {
     LLCV_DEBUG() << "small start=(" << start.x << "," << start.y << ")" << std::endl;
     auto small_cimg = larocv::BlankImage(small_img,0);
     cv::circle(small_cimg,cv::Point((int)(start.x+0.5),(int)(start.y+0.5)),(int)20,cv::Scalar(255),1);
-    cv::imwrite("test0b.png",small_cimg);
 
     auto nz_pt_v = larocv::FindNonZero(small_cimg);
     
@@ -364,7 +401,8 @@ namespace llcv {
     }
     
     LLCV_DEBUG() << "init_pt=(" << init_pt.x << "," << init_pt.y << ")" << std::endl;
-
+    
+    exists = true;
     return exists;
   }
 
@@ -398,11 +436,9 @@ namespace llcv {
     cv::line(small_mat,
     	     cv::Point((int)(pt1.x+0.5),(int)(pt1.y+0.5)),
 	     cv::Point((int)(pt2.x+0.5),(int)(pt2.y+0.5)),
-	     //cv::Scalar(255),
-	     cv::Scalar(150),
+	     cv::Scalar(255),
 	     thickness);
 
-    cv::imwrite("test1.png",small_mat);
     
     auto line_ctor_v = larocv::FindContours(small_mat);
 
@@ -425,39 +461,24 @@ namespace llcv {
   
   larocv::GEO2D_Contour_t LineFollow::EdgePoints() {
     larocv::GEO2D_Contour_t ret;
-    
+
     _black_img.setTo(0);
-
-    //
-    // edge mask
-    //
-    cv::line(_black_img,
-	     cv::Point(0,0),
-	     cv::Point(_black_img.rows-1,0),
-	     cv::Scalar(255),
-	     1);
-
-    cv::line(_black_img,
-	     cv::Point(0,0),
-	     cv::Point(0,_black_img.cols-1),
-	     cv::Scalar(255),
-	     1);
     
-    cv::line(_black_img,
-	     cv::Point(_black_img.cols-1,0),
-	     cv::Point(_black_img.rows-1,_black_img.cols-1),
-	     cv::Scalar(255),
-	     1);
+    // bottom
+    cv::line(_black_img,cv::Point(0,0),cv::Point(_black_img.cols-1,0),cv::Scalar(255),1);
+
+    // left
+    cv::line(_black_img,cv::Point(0,0),cv::Point(0,_black_img.rows-1),cv::Scalar(255),1);
+
+    // right
+    cv::line(_black_img,cv::Point(_black_img.cols-1,0),cv::Point(_black_img.cols-1,_black_img.rows-1),cv::Scalar(255),1);
     
-    cv::line(_black_img,
-	     cv::Point(0,_black_img.cols-1),
-	     cv::Point(_black_img.rows-1,_black_img.cols-1),
-	     cv::Scalar(255),
-	     1);
+    // top
+    cv::line(_black_img,cv::Point(0,_black_img.rows-1),cv::Point(_black_img.cols-1,_black_img.rows-1),cv::Scalar(255),1);
 
     _white_img.setTo(0);
     _img.copyTo(_white_img,_black_img);
-
+    
     //
     // find edge points
     //
@@ -479,6 +500,80 @@ namespace llcv {
       ret.emplace_back((int)mean_x+0.5,(int)mean_y+0.5);
     }
 
+    //
+    // determine if dead wires exists on image boundary
+    //
+
+    //
+    // check the bottom
+    //
+    int bgood = (int)_dead_img.at<uchar>(0,0);
+    int bot_max = 10;
+    if (!bgood) {
+      _black_img.setTo(0);
+      _white_img.setTo(0);
+      int rowid = 0;
+      for(int rid=0; rid<bot_max; ++rid) {
+	uint d = (uint)_dead_img.at<uchar>(rid,0);
+	rowid = rid;
+	if (d) break;
+      }
+
+      LLCV_DEBUG() << "bottom in dead region rowid=" << rowid << std::endl;
+      
+      cv::line(_black_img,cv::Point(0,rowid),cv::Point(_black_img.cols-1,rowid),cv::Scalar(255),1);
+      _img.copyTo(_white_img,_black_img);
+
+      auto ctor_v = larocv::FindContours(_white_img);
+      ret.reserve(ctor_v.size());
+      for(const auto& ctor : ctor_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(_white_img,ctor,-1,false));
+	float mean_x = 0;
+	float mean_y = 0;
+	for(const auto& nz_pt : nz_pt_v)
+	  mean_x += nz_pt.x;
+
+	mean_x /= (float)nz_pt_v.size();
+	ret.emplace_back((int)mean_x+0.5,mean_y);
+
+      }
+    } // end bottom search
+
+    //
+    // check the top
+    //
+    int tgood = (int)_dead_img.at<uchar>(_black_img.rows-1,0);
+    int top_max = 10;
+    if (!tgood) {
+      _black_img.setTo(0);
+      _white_img.setTo(0);
+      int rowid = _black_img.rows-1;
+      for(int rid=(_black_img.rows - 1); rid>((_black_img.rows - 1) - top_max); --rid) {
+	uint d = (uint)_dead_img.at<uchar>(rid,0);
+	rowid = rid;
+	if (d) break;
+      }
+
+      LLCV_DEBUG() << "top in dead region rowid=" << rowid << std::endl;
+      
+      cv::line(_black_img,cv::Point(0,rowid),cv::Point(_black_img.cols-1,rowid),cv::Scalar(255),1);
+      _img.copyTo(_white_img,_black_img);
+
+      auto ctor_v = larocv::FindContours(_white_img);
+      ret.reserve(ctor_v.size());
+      for(const auto& ctor : ctor_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(_white_img,ctor,-1,false));
+	float mean_x = 0;
+	float mean_y = _black_img.rows-1;
+	for(const auto& nz_pt : nz_pt_v)
+	  mean_x += nz_pt.x;
+
+	mean_x /= (float)nz_pt_v.size();
+	ret.emplace_back((int)mean_x+0.5,(int)mean_y);
+      }
+    } // end top search
+
+
     return ret;
   }
 
@@ -493,6 +588,48 @@ namespace llcv {
     return ret;
   }
 
+  int LineFollow::Quadrant(const geo2d::Vector<float>& pt) const{
+    int ret = larocv::kINVALID_INT;
+    
+    if (pt.x >= 0 and pt.y >= 0)
+      ret = 0;
+    else if (pt.x <= 0 and pt.y >= 0)
+      ret = 1;
+    else if (pt.x <= 0 and pt.y <= 0)
+      ret = 2;
+    else if (pt.x >=0 and pt.y <= 0)
+      ret = 3;
+
+    if (ret == larocv::kINVALID_INT)
+      throw std::runtime_error("unhandled quadrant");
+
+    return ret;
+  }
+
+  float LineFollow::Angle(const geo2d::Vector<float>& origin, const geo2d::Vector<float>& pt1) const {
+    float ret = larocv::kINVALID_FLOAT;
+
+    auto pt = pt1 - origin;
+
+    float cos = pt.x;
+    cos /= std::sqrt(pt.x*pt.x + pt.y*pt.y);
+    cos = std::acos(cos);
+    cos *= 180.0/3.14159;
+    
+    switch (Quadrant(pt)) {
+    case 0 : { break; }
+    case 1 : { break; }
+    case 2 : { cos = 360 - cos; break; }
+    case 3 : { cos = 360 - cos; break; }
+    default : {
+      throw std::runtime_error("unhandled quadrant");
+      break;
+    }
+    }
+    ret = cos;
+    
+    return ret;
+  }
 
 
 }

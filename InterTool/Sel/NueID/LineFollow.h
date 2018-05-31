@@ -6,6 +6,9 @@
 #include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
 
+#include "LArOpenCV/ImageCluster/AlgoClass/DeadWirePatch.h"
+#include "LArOpenCV/ImageCluster/AlgoClass/PiRange.h"
+
 namespace llcv {
 
   class LineFollow : public llcv_base {
@@ -16,7 +19,7 @@ namespace llcv {
 
     larocv::GEO2D_ContourArray_t FollowEdgeLine(const geo2d::Vector<float>& start);
 
-    void SetImageDimension(const cv::Mat& img);
+    void SetImageDimension(const cv::Mat& img, const cv::Mat& dead);
 
     larocv::GEO2D_Contour_t EdgePoints();
 
@@ -24,6 +27,8 @@ namespace llcv {
   private:
 
     cv::Mat _img;
+    cv::Mat _dead_img;
+    cv::Mat _bond_img;
     cv::Mat _black_img;
     cv::Mat _white_img;
     
@@ -31,10 +36,20 @@ namespace llcv {
     float _radius;
     std::vector<float> _radius_v;
 
+    larocv::PiRange _PiRange;
+    larocv::DeadWirePatch _DeadWirePatch;
+
   private:
+
     bool InitializeFirstPoint(geo2d::Vector<float> start, geo2d::Vector<float>& init_pt);
     larocv::GEO2D_Contour_t AsLine(geo2d::Vector<float> pt1, geo2d::Vector<float> pt2);
     float DistanceToEdge(const geo2d::Vector<float>& pt) const;
+
+    int Quadrant(const geo2d::Vector<float>& pt) const;
+    float Angle(const geo2d::Vector<float>& origin, const geo2d::Vector<float>& pt1) const;
+
+  private:
+
     
   };
 

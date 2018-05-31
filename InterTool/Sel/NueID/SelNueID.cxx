@@ -248,13 +248,6 @@ namespace llcv {
 		 << Data().Vertex()->Y() << "," 
 		 << Data().Vertex()->Z() << ")" << std::endl;
 
-    // int isnue = Tree().Scalar<int>("isnue");
-    // LLCV_DEBUG() << "Is this nue?: " <<  isnue << std::endl;
-    // if (isnue == 0)  {
-    //   LLCV_DEBUG() << "skip" << std::endl;
-    //   return 0.0;
-    // }
-    
     auto mat_v  = Image().Image<cv::Mat>(kImageADC,_cropx,_cropy);
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
     auto img_v  = Image().Image<larcv::Image2D>(kImageADC,_cropx,_cropy);
@@ -307,6 +300,7 @@ namespace llcv {
 
       vertex_pt_v[plane] = cv::Point_<int>(px_y,px_x);
     }
+
 
     //
     // Find contours, get closest to vertex
@@ -842,20 +836,24 @@ namespace llcv {
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
 	
       }
-      
-      LLCV_DEBUG() << "Following Line" << std::endl;
+
+      std::stringstream ss;
+
+      LLCV_DEBUG() << "Following Line @ plane=" << plane << std::endl;
 	
       LineFollow lf;
 
       auto this_img  = timg_v[plane].clone();
+      auto this_dimg = dimg_v[plane].clone();
 
       auto this_mat3d = As8UC3(this_img);
 
-      lf.SetImageDimension(this_img);
+      lf.SetImageDimension(this_img,this_dimg);
 	
       auto edge_v = lf.EdgePoints();      
 
       for(const auto& edge : edge_v) {
+
 	LLCV_DEBUG() << "@edge=" << edge << std::endl;
 
 	auto lf_vv = lf.FollowEdgeLine(geo2d::Vector<float>(edge.x,edge.y));
@@ -864,28 +862,26 @@ namespace llcv {
 
 	for(size_t lid=0; lid < lf_vv.size(); ++lid) {
 	  const auto& lf_v = lf_vv[lid];
-	  LLCV_DEBUG() << "@lid=" << lid << std::endl;
 	  if (lid == 0)
 	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(255,0,255));
 	  else
 	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(0,0,255));
 	}
-
-      }
-
-      std::stringstream ss;
+	}
 
       ss.str("");
       ss << "cpng/cosmic_img_" << plane << ".png";
       cv::imwrite(ss.str(),this_mat3d);
       LLCV_DEBUG() << "done" << std::endl;
-      
+
       ss.str("");
       ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
       cv::imwrite(ss.str(),mat3d);
+
     }
     
     LLCV_DEBUG() << "end" << std::endl;
+
     return 0.0;
   }
 
