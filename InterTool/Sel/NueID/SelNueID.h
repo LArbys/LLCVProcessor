@@ -8,6 +8,7 @@
 #include "InterTool_Util/Triangle.h"
 #include "MatchObjectAlgoTimeIOU.h"
 #include "Object2D.h"
+#include "CosmicTag.h"
 
 namespace llcv {
   
@@ -44,6 +45,8 @@ namespace llcv {
     cv::Mat _white_img;
 
     MatchObjectAlgoTimeIOU _Match;
+
+    std::vector<CosmicTag> _CosmicTag_v;
 
   private:
 

@@ -5,9 +5,6 @@
 
 #include "InterTool_Util/InterImageUtils.h"
 
-#include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
-#include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
-
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
@@ -18,8 +15,6 @@
 #include "Base/DataFormatConstants.h"
 
 #include "TVector2.h"
-
-#include "LineFollow.h"
 
 namespace llcv {
 
@@ -34,6 +29,9 @@ namespace llcv {
 
     _twatch.Stop();
   
+    _CosmicTag_v.clear();
+    _CosmicTag_v.resize(3);
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -273,6 +271,10 @@ namespace llcv {
       mat3d_v[plane]  = As8UC3(timg_v[plane]);
       timg3d_v[plane] = _white_img.clone();
       dimg_v[plane]   = *(dead_v[plane]);
+      
+      // tag cosmics
+      _CosmicTag_v[plane].Reset();
+      _CosmicTag_v[plane].TagCosmic(timg_v[plane],dimg_v[plane]);
     }
     
     larocv::data::Vertex3D vtx3d;
@@ -300,7 +302,7 @@ namespace llcv {
 
       vertex_pt_v[plane] = cv::Point_<int>(px_y,px_x);
     }
-
+    
 
     //
     // Find contours, get closest to vertex
@@ -673,7 +675,6 @@ namespace llcv {
     // Detect brem function in SelTriangleStudy
     
     
-    
     //
     // Write out
     //
@@ -820,7 +821,8 @@ namespace llcv {
     //
     for(size_t plane=0; plane<3; ++plane) {
       auto& mat3d = mat3d_v[plane];
-      
+      auto& _CosmicTag = _CosmicTag_v[plane];
+
       auto nzero = larocv::FindNonZero(timg3d_v[plane]);
       for(auto nz : nzero)
     	mat3d.at<cv::Vec3b>(nz.y,nz.x) = {255,255,0};
@@ -836,43 +838,11 @@ namespace llcv {
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
 	
       }
-
+      
+      _CosmicTag.DrawLines(mat3d);
+      //_CosmicTag.DrawContours(mat3d);
+            
       std::stringstream ss;
-
-      LLCV_DEBUG() << "Following Line @ plane=" << plane << std::endl;
-	
-      LineFollow lf;
-
-      auto this_img  = timg_v[plane].clone();
-      auto this_dimg = dimg_v[plane].clone();
-
-      auto this_mat3d = As8UC3(this_img);
-
-      lf.SetImageDimension(this_img,this_dimg);
-	
-      auto edge_v = lf.EdgePoints();      
-
-      for(const auto& edge : edge_v) {
-
-	LLCV_DEBUG() << "@edge=" << edge << std::endl;
-
-	auto lf_vv = lf.FollowEdgeLine(geo2d::Vector<float>(edge.x,edge.y));
-	
-	LLCV_DEBUG() << "ret sz=" << lf_vv.size() << std::endl;
-
-	for(size_t lid=0; lid < lf_vv.size(); ++lid) {
-	  const auto& lf_v = lf_vv[lid];
-	  if (lid == 0)
-	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(255,0,255));
-	  else
-	    cv::drawContours(this_mat3d,larocv::GEO2D_ContourArray_t(1,lf_v),-1,cv::Scalar(0,0,255));
-	}
-	}
-
-      ss.str("");
-      ss << "cpng/cosmic_img_" << plane << ".png";
-      cv::imwrite(ss.str(),this_mat3d);
-      LLCV_DEBUG() << "done" << std::endl;
 
       ss.str("");
       ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";

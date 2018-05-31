@@ -13,9 +13,18 @@
 namespace llcv {
   
   LineFollow::LineFollow() : llcv_base("LineFollow") {
-    this->set_verbosity((msg::Level_t)0);
+    this->set_verbosity((msg::Level_t)2);
     _thickness = 2;
     _radius = 15;
+    _radius_v.clear();
+    _radius_v.resize(7);
+    _radius_v[0] = 8;
+    _radius_v[1] = 10;
+    _radius_v[2] = 12;
+    _radius_v[3] = 14;
+    _radius_v[4] = 16;
+    _radius_v[5] = 18;
+    _radius_v[6] = 20;
     return;
   }
   
@@ -48,10 +57,10 @@ namespace llcv {
     // Move along the line
     //
 
-    float radius = _radius;
-    float min_angle = 0;
+    float radius     = _radius;
+    float min_angle  = 0;
     float _angle_tol = 20;
-    float _dist_tol = 10;
+    float _dist_tol  = 10;
 
     geo2d::Vector<float> center_pt = init_pt;
     geo2d::Vector<float> prev_pt;
@@ -61,29 +70,22 @@ namespace llcv {
     bool first = true;
     std::vector<float> radius_v;
 
-    _radius_v.clear();
-    _radius_v.resize(7);
-    _radius_v[0] = 8;
-    _radius_v[1] = 10;
-    _radius_v[2] = 12;
-    _radius_v[3] = 14;
-    _radius_v[4] = 16;
-    _radius_v[5] = 18;
-    _radius_v[6] = 20;
-    
     while(1) {
       ctr+=1;
-      // LLCV_DEBUG() << "@ctr=" << ctr << std::endl;
 
       //
       // get distance to edge
       //
-      auto edge_dist = DistanceToEdge(center_pt);
+      float edge_dist = DistanceToEdge(center_pt);
 
-      if (edge_dist==0) break;
+      if (edge_dist<=0) {
+	LLCV_DEBUG() << "@edge break" << std::endl;
+	break;
+      }
 
       radius_v.clear();
       radius_v.reserve(_radius_v.size());
+
       for(auto rad : _radius_v) {
 	if (edge_dist < rad)
 	  radius_v.push_back(edge_dist - 1);
@@ -93,9 +95,9 @@ namespace llcv {
 
       
       circle.center = center_pt;
-      //auto pt_vv = larocv::OnCircleGroupsOnCircleArray(_img,circle.center,radius_v);
+
       auto pt_vv = larocv::OnCircleGroupsOnCircleArray(_bond_img,circle.center,radius_v);
-      
+
       //
       // choose the comparison point
       //
@@ -111,17 +113,18 @@ namespace llcv {
       std::vector<float> ignore_v;
 
       geo2d::Line<float> line2(circle.center, prev_pt - circle.center);
+
       _PiRange.SetAngle(Angle(circle.center,prev_pt),45,45);
       
-      // LLCV_DEBUG() << "start=(" << start.x << "," << start.y << ")" << std::endl;
-      // LLCV_DEBUG() << "center=(" << circle.center.x << "," << circle.center.y << ")" << std::endl;
-      // LLCV_DEBUG() << "prev_pt=(" << prev_pt.x << "," << prev_pt.y << ")" << std::endl;
-      // LLCV_DEBUG() << "line2 angle=" << Angle(circle.center,prev_pt) << std::endl;
+      LLCV_DEBUG() << "start=(" << start.x << "," << start.y << ")" << std::endl;
+      LLCV_DEBUG() << "center=(" << circle.center.x << "," << circle.center.y << ")" << std::endl;
+      LLCV_DEBUG() << "prev_pt=(" << prev_pt.x << "," << prev_pt.y << ")" << std::endl;
+      LLCV_DEBUG() << "line2 angle=" << Angle(circle.center,prev_pt) << std::endl;
 
       for(size_t rid=0; rid < radius_v.size(); ++rid) {
 	const auto& pt_v = pt_vv[rid];
 
-	// LLCV_DEBUG() << "@rid=" << rid << " rad=" << radius_v[rid] << " pt_v sz=" << pt_v.size() << std::endl;
+	LLCV_DEBUG() << "@rid=" << rid << " rad=" << radius_v[rid] << " pt_v sz=" << pt_v.size() << std::endl;
 	
 	if (pt_v.size()<2) continue;
 	
@@ -132,9 +135,9 @@ namespace llcv {
 	  const auto& pt = pt_v[pid];
 	  geo2d::Line<float> line(circle.center, pt - circle.center);
 	  auto angle = Angle(circle.center,pt);
-	  // LLCV_DEBUG() << "@pid= " << pid << " (" << pt.x << "," << pt.y << ") a=" << angle << std::endl;
+	  LLCV_DEBUG() << "@pid= " << pid << " (" << pt.x << "," << pt.y << ") a=" << angle << std::endl;
 	  if (_PiRange.Inside(angle)) {
-	    // LLCV_DEBUG() << "...inside" << std::endl;
+	    LLCV_DEBUG() << "...inside" << std::endl;
 	    ignore_v.at(pid) = true;
 	  }
 	}
@@ -152,11 +155,11 @@ namespace llcv {
 	  auto line1 = geo2d::Line<float>(pt1, pt1 - circle.center);
 	  float angle = std::fabs(geo2d::angle(line1) - geo2d::angle(line2));
 	  if (angle > 90) angle = std::fabs(180 - angle);
-	  // LLCV_DEBUG() << "(" << pid << ") (" << pt1.x << "," << pt1.y << ")&(" << prev_pt.x << "," << prev_pt.y << ") a=" << angle << std::endl;
+	  LLCV_DEBUG() << "(" << pid << ") (" << pt1.x << "," << pt1.y << ")&(" << prev_pt.x << "," << prev_pt.y << ") a=" << angle << std::endl;
 	  if (angle < min_angle) {
 	    min_angle = angle;
 	    mpid1 = pid;
-	    // LLCV_DEBUG() << "...accepted (" << min_angle << "," << mpid1 << ")" << std::endl;
+	    LLCV_DEBUG() << "...accepted (" << min_angle << "," << mpid1 << ")" << std::endl;
 	  }
 	}
 
@@ -168,7 +171,7 @@ namespace llcv {
       }
 
       if (mmin_angle > _angle_tol) {
-	// LLCV_DEBUG() << "exit angle" << std::endl;
+	LLCV_DEBUG() << "exit angle" << std::endl;
 	break;
       }
 
@@ -176,11 +179,12 @@ namespace llcv {
 
       prev_pt   = circle.center;
       center_pt = far_pt;
+      LLCV_DEBUG() << "next ctr=" << ctr << std::endl;
 
       if (ctr>100) break;
     }
     
-    LLCV_DEBUG() << "end" << std::endl;
+    LLCV_DEBUG() << "end ctr=" << ctr << std::endl;
     return ret_v;
   }
 
@@ -421,7 +425,7 @@ namespace llcv {
     dx += pad_x;
     dy += pad_y;
 
-    auto small_mat = cv::Mat(dx,dy,_black_img.type(),cv::Scalar(0));
+    auto small_mat = cv::Mat((int)(dx+0.5),(int)(dy+0.5),_black_img.type(),cv::Scalar(0));
 
     float ox = min_x - pad_x/5;
     float oy = min_y - pad_y/5;
@@ -439,7 +443,6 @@ namespace llcv {
 	     cv::Scalar(255),
 	     thickness);
 
-    
     auto line_ctor_v = larocv::FindContours(small_mat);
 
     if (!line_ctor_v.empty()) {
@@ -582,8 +585,8 @@ namespace llcv {
     
     ret = std::min(ret,(float)pt.x);
     ret = std::min(ret,(float)pt.y);
-    ret = std::min(ret,(float)_img.rows - (float)pt.x);
-    ret = std::min(ret,(float)_img.cols - (float)pt.y);
+    ret = std::min(ret,(float)_img.rows - (float)pt.x - 1);
+    ret = std::min(ret,(float)_img.cols - (float)pt.y - 1);
     
     return ret;
   }

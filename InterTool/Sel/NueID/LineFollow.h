@@ -23,6 +23,11 @@ namespace llcv {
 
     larocv::GEO2D_Contour_t EdgePoints();
 
+    cv::Mat& Image()      { return _img;       }
+    cv::Mat& DeadImage()  { return _dead_img;  }
+    cv::Mat& BondImage()  { return _bond_img;  }
+    cv::Mat& WhiteImage() { return _white_img; }
+    cv::Mat& BlackImage() { return _black_img; }
 
   private:
 

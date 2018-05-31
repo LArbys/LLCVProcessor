@@ -8,8 +8,30 @@ namespace llcv {
   class CosmicTag : public llcv_base {
 
   public:
-  CosmicTag() : llcv_base("CosmicTag") {}
+    CosmicTag();
     ~CosmicTag() {}
+
+    void Reset();
+
+    void TagCosmic(const cv::Mat& img, const cv::Mat& dimg);
+      
+    void DrawContours(cv::Mat& mat3d) const;
+    void DrawLines(cv::Mat& mat3d) const;
+    
+  private:
+    
+    larocv::GEO2D_Contour_t LinesToContour(const larocv::GEO2D_ContourArray_t& ctor_v);
+    
+
+  private:
+
+    LineFollow _LineFollow;
+
+    // storage for cosmic contour
+    std::vector<larocv::GEO2D_Contour_t> _cosmic_ctor_v;
+
+    // storage for individual lines
+    std::vector<std::vector<larocv::GEO2D_Contour_t> > _cosmic_line_ctor_vv;
 
   private:
 
