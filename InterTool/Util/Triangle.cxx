@@ -400,6 +400,42 @@ namespace llcv {
     return res;
   }
 
+  Triangle Triangle::RotateToPoint(const geo2d::Vector<float>& pt) const {
+    // make a new triangle
+    
+    if (pt == this->MidPoint()) return Triangle(this->_apex,this->_base_pt1,this->_base_pt2);
+
+    auto new_dir   = pt - this->_apex;
+    auto length = geo2d::length(new_dir);
+    new_dir = new_dir / length;
+
+    auto perp_dir  = geo2d::Vector<float>(new_dir.y,-1.0*new_dir.x);
+    float half_base_length = this->BaseLength();
+    half_base_length /= 2.0;
+    
+    geo2d::Vector<float> base1, base2;
+    base1 = base2 = pt;
+
+    float half_length = 0.0;
+    float step = 0.1;
+
+    // look to positive 
+    half_length = 0.0;
+    while(half_length < half_base_length) {
+      base1 += step * perp_dir;
+      half_length = geo2d::dist(base1,pt);
+    }
+
+    // look to negative
+    half_length = 0.0;
+    while(half_length < half_base_length) {
+      base2 -= step * perp_dir;
+      half_length = geo2d::dist(base2,pt);
+    }
+
+    return Triangle(this->_apex,base1,base2);
+  }
+
 
 }
 

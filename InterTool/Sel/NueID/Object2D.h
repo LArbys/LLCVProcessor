@@ -19,18 +19,20 @@ namespace llcv {
     geo2d::Vector<float> _edge;
     float _line_frac;
     size_t _plane;
+    int _n_brem;
 
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
     const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
+    const geo2d::Vector<float>& Edge() const { return _edge; }
     int NPolygons() const { return (int)(_polygon_v.size()); }
     float LineFrac() const { return _line_frac; }
-
+    
     const Triangle& triangle() const { return _triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
     size_t Plane() const { return _plane; }
-
+    int NBrem() const { return _n_brem; }
 
   };
 
@@ -42,6 +44,7 @@ namespace llcv {
 
     bool HasObject(size_t plane) const;
     const Object2D& PlaneObject(size_t plane) const;
+    Object2D& PlaneObjectRW(size_t plane);
     
     void SetTheta(float theta) { _theta = theta; }
     void SetPhi(float phi)     { _phi = phi;     }
@@ -65,7 +68,6 @@ namespace llcv {
     std::vector<int> XDead(const std::array<cv::Mat,3>& dimg_v,
 			   const cv::Mat& white_img,
 			   float radius=3) const;
-    
     
     
   private:

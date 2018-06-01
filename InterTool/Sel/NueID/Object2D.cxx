@@ -28,6 +28,19 @@ namespace llcv {
     return (*this)[res];
   }
   
+  Object2D& Object2DCollection::PlaneObjectRW(size_t plane) {
+    size_t res = larocv::kINVALID_SIZE;
+    for(size_t oid=0; oid < this->size(); ++oid)
+      if ((*this)[oid]._plane == plane)
+	res = oid;
+    
+    if (res == larocv::kINVALID_SIZE) 
+      throw std::runtime_error("Check plane exists with HasObject");
+
+    return (*this)[res];
+  }
+  
+
   std::vector<int> Object2DCollection::Planes() const {
     std::vector<int> res_v(3,0);
     

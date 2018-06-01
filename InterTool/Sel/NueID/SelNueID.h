@@ -35,6 +35,8 @@ namespace llcv {
     size_t _cropx;
     size_t _cropy;
     size_t _n_neighbors;
+    float _brem_dist;
+    int _brem_size;
 
     float _extension_cutoff;
     
@@ -74,7 +76,8 @@ namespace llcv {
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
-
+    int DetectBrem(Triangle triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v);
+    
   private:
     
     bool _ismc;
@@ -187,6 +190,14 @@ namespace llcv {
     float _par2_triangle_area_V;
     float _par2_triangle_area_Y;
     float* _par_triangle_area;
+
+    float _par1_triangle_brem_U;
+    float _par1_triangle_brem_V;
+    float _par1_triangle_brem_Y;
+    float _par2_triangle_brem_U;
+    float _par2_triangle_brem_V;
+    float _par2_triangle_brem_Y;
+    float* _par_triangle_brem;
 
     std::vector<int> _par1_numberdefects_U_v;
     std::vector<int> _par1_numberdefects_V_v;

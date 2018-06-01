@@ -11,12 +11,19 @@ namespace llcv {
     Triangle(){}
     Triangle(const larocv::GEO2D_Contour_t& ctor,
 	     const geo2d::Vector<float>& start);
+    Triangle(const geo2d::Vector<float>& apex, 
+	     const geo2d::Vector<float>& base1,
+	     const geo2d::Vector<float>& base2) 
+      : _apex(apex), _base_pt1(base1), _base_pt2(base2) {}
+
     ~Triangle(){}
     
     void Expand(const cv::Mat& img, const float fraction);
     void Tighten(const cv::Mat& img, const float radius, const float fraction);
     float StraightLineTest(const cv::Mat& img) const;
     void Extend(const float fraction);
+    Triangle RotateToPoint(const geo2d::Vector<float>& pt) const;
+
 
   private:
     void Construct();
