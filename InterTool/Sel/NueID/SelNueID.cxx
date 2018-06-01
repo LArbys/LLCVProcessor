@@ -838,31 +838,32 @@ namespace llcv {
     //
     // Debug print out
     //
-    for(size_t plane=0; plane<3; ++plane) {
-      auto& mat3d = mat3d_v[plane];
-      auto& _CosmicTag = _CosmicTag_v[plane];
+    if (_debug) {
+      for(size_t plane=0; plane<3; ++plane) {
+	auto& mat3d = mat3d_v[plane];
+	auto& _CosmicTag = _CosmicTag_v[plane];
 
-      for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
-	const auto& obj_col = obj_col_v[oid];
-	if (!obj_col.HasObject(plane)) continue;
-	const auto& obj2d = obj_col.PlaneObject(plane);
+	for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
+	  const auto& obj_col = obj_col_v[oid];
+	  if (!obj_col.HasObject(plane)) continue;
+	  const auto& obj2d = obj_col.PlaneObject(plane);
 	
-	cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(255,255,0));
-	cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.triangle().AsContour()),-1,cv::Scalar(0,255,255));
+	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(255,255,0));
+	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.triangle().AsContour()),-1,cv::Scalar(0,255,255));
 
-	for(const auto& poly : obj2d.Polygons()) 
-	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
-      }
+	  for(const auto& poly : obj2d.Polygons()) 
+	    cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
+	}
       
-      _CosmicTag.DrawLines(mat3d);
-      //_CosmicTag.DrawContours(mat3d);
+	_CosmicTag.DrawLines(mat3d);
+	//_CosmicTag.DrawContours(mat3d);
             
-      std::stringstream ss;
+	std::stringstream ss;
 
-      ss.str("");
-      ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
-      cv::imwrite(ss.str(),mat3d);
-
+	ss.str("");
+	ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
+	cv::imwrite(ss.str(),mat3d);
+      }
     }
     
     LLCV_DEBUG() << "end" << std::endl;

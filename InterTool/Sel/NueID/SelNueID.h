@@ -17,7 +17,7 @@ namespace llcv {
   public:
 
   SelNueID(std::string name="SelNueID") : InterSelBase(name), _outtree(nullptr) 
-    { _ismc = false; }
+    { _ismc = false; _debug = false; }
 
     ~SelNueID(){}
       
@@ -27,7 +27,8 @@ namespace llcv {
     void Finalize();
 
     void SetIsMC(bool ismc) { _ismc = ismc; }
-
+    void SetDebug(bool debug) { _debug = debug; }
+    
   private:
     
     TTree* _outtree;
@@ -81,7 +82,8 @@ namespace llcv {
   private:
     
     bool _ismc;
-    
+    bool _debug;
+
     float _vertex_x;
     float _vertex_y;
     float _vertex_z;
