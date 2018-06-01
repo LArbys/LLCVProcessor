@@ -57,7 +57,8 @@ namespace llcv {
     void SetParticle(size_t pid);
 
     size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
-			      const geo2d::Vector<float>& pt);
+			      const geo2d::Vector<float>& pt,
+			      float& distance);
 
     larocv::GEO2D_Contour_t MaximizeLine(const cv::Mat& timg3d_mask,
 					 const Triangle& triangle,
@@ -72,6 +73,8 @@ namespace llcv {
 
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
+    float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
+
   private:
     
     bool _ismc;
@@ -82,7 +85,9 @@ namespace llcv {
     
     int _n_par;
     std::vector<float> _edge_dist_v;
-    
+    std::vector<float> _edge_n_cosmic_v;
+    std::vector<float> _edge_cosmic_vtx_dist_v;
+
     float _par1_theta;
     float _par1_phi;
     float _par1_length;
@@ -91,8 +96,9 @@ namespace llcv {
     float _par1_dy;
     float _par1_dz;
     int   _par1_nplanes;
-    std::vector<int> _par1_planes_v;
-    std::vector<int> _par1_xdead_v;
+    std::vector<int>   _par1_planes_v;
+    std::vector<int>   _par1_xdead_v;
+    std::vector<float> _par1_cosmic_dist_v;
 
     float _par2_theta;
     float _par2_phi;
@@ -102,8 +108,9 @@ namespace llcv {
     float _par2_dy;
     float _par2_dz;
     int   _par2_nplanes;
-    std::vector<int> _par2_planes_v;
-    std::vector<int> _par2_xdead_v;
+    std::vector<int>   _par2_planes_v;
+    std::vector<int>   _par2_xdead_v;
+    std::vector<float> _par2_cosmic_dist_v;
 
     float* _par_theta;
     float* _par_phi;
@@ -113,8 +120,9 @@ namespace llcv {
     float* _par_dy;
     float* _par_dz;
     int*   _par_nplanes;
-    std::vector<int>* _par_planes_v;
-    std::vector<int>* _par_xdead_v;
+    std::vector<int>*   _par_planes_v;
+    std::vector<int>*   _par_xdead_v;
+    std::vector<float>* _par_cosmic_dist_v;
 
     int _par1_n_polygons_U;
     int _par1_n_polygons_V;

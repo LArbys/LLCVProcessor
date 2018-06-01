@@ -93,7 +93,39 @@ namespace llcv {
     }
   }
   
+  size_t CosmicTag::NearestCosmicToPoint(const cv::Point_<int>& pt, float& distance) const {
+    size_t ret = larocv::kINVALID_SIZE;
+    distance = larocv::kINVALID_FLOAT;
+    
+    geo2d::Vector<float> pt_f(pt.x,pt.y);
 
+    for(size_t cid=0; cid<_cosmic_ctor_v.size(); ++cid) {
+      const auto& cosmic_ctor = _cosmic_ctor_v[cid];
+      auto dist = larocv::Pt2PtDistance(pt_f,cosmic_ctor);
+      if (dist < distance) {
+	distance = dist;
+	ret = cid;
+      }
+    }
+    
+    return ret;
+  }
+    
+  size_t CosmicTag::NearestCosmicToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const {
+    size_t ret = larocv::kINVALID_SIZE;
+    distance = larocv::kINVALID_FLOAT;
+      
+    for(size_t cid=0; cid<_cosmic_ctor_v.size(); ++cid) {
+      const auto& cosmic_ctor = _cosmic_ctor_v[cid];
+      auto dist = larocv::Pt2PtDistance(cosmic_ctor,ctor);
+      if (dist < distance) {
+	distance = dist;
+	ret = cid;
+      }
+    }
+      
+    return ret;
+  }
 
 }
 
