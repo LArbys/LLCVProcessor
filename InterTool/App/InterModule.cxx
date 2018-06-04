@@ -367,9 +367,31 @@ namespace llcv {
       } // end shower
 
     } // end vertex
-
-    //_driver.Dump();
+    
     _driver.Process();
+    
+
+    //
+    // write out
+    //
+
+    if (_write) {
+    larlite::event_vertex ev_inter_vertex = nullptr;
+    ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
+    
+    larlite::event_shower ev_inter_shower = nullptr;
+    ev_inter_shower = (larlite::event_shower*)sto.get_data(larlite::data::kShower,"inter_shower");
+    
+    larlite::event_track ev_inter_track = nullptr;
+    ev_inter_track = (larlite::event_track*)sto.get_data(larlite::data::kTrack,"inter_track");
+
+    larlite::event_ass
+    
+    for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+      
+    }
+    
+    }
     _driver.Reset();
 
     LLCV_DEBUG() << "end" << std::endl;

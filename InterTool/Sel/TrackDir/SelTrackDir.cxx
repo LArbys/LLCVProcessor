@@ -165,11 +165,11 @@ namespace llcv {
       
       _trackhitsort.getPathBinneddEdx(stride,stride,dedx_track_per_plane);
       
-     const auto& bincenter_xyz = _trackhitsort.getBinCentersXYZ(fplane); 
-     const auto& dedx_track = dedx_track_per_plane.at(fplane);
+      const auto& bincenter_xyz = _trackhitsort.getBinCentersXYZ(fplane); 
+      const auto& dedx_track = dedx_track_per_plane.at(fplane);
       
-     auto& trk_dedx_v = trk_dedx_vv[ithsort];
-     trk_dedx_v.resize(dedx_track.size(),-1);
+      auto& trk_dedx_v = trk_dedx_vv[ithsort];
+      trk_dedx_v.resize(dedx_track.size(),-1);
 
       static std::vector<float> dedx_v;
       static std::vector<float> range_v;
@@ -186,8 +186,13 @@ namespace llcv {
 
       npts = 0;
 
+      // store the track
+     
+      auto& out_track = Data().MakeTrack();
+
       for (size_t ipt=0; ipt<dedx_track.size(); ipt++) {
 	if (ipt >= bincenter_xyz.size()) continue;
+
 	auto dedx = dedx_track.at(ipt);
 	auto dx = stride*(float)(ipt+1);
 	
@@ -197,7 +202,12 @@ namespace llcv {
 
 	dedx_v.push_back(dedx);
 	range_v.push_back(dx);
+
+	const auto& trk_path = _trackhitsort.path3d[fplane][ipt];
+	out_track.add_vertex(TVector3(trk_path[0],trk_path[1],trk_path[2]));
       }
+
+      out_track.add_dqdx(std::vector<double>(dedx_track.begin(),dedx_track.end()));
 
       length = range_v.back();
 

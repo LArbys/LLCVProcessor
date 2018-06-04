@@ -38,7 +38,7 @@ namespace llcv {
     TFile* _fout;
     
     InterImageManager& Image()      { return *_img_mgr_ptr; }
-    const InterDataManager& Data()  { return *_data_mgr_ptr; }
+    InterDataManager& Data()        { return *_data_mgr_ptr; }
     const InterTTreeManager& Tree() { return *_tree_mgr_ptr; }
 
     void AttachRSEV(TTree* tree);
@@ -53,7 +53,7 @@ namespace llcv {
     void set_output_file(TFile* fout) { _fout = fout; }
     
     InterImageManager* _img_mgr_ptr;
-    const InterDataManager* _data_mgr_ptr;
+    InterDataManager* _data_mgr_ptr;
     const InterTTreeManager* _tree_mgr_ptr;
 
     int* _run;

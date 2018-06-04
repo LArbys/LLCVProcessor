@@ -90,7 +90,7 @@ namespace llcv {
     
     int _n_par;
     std::vector<float> _edge_dist_v;
-    std::vector<float> _edge_n_cosmic_v;
+    std::vector<int>   _edge_n_cosmic_v;
     std::vector<float> _edge_cosmic_vtx_dist_v;
 
     float _par1_theta;
