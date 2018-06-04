@@ -78,7 +78,7 @@ namespace llcv {
       //
       float edge_dist = DistanceToEdge(center_pt);
 
-      if (edge_dist<=0) {
+      if (edge_dist<=1) {
 	LLCV_DEBUG() << "@edge break" << std::endl;
 	break;
       }
@@ -91,6 +91,7 @@ namespace llcv {
 	  radius_v.push_back(edge_dist - 1);
 	else
 	  radius_v.push_back(rad);
+	LLCV_DEBUG() << "@rad=" << radius_v.back() << std::endl;
       }
 
       
