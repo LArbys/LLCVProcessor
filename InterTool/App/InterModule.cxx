@@ -57,6 +57,8 @@ namespace llcv {
     for(auto selptr : _driver._sel_base_v)
       selptr->Configure(cfg.get<larcv::PSet>(selptr->name()));
 
+    _write_out = cfg.get<bool>("WriteOutput");
+    
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -375,25 +377,54 @@ namespace llcv {
     // write out
     //
 
-    if (_write) {
-    larlite::event_vertex ev_inter_vertex = nullptr;
-    ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
+    if (_write_out) {
+      larlite::event_vertex* ev_inter_vertex = nullptr;
+      ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
     
-    larlite::event_shower ev_inter_shower = nullptr;
-    ev_inter_shower = (larlite::event_shower*)sto.get_data(larlite::data::kShower,"inter_shower");
+      larlite::event_shower* ev_inter_shower = nullptr;
+      ev_inter_shower = (larlite::event_shower*)sto.get_data(larlite::data::kShower,"inter_shower");
     
-    larlite::event_track ev_inter_track = nullptr;
-    ev_inter_track = (larlite::event_track*)sto.get_data(larlite::data::kTrack,"inter_track");
+      larlite::event_track* ev_inter_track = nullptr;
+      ev_inter_track = (larlite::event_track*)sto.get_data(larlite::data::kTrack,"inter_track");
 
-    larlite::event_ass
-    
-    for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+      larlite::event_ass* ev_inter_ass = nullptr;
+      ev_inter_ass = (larlite::event_ass*) sto.get_data(larlite::data::kAssociation,"inter_ass");
       
-    }
-    
-    }
-    _driver.Reset();
+      std::vector<std::vector<unsigned int> > ass_vtx_to_shr_vv;
+      std::vector<std::vector<unsigned int> > ass_vtx_to_trk_vv;
 
+      ass_vtx_to_shr_vv.resize(num_vertex);
+      ass_vtx_to_trk_vv.resize(num_vertex);
+
+      for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+	const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];	
+	const auto& par = pgraph_vertex.ParticleArray().front();
+	double out_vertex[3];
+	out_vertex[0] = par.X();
+	out_vertex[1] = par.Y();
+	out_vertex[2] = par.Z();
+	ev_inter_vertex->emplace_back(larlite::vertex(out_vertex));
+	
+	const auto& data_mgr = _driver._data_mgr_v[vtxid];
+	
+	for(const auto& out_shr : data_mgr.OutputShowers()) {
+	  ass_vtx_to_shr_vv[vtxid].push_back(ev_inter_shower->size());
+	  ev_inter_shower->emplace_back(out_shr);
+	}
+
+	for(const auto& out_trk : data_mgr.OutputTracks()) {
+	  ass_vtx_to_trk_vv[vtxid].push_back(ev_inter_track->size());
+	  ev_inter_track->emplace_back(out_trk);
+	}
+	
+      }
+      
+      ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_shower->id(), ass_vtx_to_shr_vv);
+      ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_track->id(), ass_vtx_to_trk_vv);
+    }
+
+    _driver.Reset();
+    
     LLCV_DEBUG() << "end" << std::endl;
     return true;
   }

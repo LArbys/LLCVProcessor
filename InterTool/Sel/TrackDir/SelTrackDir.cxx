@@ -203,8 +203,8 @@ namespace llcv {
 	dedx_v.push_back(dedx);
 	range_v.push_back(dx);
 
-	const auto& trk_path = _trackhitsort.path3d[fplane][ipt];
-	out_track.add_vertex(TVector3(trk_path[0],trk_path[1],trk_path[2]));
+	const auto& bincenter = bincenter_xyz.at(ipt);
+	out_track.add_vertex(TVector3(bincenter.at(0),bincenter.at(1),bincenter.at(2)));
       }
 
       out_track.add_dqdx(std::vector<double>(dedx_track.begin(),dedx_track.end()));

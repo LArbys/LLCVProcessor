@@ -37,14 +37,15 @@ sys.path.insert(0,BASE_PATH)
 
 proc = llcv.Processor()
 
+
 # intermodule
 imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
 
-#NUM = 1
-NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
+NUM = 1
+#NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
 driver.SetOutputFilename("track_dir_ana_%d.root" % NUM);
 
 selection = llcv.SelTrackDir()
@@ -62,6 +63,9 @@ proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
+
+# output name
+proc.set_output_ll_name(os.path.join(OUT_DIR,"track_dir_out_%d.root" % NUM))
 
 proc.initialize()
 
