@@ -76,6 +76,9 @@ namespace llcv {
     
     larlite::track& MakeTrack();
     larlite::shower& MakeShower();
+
+    const std::vector<larlite::track>& OutputTracks() const { return _out_track_v; }
+    const std::vector<larlite::shower>& OutputShowers() const { return _out_shower_v; }
     
   private:
     std::vector<larlite::track> _out_track_v;
