@@ -204,7 +204,9 @@ namespace llcv {
 	range_v.push_back(dx);
 
 	const auto& bincenter = bincenter_xyz.at(ipt);
-	out_track.add_vertex(TVector3(bincenter.at(0),bincenter.at(1),bincenter.at(2)));
+	TVector3 xyz(bincenter.at(0),bincenter.at(1),bincenter.at(2));
+	out_track.add_vertex(xyz);
+	out_track.add_direction(xyz);
       }
 
       out_track.add_dqdx(std::vector<double>(dedx_track.begin(),dedx_track.end()));
