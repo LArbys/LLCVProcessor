@@ -43,7 +43,8 @@ namespace llcv {
     float _epsilon;
 
     InterDriver _driver;
-
+    
+    bool _write_out;
 
   private:
 

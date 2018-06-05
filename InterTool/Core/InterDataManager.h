@@ -53,6 +53,7 @@ namespace llcv {
     std::vector<std::vector<size_t> > _ass_shower_to_cluster_vv;
     std::vector<std::vector<size_t> > _ass_cluster_to_hit_vv;
 
+    //getters
   public:
 
     // larlite
@@ -69,6 +70,20 @@ namespace llcv {
     const larcv::PGraph* PGraph() const { return _pgraph; }
 
     const std::vector<std::vector<larcv::Pixel2DCluster> >& Particles() const { return _pcluster_vv; }
+
+    //writeout
+  public:
+    
+    larlite::track& MakeTrack();
+    larlite::shower& MakeShower();
+
+    const std::vector<larlite::track>& OutputTracks() const { return _out_track_v; }
+    const std::vector<larlite::shower>& OutputShowers() const { return _out_shower_v; }
+    
+  private:
+    std::vector<larlite::track> _out_track_v;
+    std::vector<larlite::shower> _out_shower_v;
+    
 
   };
 
