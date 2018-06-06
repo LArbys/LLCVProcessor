@@ -34,6 +34,9 @@ namespace llcv {
     size_t Plane() const { return _plane; }
     int NBrem() const { return _n_brem; }
 
+    float LinedX() const;
+    float LinedY() const;
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {

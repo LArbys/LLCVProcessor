@@ -91,6 +91,20 @@ namespace llcv {
 
     return res_v;
   }
+  
+  float Object2D::LinedX() const {
+    float ret = larocv::kINVALID_FLOAT;
+    ret = (this->Edge() - this->Start()).x;
+    ret /= this->LineLength();
+    return ret;
+  }
+  
+  float Object2D::LinedY() const {
+    float ret = larocv::kINVALID_FLOAT;
+    ret = (this->Edge() - this->Start()).y;
+    ret /= this->LineLength();
+    return ret;
+  }  
 
 }
 

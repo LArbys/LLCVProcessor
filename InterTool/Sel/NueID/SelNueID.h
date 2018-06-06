@@ -153,6 +153,22 @@ namespace llcv {
     float _par2_linefrac_Y;
     float* _par_linefrac;
 
+    float _par1_linedx_U;
+    float _par1_linedx_V;
+    float _par1_linedx_Y;
+    float _par2_linedx_U;
+    float _par2_linedx_V;
+    float _par2_linedx_Y;
+    float* _par_linedx;
+
+    float _par1_linedy_U;
+    float _par1_linedy_V;
+    float _par1_linedy_Y;
+    float _par2_linedy_U;
+    float _par2_linedy_V;
+    float _par2_linedy_Y;
+    float* _par_linedy;
+
     float _par1_triangle_height_U;
     float _par1_triangle_height_V;
     float _par1_triangle_height_Y;
@@ -280,6 +296,30 @@ namespace llcv {
     std::vector<float> _par2_pocketarea_ns_V_v;
     std::vector<float> _par2_pocketarea_ns_Y_v;
     std::vector<float>* _par_pocketarea_ns_v;
+
+    std::vector<float> _par1_polyarea_U_v;
+    std::vector<float> _par1_polyarea_V_v;
+    std::vector<float> _par1_polyarea_Y_v;
+    std::vector<float> _par2_polyarea_U_v;
+    std::vector<float> _par2_polyarea_V_v;
+    std::vector<float> _par2_polyarea_Y_v;
+    std::vector<float>* _par_polyarea_v;
+
+    std::vector<float> _par1_polyperimeter_U_v;
+    std::vector<float> _par1_polyperimeter_V_v;
+    std::vector<float> _par1_polyperimeter_Y_v;
+    std::vector<float> _par2_polyperimeter_U_v;
+    std::vector<float> _par2_polyperimeter_V_v;
+    std::vector<float> _par2_polyperimeter_Y_v;
+    std::vector<float>* _par_polyperimeter_v;
+
+    std::vector<float> _par1_polycharge_U_v;
+    std::vector<float> _par1_polycharge_V_v;
+    std::vector<float> _par1_polycharge_Y_v;
+    std::vector<float> _par2_polycharge_U_v;
+    std::vector<float> _par2_polycharge_V_v;
+    std::vector<float> _par2_polycharge_Y_v;
+    std::vector<float>* _par_polycharge_v;
 
     float _par1_electron_frac_U;
     float _par1_electron_frac_V;

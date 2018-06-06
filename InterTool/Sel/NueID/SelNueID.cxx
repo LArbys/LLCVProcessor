@@ -106,6 +106,20 @@ namespace llcv {
     _outtree->Branch("par2_linefrac_V", &_par2_linefrac_V, "par2_linefrac_V/F");
     _outtree->Branch("par2_linefrac_Y", &_par2_linefrac_Y, "par2_linefrac_Y/F");
 
+    _outtree->Branch("par1_linedx_U", &_par1_linedx_U, "par1_linedx_U/F");
+    _outtree->Branch("par1_linedx_V", &_par1_linedx_V, "par1_linedx_V/F");
+    _outtree->Branch("par1_linedx_Y", &_par1_linedx_Y, "par1_linedx_Y/F");
+    _outtree->Branch("par2_linedx_U", &_par2_linedx_U, "par2_linedx_U/F");
+    _outtree->Branch("par2_linedx_V", &_par2_linedx_V, "par2_linedx_V/F");
+    _outtree->Branch("par2_linedx_Y", &_par2_linedx_Y, "par2_linedx_Y/F");
+    
+    _outtree->Branch("par1_linedy_U", &_par1_linedy_U, "par1_linedy_U/F");
+    _outtree->Branch("par1_linedy_V", &_par1_linedy_V, "par1_linedy_V/F");
+    _outtree->Branch("par1_linedy_Y", &_par1_linedy_Y, "par1_linedy_Y/F");
+    _outtree->Branch("par2_linedy_U", &_par2_linedy_U, "par2_linedy_U/F");
+    _outtree->Branch("par2_linedy_V", &_par2_linedy_V, "par2_linedy_V/F");
+    _outtree->Branch("par2_linedy_Y", &_par2_linedy_Y, "par2_linedy_Y/F");
+
     _outtree->Branch("par1_triangle_height_U", &_par1_triangle_height_U, "par1_triangle_height_U/F");
     _outtree->Branch("par1_triangle_height_V", &_par1_triangle_height_V, "par1_triangle_height_V/F");
     _outtree->Branch("par1_triangle_height_Y", &_par1_triangle_height_Y, "par1_triangle_height_Y/F");
@@ -218,6 +232,29 @@ namespace llcv {
     _outtree->Branch("par2_pocketarea_ns_V_v", &_par2_pocketarea_ns_V_v);
     _outtree->Branch("par2_pocketarea_ns_Y_v", &_par2_pocketarea_ns_Y_v);
 
+    _outtree->Branch("par1_poly_area_U_v", &_par1_polyarea_U_v);
+    _outtree->Branch("par1_poly_area_V_v", &_par1_polyarea_V_v);
+    _outtree->Branch("par1_poly_area_Y_v", &_par1_polyarea_Y_v);
+    _outtree->Branch("par2_poly_area_U_v", &_par2_polyarea_U_v);
+    _outtree->Branch("par2_poly_area_V_v", &_par2_polyarea_V_v);
+    _outtree->Branch("par2_poly_area_Y_v", &_par2_polyarea_Y_v);
+
+    _outtree->Branch("par1_polyperimeter_U_v", &_par1_polyperimeter_U_v);
+    _outtree->Branch("par1_polyperimeter_V_v", &_par1_polyperimeter_V_v);
+    _outtree->Branch("par1_polyperimeter_Y_v", &_par1_polyperimeter_Y_v);
+    _outtree->Branch("par2_polyperimeter_U_v", &_par2_polyperimeter_U_v);
+    _outtree->Branch("par2_polyperimeter_V_v", &_par2_polyperimeter_V_v);
+    _outtree->Branch("par2_polyperimeter_Y_v", &_par2_polyperimeter_Y_v);
+
+    _outtree->Branch("par1_polycharge_U_v", &_par1_polycharge_U_v);
+    _outtree->Branch("par1_polycharge_V_v", &_par1_polycharge_V_v);
+    _outtree->Branch("par1_polycharge_Y_v", &_par1_polycharge_Y_v);
+    _outtree->Branch("par2_polycharge_U_v", &_par2_polycharge_U_v);
+    _outtree->Branch("par2_polycharge_V_v", &_par2_polycharge_V_v);
+    _outtree->Branch("par2_polycharge_Y_v", &_par2_polycharge_Y_v);
+
+    
+    
     //
     // segment information
     //
@@ -740,6 +777,8 @@ namespace llcv {
 	*_par_n_polygons  = obj2d.NPolygons();
 	*_par_linelength  = obj2d.LineLength();
 	*_par_linefrac    = obj2d.LineFrac();   
+	*_par_linedx      = obj2d.LinedX();
+	*_par_linedy      = obj2d.LinedY();
 
 	*_par_triangle_height         = obj2d.triangle().Height();
 	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
@@ -764,6 +803,9 @@ namespace llcv {
 	  (*_par_emptyarea_v)[polyid]         = polygon.EmptyArea();
 	  (*_par_pocketarea_v)[polyid]        = polygon.PocketArea();
 	  (*_par_pocketarea_ns_v)[polyid]     = polygon.PocketAreaNoStart();
+	  (*_par_polyarea_v)[polyid]          = polygon.Area();
+	  (*_par_polyperimeter_v)[polyid]     = polygon.Perimeter();
+	  (*_par_polycharge_v)[polyid]        = polygon.Charge(aimg_v[plane]);
 	}
 
       }
@@ -1289,6 +1331,22 @@ namespace llcv {
     _par2_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_linefrac = nullptr;
 
+    _par1_linedx_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linedx_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linedx_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedx_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedx_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedx_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_linedx = nullptr;
+
+    _par1_linedy_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linedy_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_linedy_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedy_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedy_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_linedy_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_linedy = nullptr;
+
     _par1_triangle_height_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_triangle_height_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_triangle_height_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1417,6 +1475,30 @@ namespace llcv {
     _par2_pocketarea_ns_Y_v.clear();
     _par_pocketarea_ns_v = nullptr;
 
+    _par1_polyarea_U_v.clear();
+    _par1_polyarea_V_v.clear();
+    _par1_polyarea_Y_v.clear();
+    _par2_polyarea_U_v.clear();
+    _par2_polyarea_V_v.clear();
+    _par2_polyarea_Y_v.clear();
+    _par_polyarea_v = nullptr;
+
+    _par1_polyperimeter_U_v.clear();
+    _par1_polyperimeter_V_v.clear();
+    _par1_polyperimeter_Y_v.clear();
+    _par2_polyperimeter_U_v.clear();
+    _par2_polyperimeter_V_v.clear();
+    _par2_polyperimeter_Y_v.clear();
+    _par_polyperimeter_v = nullptr;
+
+    _par1_polycharge_U_v.clear();
+    _par1_polycharge_V_v.clear();
+    _par1_polycharge_Y_v.clear();
+    _par2_polycharge_U_v.clear();
+    _par2_polycharge_V_v.clear();
+    _par2_polycharge_Y_v.clear();
+    _par_polycharge_v = nullptr;
+
     _par1_electron_frac_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1486,6 +1568,18 @@ namespace llcv {
       LLCV_CRITICAL() << "ptr to _par_pocketarea_ns_v is null" << std::endl;
       throw llcv_err("die");
     }
+    if(!_par_polyarea_v) {
+      LLCV_CRITICAL() << "ptr to _par_polyarea_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_polyperimeter_v) {
+      LLCV_CRITICAL() << "ptr to _par_polyperimeter_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+    if(!_par_polycharge_v) {
+      LLCV_CRITICAL() << "ptr to _par_polycharge_v is null" << std::endl;
+      throw llcv_err("die");
+    }
 
     
     _par_numberdefects_v->resize(sz,-1.0*larocv::kINVALID_INT);
@@ -1507,6 +1601,13 @@ namespace llcv {
     _par_pocketarea_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
 
     _par_pocketarea_ns_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
+
+    _par_polyarea_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
+
+    _par_polyperimeter_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
+
+    _par_polycharge_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
+    
 
     return;
   }
@@ -1561,6 +1662,8 @@ namespace llcv {
 	_par_n_polygons              = &_par1_n_polygons_U;
 	_par_linelength              = &_par1_linelength_U;
 	_par_linefrac                = &_par1_linefrac_U;
+	_par_linedx                  = &_par1_linedx_U;
+	_par_linedy                  = &_par1_linedy_U;
 	_par_triangle_height         = &_par1_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_U;
@@ -1578,12 +1681,17 @@ namespace llcv {
 	_par_emptyarea_v         = &_par1_emptyarea_U_v;
 	_par_pocketarea_v        = &_par1_pocketarea_U_v;
 	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_U_v;
+	_par_polyarea_v          = &_par1_polyarea_U_v;
+	_par_polyperimeter_v     = &_par1_polyperimeter_U_v;
+	_par_polycharge_v        = &_par1_polycharge_U_v;
 	break;
       }
       case 1: {
 	_par_n_polygons              = &_par1_n_polygons_V;
 	_par_linelength              = &_par1_linelength_V;
 	_par_linefrac                = &_par1_linefrac_V;
+	_par_linedx                  = &_par1_linedx_V;
+	_par_linedy                  = &_par1_linedy_V;
 	_par_triangle_height         = &_par1_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_V;
@@ -1601,12 +1709,17 @@ namespace llcv {
 	_par_emptyarea_v         = &_par1_emptyarea_V_v;
 	_par_pocketarea_v        = &_par1_pocketarea_V_v;
 	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_V_v;
+	_par_polyarea_v          = &_par1_polyarea_V_v;
+	_par_polyperimeter_v     = &_par1_polyperimeter_V_v;
+	_par_polycharge_v        = &_par1_polycharge_V_v;
 	break;
       }
       case 2: {
 	_par_n_polygons              = &_par1_n_polygons_Y;
 	_par_linelength              = &_par1_linelength_Y;
 	_par_linefrac                = &_par1_linefrac_Y;
+	_par_linedx                  = &_par1_linedx_Y;
+	_par_linedy                  = &_par1_linedy_Y;
 	_par_triangle_height         = &_par1_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_Y;
@@ -1624,6 +1737,9 @@ namespace llcv {
 	_par_emptyarea_v         = &_par1_emptyarea_Y_v;
 	_par_pocketarea_v        = &_par1_pocketarea_Y_v;
 	_par_pocketarea_ns_v     = &_par1_pocketarea_ns_Y_v;
+	_par_polyarea_v          = &_par1_polyarea_Y_v;
+	_par_polyperimeter_v     = &_par1_polyperimeter_Y_v;
+	_par_polycharge_v        = &_par1_polycharge_Y_v;
 	break;
       }
       default : { break; }
@@ -1637,6 +1753,8 @@ namespace llcv {
 	_par_n_polygons              = &_par2_n_polygons_U;
 	_par_linelength              = &_par2_linelength_U;
 	_par_linefrac                = &_par2_linefrac_U;
+	_par_linedx                  = &_par2_linedx_U;
+	_par_linedy                  = &_par2_linedy_U;
 	_par_triangle_height         = &_par2_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_U;
@@ -1654,12 +1772,17 @@ namespace llcv {
 	_par_emptyarea_v         = &_par2_emptyarea_U_v;
 	_par_pocketarea_v        = &_par2_pocketarea_U_v;
 	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_U_v;
+	_par_polyarea_v          = &_par2_polyarea_U_v;
+	_par_polyperimeter_v     = &_par2_polyperimeter_U_v;
+	_par_polycharge_v        = &_par2_polycharge_U_v;
 	break;
       }
       case 1: {
 	_par_n_polygons              = &_par2_n_polygons_V;
 	_par_linelength              = &_par2_linelength_V;
 	_par_linefrac                = &_par2_linefrac_V;
+	_par_linedx                  = &_par2_linedx_V;
+	_par_linedy                  = &_par2_linedy_V;
 	_par_triangle_height         = &_par2_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_V;
@@ -1677,12 +1800,17 @@ namespace llcv {
 	_par_emptyarea_v         = &_par2_emptyarea_V_v;
 	_par_pocketarea_v        = &_par2_pocketarea_V_v;
 	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_V_v;
+	_par_polyarea_v          = &_par2_polyarea_V_v;
+	_par_polyperimeter_v     = &_par2_polyperimeter_V_v;
+	_par_polycharge_v        = &_par2_polycharge_V_v;
 	break;
       }
       case 2: {
 	_par_n_polygons              = &_par2_n_polygons_Y;
 	_par_linelength              = &_par2_linelength_Y;
 	_par_linefrac                = &_par2_linefrac_Y;
+	_par_linedx                  = &_par2_linedx_Y;
+	_par_linedy                  = &_par2_linedy_Y;
 	_par_triangle_height         = &_par2_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_Y;
@@ -1700,6 +1828,9 @@ namespace llcv {
 	_par_emptyarea_v         = &_par2_emptyarea_Y_v;
 	_par_pocketarea_v        = &_par2_pocketarea_Y_v;
 	_par_pocketarea_ns_v     = &_par2_pocketarea_ns_Y_v;
+	_par_polyarea_v          = &_par2_polyarea_Y_v;
+	_par_polyperimeter_v     = &_par2_polyperimeter_Y_v;
+	_par_polycharge_v        = &_par2_polycharge_Y_v;
 	break;
       }
       default : { break; }
