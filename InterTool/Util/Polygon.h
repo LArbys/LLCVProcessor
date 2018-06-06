@@ -30,6 +30,10 @@ namespace llcv {
     const larocv::GEO2D_Contour_t Contour() const { return _ctor; }
     const larocv::GEO2D_Contour_t Hull() const { return _hull; }
 
+    float Area() const;
+    float Perimeter() const;
+    float Charge(const cv::Mat& img) const;
+
   private:
     void Construct();
     void VetoStartPoint();

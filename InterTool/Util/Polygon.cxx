@@ -233,6 +233,24 @@ namespace llcv {
     return res;
   }
 
+  float Polygon::Area() const {
+    float ret = -1.0*larocv::kINVALID_FLOAT;
+    ret = larocv::ContourArea(_ctor);
+    return ret;
+  }
+
+  float Polygon::Perimeter() const {
+    float ret = -1.0*larocv::kINVALID_FLOAT;
+    ret = larocv::ArcLength(_ctor);
+    return ret;
+  }
+  
+  float Polygon::Charge(const cv::Mat& img) const {
+    float ret = -1.0*larocv::kINVALID_FLOAT;
+    ret = larocv::SumNonZero(larocv::MaskImage(img,_ctor,-1,false));
+    return ret;
+  }
+
 }
 
 #endif
