@@ -22,7 +22,7 @@ namespace llcv {
     void Tighten(const cv::Mat& img, const float radius, const float fraction);
     float StraightLineTest(const cv::Mat& img) const;
     void Extend(const float fraction);
-    Triangle RotateToPoint(const geo2d::Vector<float>& pt) const;
+    Triangle RotateToPoint(const geo2d::Vector<float>& pt,float scale) const;
 
 
   private:
