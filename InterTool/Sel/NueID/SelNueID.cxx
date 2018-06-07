@@ -32,7 +32,7 @@ namespace llcv {
     _CosmicTag_v.clear();
     _CosmicTag_v.resize(3);
 
-    _brem_dist = pset.get<float>("BremDistance",25);
+    _brem_dist = pset.get<float>("BremDistance",50);
     _brem_size = pset.get<int>("BremSize",6);
 
     LLCV_DEBUG() << "end" << std::endl;
@@ -694,8 +694,12 @@ namespace llcv {
     } // end plane
     
     
+    std::vector<std::vector<Triangle> > tri_brem_vv(obj_col_v.size());
+    for(auto& v : tri_brem_vv) v.resize(3);
+
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       auto& obj_col = obj_col_v[oid];
+      auto& tri_brem_v = tri_brem_vv[oid];
       for(size_t plane=0; plane<3; ++plane) {
 	if (!obj_col.HasObject(plane)) continue;
 	auto& obj2d = obj_col.PlaneObjectRW(plane);
@@ -704,12 +708,14 @@ namespace llcv {
 
 	// orient a triangle in direction of line
 	auto edge = obj2d.Edge();
-	auto triangle = obj2d.triangle().RotateToPoint(edge);
+	auto triangle = obj2d.triangle().RotateToPoint(edge,2.0);
 
 	// look for brem
 	auto nbrem = DetectBrem(triangle,cimg_ctor_v);
 	
 	obj2d._n_brem = nbrem;
+
+	tri_brem_v[plane] = std::move(triangle);
       }
     }
     
@@ -895,11 +901,14 @@ namespace llcv {
 
 	  for(const auto& poly : obj2d.Polygons()) 
 	    cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
+
+	  const auto & tri_brem = tri_brem_vv[oid][plane];
+	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,tri_brem.AsContour()),-1,cv::Scalar(255,176,102));
 	}
       
-	_CosmicTag.DrawLines(mat3d);
-	//_CosmicTag.DrawContours(mat3d);
-            
+	// _CosmicTag.DrawLines(mat3d);
+	_CosmicTag.DrawContours(mat3d);
+	
 	std::stringstream ss;
 
 	ss.str("");
@@ -1924,7 +1933,7 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     return ret;
   }
   
-  int SelNueID::DetectBrem(Triangle triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v) {
+  int SelNueID::DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v) {
     int res = 0;
 
     //

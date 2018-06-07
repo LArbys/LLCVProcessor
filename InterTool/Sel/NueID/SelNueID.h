@@ -77,7 +77,7 @@ namespace llcv {
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
-    int DetectBrem(Triangle triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v);
+    int DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v);
     
   private:
     
