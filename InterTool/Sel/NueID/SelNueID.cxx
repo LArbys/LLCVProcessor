@@ -711,11 +711,15 @@ namespace llcv {
 	auto triangle = obj2d.triangle().RotateToPoint(edge,2.0);
 
 	// look for brem
-	auto nbrem = DetectBrem(triangle,cimg_ctor_v);
+	std::vector<size_t> brem_v;
+	auto nbrem = DetectBrem(triangle,cimg_ctor_v,brem_v);
 	
 	obj2d._n_brem = nbrem;
 
 	tri_brem_v[plane] = std::move(triangle);
+	
+	for(auto bid : brem_v)
+	  obj2d._polygon_v.emplace_back(cimg_ctor_v[bid],obj2d.Start());
       }
     }
     
@@ -1933,7 +1937,7 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     return ret;
   }
   
-  int SelNueID::DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v) {
+  int SelNueID::DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v,std::vector<size_t>& id_v) {
     int res = 0;
 
     //
@@ -1946,6 +1950,7 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     
     auto tri_ctor = triangle.AsContour();
     
+    id_v.reserve(other_ctor_v.size());
     for(size_t oid=0; oid < other_ctor_v.size(); ++oid) {
       const auto& other_ctor = other_ctor_v[oid];
       
@@ -1953,8 +1958,10 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
       if (common_area == 0) continue;
       
       int pixel_area = larocv::ContourPixelArea(other_ctor);
-      if (pixel_area > _brem_size)
+      if (pixel_area > _brem_size) {
 	res += 1;
+	id_v.push_back(oid);
+      }
     }
     
     return res;
