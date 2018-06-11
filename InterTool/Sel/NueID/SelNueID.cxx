@@ -161,6 +161,13 @@ namespace llcv {
     _outtree->Branch("par2_triangle_brem_U", &_par2_triangle_brem_U, "par2_triangle_brem_U/F");
     _outtree->Branch("par2_triangle_brem_V", &_par2_triangle_brem_V, "par2_triangle_brem_V/F");
     _outtree->Branch("par2_triangle_brem_Y", &_par2_triangle_brem_Y, "par2_triangle_brem_Y/F");
+
+    _outtree->Branch("par1_expand_charge_U", &_par1_expand_charge_U, "par1_expand_charge_U/F");
+    _outtree->Branch("par1_expand_charge_V", &_par1_expand_charge_V, "par1_expand_charge_V/F");
+    _outtree->Branch("par1_expand_charge_Y", &_par1_expand_charge_Y, "par1_expand_charge_Y/F");
+    _outtree->Branch("par2_expand_charge_U", &_par2_expand_charge_U, "par2_expand_charge_U/F");
+    _outtree->Branch("par2_expand_charge_V", &_par2_expand_charge_V, "par2_expand_charge_V/F");
+    _outtree->Branch("par2_expand_charge_Y", &_par2_expand_charge_Y, "par2_expand_charge_Y/F");
     
     _outtree->Branch("par1_numberdefects_U_v", &_par1_numberdefects_U_v);
     _outtree->Branch("par1_numberdefects_V_v", &_par1_numberdefects_V_v);
@@ -712,14 +719,23 @@ namespace llcv {
 
 	// look for brem
 	std::vector<size_t> brem_v;
-	auto nbrem = DetectBrem(triangle,cimg_ctor_v,brem_v);
+	std::vector<size_t> inside_v;
+	auto nbrem = DetectBrem(triangle,cimg_ctor_v,brem_v,inside_v);
 	
 	obj2d._n_brem = nbrem;
 
 	tri_brem_v[plane] = std::move(triangle);
+
+	// store all the contours inside the expanded triangle
+	obj2d._expand_polygon_v = obj2d._polygon_v;
+
+	for(auto iid : inside_v)
+	  obj2d._expand_polygon_v.emplace_back(cimg_ctor_v[iid],obj2d.Start());
 	
+	// store the brem only into polygon
 	for(auto bid : brem_v)
 	  obj2d._polygon_v.emplace_back(cimg_ctor_v[bid],obj2d.Start());
+
       }
     }
     
@@ -796,6 +812,7 @@ namespace llcv {
 	*_par_triangle_baselength     = obj2d.triangle().BaseLength();
 	*_par_triangle_area           = obj2d.triangle().Area();
 	*_par_triangle_brem           = obj2d.NBrem();
+	*_par_expand_charge           = obj2d.Charge(aimg_v[plane]);
 
 	(*_par_cosmic_dist_v)[plane] = NearestPolygonToCosmic(obj2d.Polygons(),plane);
 
@@ -817,6 +834,7 @@ namespace llcv {
 	  (*_par_polyperimeter_v)[polyid]     = polygon.Perimeter();
 	  (*_par_polycharge_v)[polyid]        = polygon.Charge(aimg_v[plane]);
 	}
+
 
       }
 
@@ -892,8 +910,18 @@ namespace llcv {
     //
     if (_debug) {
       for(size_t plane=0; plane<3; ++plane) {
-	auto& mat3d = mat3d_v[plane];
+	
+	auto write_img = timg_v[plane].clone();
+
+
+
+
 	auto& _CosmicTag = _CosmicTag_v[plane];
+
+	for(const auto& ctor : _CosmicTag.CosmicContours())
+	  write_img = larocv::MaskImage(write_img,ctor,-1,true);
+
+	auto mat3d = As8UC3(write_img);
 
 	for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
 	  const auto& obj_col = obj_col_v[oid];
@@ -903,15 +931,19 @@ namespace llcv {
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(255,255,0));
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.triangle().AsContour()),-1,cv::Scalar(0,255,255));
 
-	  for(const auto& poly : obj2d.Polygons()) 
-	    cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
+	  // const auto & tri_brem = tri_brem_vv[oid][plane];
+	  // cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,tri_brem.AsContour()),-1,cv::Scalar(255,176,102));
 
-	  const auto & tri_brem = tri_brem_vv[oid][plane];
-	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,tri_brem.AsContour()),-1,cv::Scalar(255,176,102));
+	  // for(const auto& poly : obj2d.ExpandedPolygons()) 
+	  //   cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,0,255));
+
+	  // for(const auto& poly : obj2d.Polygons()) 
+	  //   cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
+
 	}
       
 	// _CosmicTag.DrawLines(mat3d);
-	_CosmicTag.DrawContours(mat3d);
+	// _CosmicTag.DrawContours(mat3d);
 	
 	std::stringstream ss;
 
@@ -1408,6 +1440,14 @@ namespace llcv {
     _par2_triangle_brem_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_triangle_brem = nullptr;
 
+    _par1_expand_charge_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_expand_charge_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_expand_charge_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_expand_charge_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_expand_charge_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_expand_charge_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_expand_charge = nullptr;
+
     _par1_numberdefects_U_v.clear();
     _par1_numberdefects_V_v.clear();
     _par1_numberdefects_Y_v.clear();
@@ -1683,6 +1723,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par1_triangle_baselength_U;
 	_par_triangle_area           = &_par1_triangle_area_U;
 	_par_triangle_brem           = &_par1_triangle_brem_U;	
+	_par_expand_charge           = &_par1_expand_charge_U;
 
 	_par_numberdefects_v     = &_par1_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_U_v;
@@ -1711,6 +1752,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par1_triangle_baselength_V;
 	_par_triangle_area           = &_par1_triangle_area_V;
 	_par_triangle_brem           = &_par1_triangle_brem_V;
+	_par_expand_charge           = &_par1_expand_charge_V;
 
 	_par_numberdefects_v     = &_par1_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_V_v;
@@ -1739,6 +1781,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par1_triangle_baselength_Y;
 	_par_triangle_area           = &_par1_triangle_area_Y;
 	_par_triangle_brem           = &_par1_triangle_brem_Y;
+	_par_expand_charge           = &_par1_expand_charge_Y;
 
 	_par_numberdefects_v     = &_par1_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_Y_v;
@@ -1774,6 +1817,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par2_triangle_baselength_U;
 	_par_triangle_area           = &_par2_triangle_area_U;
 	_par_triangle_brem           = &_par2_triangle_brem_U;
+	_par_expand_charge           = &_par2_expand_charge_U;
 
 	_par_numberdefects_v     = &_par2_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_U_v;
@@ -1802,6 +1846,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par2_triangle_baselength_V;
 	_par_triangle_area           = &_par2_triangle_area_V;
 	_par_triangle_brem           = &_par2_triangle_brem_V;
+	_par_expand_charge           = &_par2_expand_charge_V;
 
 	_par_numberdefects_v     = &_par2_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_V_v;
@@ -1830,6 +1875,7 @@ namespace llcv {
 	_par_triangle_baselength     = &_par2_triangle_baselength_Y;
 	_par_triangle_area           = &_par2_triangle_area_Y;
 	_par_triangle_brem           = &_par2_triangle_brem_Y;
+	_par_expand_charge           = &_par2_expand_charge_Y;
 
 	_par_numberdefects_v     = &_par2_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_Y_v;
@@ -1937,7 +1983,10 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     return ret;
   }
   
-  int SelNueID::DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v,std::vector<size_t>& id_v) {
+  int SelNueID::DetectBrem(Triangle& triangle, 
+			   const larocv::GEO2D_ContourArray_t& other_ctor_v,
+			   std::vector<size_t>& id_v,
+			   std::vector<size_t>& inside_v) {
     int res = 0;
 
     //
@@ -1951,6 +2000,8 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     auto tri_ctor = triangle.AsContour();
     
     id_v.reserve(other_ctor_v.size());
+    inside_v.reserve(other_ctor_v.size());
+
     for(size_t oid=0; oid < other_ctor_v.size(); ++oid) {
       const auto& other_ctor = other_ctor_v[oid];
       
@@ -1962,6 +2013,7 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
 	res += 1;
 	id_v.push_back(oid);
       }
+      inside_v.push_back(oid);
     }
     
     return res;

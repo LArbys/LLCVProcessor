@@ -77,7 +77,11 @@ namespace llcv {
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
-    int DetectBrem(Triangle& triangle, const larocv::GEO2D_ContourArray_t& other_ctor_v,std::vector<size_t>& id_v);
+    int DetectBrem(Triangle& triangle, 
+		   const larocv::GEO2D_ContourArray_t& other_ctor_v,
+		   std::vector<size_t>& id_v,
+		   std::vector<size_t>& inside_v);
+    
     
   private:
     
@@ -217,6 +221,14 @@ namespace llcv {
     float _par2_triangle_brem_Y;
     float* _par_triangle_brem;
 
+    float _par1_expand_charge_U;
+    float _par1_expand_charge_V;
+    float _par1_expand_charge_Y;
+    float _par2_expand_charge_U;
+    float _par2_expand_charge_V;
+    float _par2_expand_charge_Y;
+    float *_par_expand_charge;
+
     std::vector<int> _par1_numberdefects_U_v;
     std::vector<int> _par1_numberdefects_V_v;
     std::vector<int> _par1_numberdefects_Y_v;
@@ -320,6 +332,7 @@ namespace llcv {
     std::vector<float> _par2_polycharge_V_v;
     std::vector<float> _par2_polycharge_Y_v;
     std::vector<float>* _par_polycharge_v;
+
 
     float _par1_electron_frac_U;
     float _par1_electron_frac_V;

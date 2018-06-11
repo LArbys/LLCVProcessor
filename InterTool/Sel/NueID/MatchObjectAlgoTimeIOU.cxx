@@ -7,13 +7,15 @@ namespace llcv {
   
   void MatchObjectAlgoTimeIOU::Configure(const larcv::PSet& pset) {
     this->set_verbosity((msg::Level_t)(pset.get<unsigned short>("Verbosity", (unsigned short)(this->logger().level()))));
-    //this->set_verbosity((msg::Level_t)0);
+    // this->set_verbosity((msg::Level_t)0);
     _threshold = pset.get<float>("Threshold",0.1);
 
     _match_three_planes = pset.get<bool>  ("MatchThreePlanes",true);
     _three_planes_boost = pset.get<float> ("ThreePlanesBoost",1.1);
-    _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
+    // _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
+    _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.15);
   }
+
     
   void MatchObjectAlgoTimeIOU::Initialize() {}
   
@@ -99,6 +101,7 @@ namespace llcv {
     auto m_max = std::max({m01, m02, m12});
     auto m_min = std::min({m01, m02, m12});
     
+    // if ((m_max - m_min) > 0.3)
     if ((m_max - m_min) > 0.1)
       return score;
   

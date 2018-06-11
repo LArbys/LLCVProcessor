@@ -14,7 +14,13 @@ namespace llcv {
     ~Object2D() {}
     
     Triangle _triangle;
-    std::vector<Polygon> _polygon_v;
+
+    // list of "large enough" clusters which consititue 2D particle
+    std::vector<Polygon> _polygon_v; 
+
+    // list of all clusters which lie inside expanded triangle
+    std::vector<Polygon> _expand_polygon_v;
+
     larocv::GEO2D_Contour_t _line;
     geo2d::Vector<float> _edge;
     float _line_frac;
@@ -30,12 +36,15 @@ namespace llcv {
     
     const Triangle& triangle() const { return _triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
+    const std::vector<Polygon>& ExpandedPolygons() const { return _expand_polygon_v; }
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
     size_t Plane() const { return _plane; }
     int NBrem() const { return _n_brem; }
 
     float LinedX() const;
     float LinedY() const;
+    
+    float Charge(const cv::Mat& mat) const;
 
   };
 
