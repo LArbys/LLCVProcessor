@@ -229,6 +229,14 @@ namespace llcv {
     float _par2_expand_charge_Y;
     float *_par_expand_charge;
 
+    float _par1_length3d_U;
+    float _par1_length3d_V;
+    float _par1_length3d_Y;
+    float _par2_length3d_U;
+    float _par2_length3d_V;
+    float _par2_length3d_Y;
+    float *_par_length3d;
+
     std::vector<int> _par1_numberdefects_U_v;
     std::vector<int> _par1_numberdefects_V_v;
     std::vector<int> _par1_numberdefects_Y_v;

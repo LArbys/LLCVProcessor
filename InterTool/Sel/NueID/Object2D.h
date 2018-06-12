@@ -27,6 +27,9 @@ namespace llcv {
     size_t _plane;
     int _n_brem;
 
+    // 3D length estimated from plane
+    float _length;
+
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
     const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
@@ -45,6 +48,8 @@ namespace llcv {
     float LinedY() const;
     
     float Charge(const cv::Mat& mat) const;
+    
+    float Length() const { return _length; }
 
   };
 

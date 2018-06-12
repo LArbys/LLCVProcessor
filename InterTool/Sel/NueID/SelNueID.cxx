@@ -168,6 +168,13 @@ namespace llcv {
     _outtree->Branch("par2_expand_charge_U", &_par2_expand_charge_U, "par2_expand_charge_U/F");
     _outtree->Branch("par2_expand_charge_V", &_par2_expand_charge_V, "par2_expand_charge_V/F");
     _outtree->Branch("par2_expand_charge_Y", &_par2_expand_charge_Y, "par2_expand_charge_Y/F");
+
+    _outtree->Branch("par1_length3d_U", &_par1_length3d_U, "par1_length3d_U/F");
+    _outtree->Branch("par1_length3d_V", &_par1_length3d_V, "par1_length3d_V/F");
+    _outtree->Branch("par1_length3d_Y", &_par1_length3d_Y, "par1_length3d_Y/F");
+    _outtree->Branch("par2_length3d_U", &_par2_length3d_U, "par2_length3d_U/F");
+    _outtree->Branch("par2_length3d_V", &_par2_length3d_V, "par2_length3d_V/F");
+    _outtree->Branch("par2_length3d_Y", &_par2_length3d_Y, "par2_length3d_Y/F");
     
     _outtree->Branch("par1_numberdefects_U_v", &_par1_numberdefects_U_v);
     _outtree->Branch("par1_numberdefects_V_v", &_par1_numberdefects_V_v);
@@ -813,6 +820,7 @@ namespace llcv {
 	*_par_triangle_area           = obj2d.triangle().Area();
 	*_par_triangle_brem           = obj2d.NBrem();
 	*_par_expand_charge           = obj2d.Charge(aimg_v[plane]);
+	*_par_length3d                = obj2d.Length();
 
 	(*_par_cosmic_dist_v)[plane] = NearestPolygonToCosmic(obj2d.Polygons(),plane);
 
@@ -912,9 +920,6 @@ namespace llcv {
       for(size_t plane=0; plane<3; ++plane) {
 	
 	auto write_img = timg_v[plane].clone();
-
-
-
 
 	auto& _CosmicTag = _CosmicTag_v[plane];
 
@@ -1281,14 +1286,22 @@ namespace llcv {
     // auto length = *(std::max_element(std::begin(length_v),std::end(length_v)));
 
     float sum = 0.0;
-    for(auto length : length_v)  {
+    float nplanes = 0.0;
+
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto length = length_v[plane];
+      
       if (length == -1.0*::larlite::data::kINVALID_DOUBLE)
 	continue;
 
+      auto& obj2d = obj_col.PlaneObjectRW(plane);
+      obj2d._length = length;
+
+      nplanes += 1;
       sum += (float)length;
     }
     
-    sum /= ((float)length_v.size());
+    sum /= nplanes;
 
     obj_col.SetLength(sum);
   }
@@ -1447,6 +1460,14 @@ namespace llcv {
     _par2_expand_charge_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_expand_charge_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_expand_charge = nullptr;
+
+    _par1_length3d_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_length3d_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_length3d_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_length3d_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_length3d_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_length3d_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_length3d = nullptr;
 
     _par1_numberdefects_U_v.clear();
     _par1_numberdefects_V_v.clear();
@@ -1724,6 +1745,7 @@ namespace llcv {
 	_par_triangle_area           = &_par1_triangle_area_U;
 	_par_triangle_brem           = &_par1_triangle_brem_U;	
 	_par_expand_charge           = &_par1_expand_charge_U;
+	_par_length3d                = &_par1_length3d_U;
 
 	_par_numberdefects_v     = &_par1_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_U_v;
@@ -1738,6 +1760,7 @@ namespace llcv {
 	_par_polyarea_v          = &_par1_polyarea_U_v;
 	_par_polyperimeter_v     = &_par1_polyperimeter_U_v;
 	_par_polycharge_v        = &_par1_polycharge_U_v;
+
 	break;
       }
       case 1: {
@@ -1753,6 +1776,7 @@ namespace llcv {
 	_par_triangle_area           = &_par1_triangle_area_V;
 	_par_triangle_brem           = &_par1_triangle_brem_V;
 	_par_expand_charge           = &_par1_expand_charge_V;
+	_par_length3d                = &_par1_length3d_V;
 
 	_par_numberdefects_v     = &_par1_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_V_v;
@@ -1782,6 +1806,7 @@ namespace llcv {
 	_par_triangle_area           = &_par1_triangle_area_Y;
 	_par_triangle_brem           = &_par1_triangle_brem_Y;
 	_par_expand_charge           = &_par1_expand_charge_Y;
+	_par_length3d                = &_par1_length3d_Y;
 
 	_par_numberdefects_v     = &_par1_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_Y_v;
@@ -1818,6 +1843,7 @@ namespace llcv {
 	_par_triangle_area           = &_par2_triangle_area_U;
 	_par_triangle_brem           = &_par2_triangle_brem_U;
 	_par_expand_charge           = &_par2_expand_charge_U;
+	_par_length3d                = &_par2_length3d_U;
 
 	_par_numberdefects_v     = &_par2_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_U_v;
@@ -1847,6 +1873,7 @@ namespace llcv {
 	_par_triangle_area           = &_par2_triangle_area_V;
 	_par_triangle_brem           = &_par2_triangle_brem_V;
 	_par_expand_charge           = &_par2_expand_charge_V;
+	_par_length3d                = &_par2_length3d_V;
 
 	_par_numberdefects_v     = &_par2_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_V_v;
@@ -1876,6 +1903,7 @@ namespace llcv {
 	_par_triangle_area           = &_par2_triangle_area_Y;
 	_par_triangle_brem           = &_par2_triangle_brem_Y;
 	_par_expand_charge           = &_par2_expand_charge_Y;
+	_par_length3d                = &_par2_length3d_Y;
 
 	_par_numberdefects_v     = &_par2_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_Y_v;
