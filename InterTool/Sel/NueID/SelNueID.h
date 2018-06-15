@@ -340,6 +340,22 @@ namespace llcv {
     std::vector<float> _par2_polycharge_V_v;
     std::vector<float> _par2_polycharge_Y_v;
     std::vector<float>* _par_polycharge_v;
+    
+    std::vector<int> _par1_polyedges_U_v;
+    std::vector<int> _par1_polyedges_V_v;
+    std::vector<int> _par1_polyedges_Y_v;
+    std::vector<int> _par2_polyedges_U_v;
+    std::vector<int> _par2_polyedges_V_v;
+    std::vector<int> _par2_polyedges_Y_v;
+    std::vector<int>* _par_polyedges_v;
+
+    std::vector<int> _par1_polybranches_U_v;
+    std::vector<int> _par1_polybranches_V_v;
+    std::vector<int> _par1_polybranches_Y_v;
+    std::vector<int> _par2_polybranches_U_v;
+    std::vector<int> _par2_polybranches_V_v;
+    std::vector<int> _par2_polybranches_Y_v;
+    std::vector<int>* _par_polybranches_v;
 
 
     float _par1_electron_frac_U;

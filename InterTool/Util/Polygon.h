@@ -33,6 +33,15 @@ namespace llcv {
     float Area() const;
     float Perimeter() const;
     float Charge(const cv::Mat& img) const;
+    void DetectBranching(const cv::Mat& img,
+			 const float rad,
+			 const float thickness,
+			 const int edge_size,
+			 const int branch_size);
+
+
+    const larocv::GEO2D_Contour_t Edges() const { return _edge_pt_v; }
+    const larocv::GEO2D_Contour_t Branches() const { return _branch_pt_v; }
 
   private:
     void Construct();
@@ -51,6 +60,9 @@ namespace llcv {
     
     int _veto_ctor_id;
     int _veto_hull_id;
+
+    larocv::GEO2D_Contour_t _edge_pt_v;
+    larocv::GEO2D_Contour_t _branch_pt_v;
 
   };
 

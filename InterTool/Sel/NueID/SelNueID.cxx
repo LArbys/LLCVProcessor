@@ -267,6 +267,19 @@ namespace llcv {
     _outtree->Branch("par2_polycharge_V_v", &_par2_polycharge_V_v);
     _outtree->Branch("par2_polycharge_Y_v", &_par2_polycharge_Y_v);
 
+    _outtree->Branch("par1_polyedges_U_v", &_par1_polyedges_U_v);
+    _outtree->Branch("par1_polyedges_V_v", &_par1_polyedges_V_v);
+    _outtree->Branch("par1_polyedges_Y_v", &_par1_polyedges_Y_v);
+    _outtree->Branch("par2_polyedges_U_v", &_par2_polyedges_U_v);
+    _outtree->Branch("par2_polyedges_V_v", &_par2_polyedges_V_v);
+    _outtree->Branch("par2_polyedges_Y_v", &_par2_polyedges_Y_v);
+
+    _outtree->Branch("par1_polybranches_U_v", &_par1_polybranches_U_v);
+    _outtree->Branch("par1_polybranches_V_v", &_par1_polybranches_V_v);
+    _outtree->Branch("par1_polybranches_Y_v", &_par1_polybranches_Y_v);
+    _outtree->Branch("par2_polybranches_U_v", &_par2_polybranches_U_v);
+    _outtree->Branch("par2_polybranches_V_v", &_par2_polybranches_V_v);
+    _outtree->Branch("par2_polybranches_Y_v", &_par2_polybranches_Y_v);
     
     
     //
@@ -432,7 +445,10 @@ namespace llcv {
 	auto& par_ctor = par_ctor_v[plane];
 	par_ctor = larocv::FindContours(cimg_mask);
 
-	auto nctor = par_ctor_v[plane].size();	
+	auto nctor = par_ctor.size();
+
+	// number particles == 1 veto
+	if (nctor < 2) continue;
 	
 	larocv::GEO2D_ContourArray_t local_line_contour_v;
 	std::vector<Triangle>        local_triangle_v;
@@ -443,9 +459,6 @@ namespace llcv {
 	local_triangle_v.reserve(nctor);
 	local_edge_v.reserve(nctor);
 	local_line_frac_v.reserve(nctor);
-
-	// number particles == 1 veto
-	if (nctor < 2) continue;
 
 	for(size_t pid=0; pid<(size_t)nctor; ++pid) {
 
@@ -685,7 +698,7 @@ namespace llcv {
     //
     // Detect brem function
     //
-
+    LLCV_DEBUG() << "Detecting brem" << std::endl;
     // mask out all polygons from all particles, find contours in cimg
     std::array<larocv::GEO2D_ContourArray_t,3> cimg_ctor_vv;
     for(size_t plane=0; plane<3; ++plane) {
@@ -745,7 +758,23 @@ namespace llcv {
 
       }
     }
-    
+    LLCV_DEBUG() << "...done" << std::endl;
+
+
+    //
+    // Detect branches for obj2d polygons
+    //
+    LLCV_DEBUG() << "Detecting branches..." << std::endl;
+    for(auto& obj_col : obj_col_v) {
+      for(size_t plane=0; plane<3; ++plane) {
+	if (!obj_col.HasObject(plane)) continue;
+	const auto& cimg = cimg_v[plane];
+	auto& obj2d = obj_col.PlaneObjectRW(plane);
+	for(auto& polygon : obj2d._polygon_v) 
+	  polygon.DetectBranching(cimg,4,2,5,5);
+      }
+    }
+    LLCV_DEBUG() << "...done" << std::endl;
     
     //
     // Write out
@@ -841,6 +870,8 @@ namespace llcv {
 	  (*_par_polyarea_v)[polyid]          = polygon.Area();
 	  (*_par_polyperimeter_v)[polyid]     = polygon.Perimeter();
 	  (*_par_polycharge_v)[polyid]        = polygon.Charge(aimg_v[plane]);
+	  (*_par_polyedges_v)[polyid]         = polygon.Edges().size();
+	  (*_par_polybranches_v)[polyid]      = polygon.Branches().size();
 	}
 
 
@@ -933,14 +964,14 @@ namespace llcv {
 	  if (!obj_col.HasObject(plane)) continue;
 	  const auto& obj2d = obj_col.PlaneObject(plane);
 	
-	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(255,255,0));
+	  // cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.Line()),-1,cv::Scalar(255,255,0));
 	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,obj2d.triangle().AsContour()),-1,cv::Scalar(0,255,255));
 
-	  // const auto & tri_brem = tri_brem_vv[oid][plane];
-	  // cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,tri_brem.AsContour()),-1,cv::Scalar(255,176,102));
-
-	  // for(const auto& poly : obj2d.ExpandedPolygons()) 
-	  //   cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,0,255));
+	  const auto & tri_brem = tri_brem_vv[oid][plane];
+	  cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,tri_brem.AsContour()),-1,cv::Scalar(255,176,102));
+	  
+	  for(const auto& poly : obj2d.ExpandedPolygons()) 
+	    cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,0,255));
 
 	  // for(const auto& poly : obj2d.Polygons()) 
 	  //   cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
@@ -948,7 +979,7 @@ namespace llcv {
 	}
       
 	// _CosmicTag.DrawLines(mat3d);
-	// _CosmicTag.DrawContours(mat3d);
+	_CosmicTag.DrawContours(mat3d);
 	
 	std::stringstream ss;
 
@@ -1573,6 +1604,22 @@ namespace llcv {
     _par2_polycharge_Y_v.clear();
     _par_polycharge_v = nullptr;
 
+    _par1_polyedges_U_v.clear();
+    _par1_polyedges_V_v.clear();
+    _par1_polyedges_Y_v.clear();
+    _par2_polyedges_U_v.clear();
+    _par2_polyedges_V_v.clear();
+    _par2_polyedges_Y_v.clear();
+    _par_polyedges_v = nullptr;
+
+    _par1_polybranches_U_v.clear();
+    _par1_polybranches_V_v.clear();
+    _par1_polybranches_Y_v.clear();
+    _par2_polybranches_U_v.clear();
+    _par2_polybranches_V_v.clear();
+    _par2_polybranches_Y_v.clear();
+    _par_polybranches_v = nullptr;
+
     _par1_electron_frac_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1655,6 +1702,16 @@ namespace llcv {
       throw llcv_err("die");
     }
 
+    if(!_par_polyedges_v) {
+      LLCV_CRITICAL() << "ptr to _par_polyedges_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+
+    if(!_par_polybranches_v) {
+      LLCV_CRITICAL() << "ptr to _par_branches_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+
     
     _par_numberdefects_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
@@ -1682,6 +1739,9 @@ namespace llcv {
 
     _par_polycharge_v->resize(sz,-1.0*larocv::kINVALID_FLOAT);
     
+    _par_polyedges_v->resize(sz,-1.0*larocv::kINVALID_INT);
+
+    _par_polybranches_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
     return;
   }
@@ -1760,6 +1820,8 @@ namespace llcv {
 	_par_polyarea_v          = &_par1_polyarea_U_v;
 	_par_polyperimeter_v     = &_par1_polyperimeter_U_v;
 	_par_polycharge_v        = &_par1_polycharge_U_v;
+	_par_polyedges_v         = &_par1_polyedges_U_v;
+	_par_polybranches_v      = &_par1_polybranches_U_v;
 
 	break;
       }
@@ -1791,6 +1853,9 @@ namespace llcv {
 	_par_polyarea_v          = &_par1_polyarea_V_v;
 	_par_polyperimeter_v     = &_par1_polyperimeter_V_v;
 	_par_polycharge_v        = &_par1_polycharge_V_v;
+	_par_polyedges_v         = &_par1_polyedges_V_v;
+	_par_polybranches_v      = &_par1_polybranches_V_v;
+
 	break;
       }
       case 2: {
@@ -1821,6 +1886,9 @@ namespace llcv {
 	_par_polyarea_v          = &_par1_polyarea_Y_v;
 	_par_polyperimeter_v     = &_par1_polyperimeter_Y_v;
 	_par_polycharge_v        = &_par1_polycharge_Y_v;
+	_par_polyedges_v         = &_par1_polyedges_Y_v;
+	_par_polybranches_v      = &_par1_polybranches_Y_v;
+
 	break;
       }
       default : { break; }
@@ -1858,6 +1926,9 @@ namespace llcv {
 	_par_polyarea_v          = &_par2_polyarea_U_v;
 	_par_polyperimeter_v     = &_par2_polyperimeter_U_v;
 	_par_polycharge_v        = &_par2_polycharge_U_v;
+	_par_polyedges_v         = &_par2_polyedges_U_v;
+	_par_polybranches_v      = &_par2_polybranches_U_v;
+
 	break;
       }
       case 1: {
@@ -1888,6 +1959,9 @@ namespace llcv {
 	_par_polyarea_v          = &_par2_polyarea_V_v;
 	_par_polyperimeter_v     = &_par2_polyperimeter_V_v;
 	_par_polycharge_v        = &_par2_polycharge_V_v;
+	_par_polyedges_v         = &_par2_polyedges_V_v;
+	_par_polybranches_v      = &_par2_polybranches_V_v;
+
 	break;
       }
       case 2: {
@@ -1918,6 +1992,9 @@ namespace llcv {
 	_par_polyarea_v          = &_par2_polyarea_Y_v;
 	_par_polyperimeter_v     = &_par2_polyperimeter_Y_v;
 	_par_polycharge_v        = &_par2_polycharge_Y_v;
+	_par_polyedges_v         = &_par2_polyedges_Y_v;
+	_par_polybranches_v      = &_par2_polybranches_Y_v;
+
 	break;
       }
       default : { break; }

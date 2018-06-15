@@ -12,7 +12,7 @@
 #endif
 
 #include <cassert>
-
+#include <stdexcept>
 
 namespace llcv {
   
@@ -249,6 +249,122 @@ namespace llcv {
     float ret = -1.0*larocv::kINVALID_FLOAT;
     ret = larocv::SumNonZero(larocv::MaskImage(img,_ctor,-1,false));
     return ret;
+  }
+
+  void Polygon::DetectBranching(const cv::Mat& img, const float rad, const float thickness,const int edge_size, const int branch_size) {
+
+    _edge_pt_v.clear();
+    _branch_pt_v.clear();
+
+    if (_ctor.empty()) return;
+    
+    std::vector<std::vector<const geo2d::Vector<int>*> > xs_vv;
+    xs_vv.clear();
+
+    auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(img,_ctor,-1,false));
+
+    for(const auto& nz_pt : nz_pt_v) {
+      geo2d::Circle<float> circle(nz_pt.x, nz_pt.y,rad);
+      auto ret_v = larocv::OnCircleGroups(img,circle);
+      int ctr=0;
+      for(const auto& ret : ret_v) {
+	if (!larocv::Connected(img,ret,circle.center,thickness))
+	  continue;
+	ctr++;
+      }
+
+      if (ctr >= (int)xs_vv.size())
+	xs_vv.resize(ctr+1);
+
+      auto& xs_v = xs_vv[ctr];
+      xs_v.push_back(&nz_pt);
+    }
+    
+    if (xs_vv.size()<=1) return; // ignore 0 point crossings (0)
+
+    auto blank_img = larocv::BlankImage(img,0);
+    
+    //
+    // detect edges
+    //
+    const auto& xs_v = xs_vv.at(1);
+    for(const auto xs : xs_v) {
+      if (!xs) throw std::runtime_error("invalid point");
+      blank_img.at<uchar>(xs->y,xs->x) = (uchar)255;
+    }
+
+    auto edge_ctor_v = larocv::FindContours(blank_img);
+
+    for(const auto& edge_ctor : edge_ctor_v) {
+      auto nz_edge_pt_v = larocv::FindNonZero(larocv::MaskImage(blank_img,edge_ctor,-1,false));
+      if ((int)nz_edge_pt_v.size() < edge_size) continue;
+      float mx,my;
+      mx=my=0.0;
+      for(const auto& nz_edge_pt : nz_pt_v) {
+	mx += nz_edge_pt.x;
+	my += nz_edge_pt.y;
+      }
+      mx /= (float)nz_pt_v.size();
+      my /= (float)nz_pt_v.size();
+      geo2d::Vector<float> mid_pt(mx,my);
+      geo2d::Vector<float> edge_pt;
+
+      float min_dist = larocv::kINVALID_FLOAT;
+      for(const auto& nz_edge_pt : nz_edge_pt_v) {
+	float distance = geo2d::dist(geo2d::Vector<float>(nz_edge_pt.x,nz_edge_pt.y),mid_pt);
+	if (distance < min_dist) {
+	  min_dist = distance;
+	  edge_pt.x = nz_edge_pt.x;
+	  edge_pt.y = nz_edge_pt.y;
+	}
+      } // end edge point
+
+      _edge_pt_v.emplace_back(edge_pt.x,edge_pt.y);
+    } // end this grouping
+    
+    if (xs_vv.size() <= 3) return; // ignore 2 point or less crossing (0,1,2)
+
+    blank_img.setTo(0);
+
+    //
+    // detect branches
+    //
+    for(size_t bid=3; bid < xs_vv.size(); ++bid) {
+      const auto& xs_v = xs_vv.at(bid);
+      for(const auto xs : xs_v) {
+	if (!xs) throw std::runtime_error("invalid point");
+	blank_img.at<uchar>(xs->y,xs->x) = 255;
+      }
+    }
+
+    auto branch_ctor_v = larocv::FindContours(blank_img);
+    for(const auto& branch_ctor : branch_ctor_v) {
+      auto nz_branch_pt_v = larocv::FindNonZero(larocv::MaskImage(blank_img,branch_ctor,-1,false));
+      if ((int)nz_branch_pt_v.size() < branch_size) continue;
+      float mx,my;
+      mx=my=0.0;
+      for(const auto& nz_branch_pt : nz_branch_pt_v) {
+	mx += nz_branch_pt.x;
+	my += nz_branch_pt.y;
+      }
+      mx /= (float)nz_pt_v.size();
+      my /= (float)nz_pt_v.size();
+      geo2d::Vector<float> mid_pt(mx,my);
+      geo2d::Vector<float> branch_pt; 
+      float min_dist = larocv::kINVALID_FLOAT;
+      for(const auto& nz_branch_pt : nz_branch_pt_v) {
+	float distance = geo2d::dist(geo2d::Vector<float>(nz_branch_pt.x,nz_branch_pt.y),mid_pt);
+	if (distance < min_dist) {
+	  min_dist = distance;
+	  branch_pt.x = nz_branch_pt.x;
+	  branch_pt.y = nz_branch_pt.y;
+	}
+      } // end branch
+      
+      _branch_pt_v.emplace_back(branch_pt.x,branch_pt.y);
+    } // end this grouping
+    
+    return;
   }
 
 }
