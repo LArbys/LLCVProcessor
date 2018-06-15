@@ -300,12 +300,12 @@ namespace llcv {
       if ((int)nz_edge_pt_v.size() < edge_size) continue;
       float mx,my;
       mx=my=0.0;
-      for(const auto& nz_edge_pt : nz_pt_v) {
+      for(const auto& nz_edge_pt : nz_edge_pt_v) {
 	mx += nz_edge_pt.x;
 	my += nz_edge_pt.y;
       }
-      mx /= (float)nz_pt_v.size();
-      my /= (float)nz_pt_v.size();
+      mx /= (float)nz_edge_pt_v.size();
+      my /= (float)nz_edge_pt_v.size();
       geo2d::Vector<float> mid_pt(mx,my);
       geo2d::Vector<float> edge_pt;
 
@@ -333,7 +333,7 @@ namespace llcv {
       const auto& xs_v = xs_vv.at(bid);
       for(const auto xs : xs_v) {
 	if (!xs) throw std::runtime_error("invalid point");
-	blank_img.at<uchar>(xs->y,xs->x) = 255;
+	blank_img.at<uchar>(xs->y,xs->x) = (uchar)255;
       }
     }
 
@@ -347,8 +347,8 @@ namespace llcv {
 	mx += nz_branch_pt.x;
 	my += nz_branch_pt.y;
       }
-      mx /= (float)nz_pt_v.size();
-      my /= (float)nz_pt_v.size();
+      mx /= (float)nz_branch_pt_v.size();
+      my /= (float)nz_branch_pt_v.size();
       geo2d::Vector<float> mid_pt(mx,my);
       geo2d::Vector<float> branch_pt; 
       float min_dist = larocv::kINVALID_FLOAT;
