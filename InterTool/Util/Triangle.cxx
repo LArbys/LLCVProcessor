@@ -384,6 +384,19 @@ namespace llcv {
     return res;
   }
 
+  float Triangle::Coverage(const cv::Mat& img) const {
+    float res = -1;
+    
+    auto mask = larocv::MaskImage(img,_ctor,-1,false);
+    float mask_area = larocv::CountNonZero(mask);
+    float mask_area_triangle = larocv::CountNonZero(larocv::MaskImage(mask,this->AsContour(),-1,false));
+
+    if (mask_area > 0)
+      res = mask_area_triangle / mask_area;
+
+    return res;
+  }
+
   float Triangle::BaseLength() const {
     float res = -1;
     

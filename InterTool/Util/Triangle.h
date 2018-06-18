@@ -23,6 +23,7 @@ namespace llcv {
     float StraightLineTest(const cv::Mat& img) const;
     void Extend(const float fraction);
     Triangle RotateToPoint(const geo2d::Vector<float>& pt,float scale) const;
+    void SetContour(const larocv::GEO2D_Contour_t& ctor) { _ctor = ctor; }
 
 
   private:
@@ -46,6 +47,8 @@ namespace llcv {
     float BaseLength() const;
     float Area() const;
 
+    float Coverage(const cv::Mat& img) const;
+    
 
   private:
     geo2d::Vector<float> _apex;

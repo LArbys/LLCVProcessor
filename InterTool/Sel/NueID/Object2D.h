@@ -10,10 +10,11 @@ namespace llcv {
 
   class Object2D {
   public:
-    Object2D() {}
+    Object2D(){}
     ~Object2D() {}
     
     Triangle _triangle;
+    Triangle _brem_triangle;
 
     // list of "large enough" clusters which consititue 2D particle
     std::vector<Polygon> _polygon_v; 
@@ -30,6 +31,8 @@ namespace llcv {
     // 3D length estimated from plane
     float _length;
 
+    int _brem_index;
+
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
     const geo2d::Vector<float>& Start() const { return _triangle.Apex(); }
@@ -38,6 +41,7 @@ namespace llcv {
     float LineFrac() const { return _line_frac; }
     
     const Triangle& triangle() const { return _triangle; }
+    const Triangle& brem_triangle() const { return _brem_triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
     const std::vector<Polygon>& ExpandedPolygons() const { return _expand_polygon_v; }
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
@@ -50,6 +54,8 @@ namespace llcv {
     float Charge(const cv::Mat& mat) const;
     
     float Length() const { return _length; }
+
+    int BremIndex() const { return _brem_index; }
 
   };
 

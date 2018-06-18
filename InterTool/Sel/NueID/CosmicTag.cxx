@@ -39,9 +39,8 @@ namespace llcv {
       auto& cosmic_line_ctor_v = _cosmic_line_ctor_vv[eid];
 	
       cosmic_line_ctor_v = _LineFollow.FollowEdgeLine(geo2d::Vector<float>(edge.x,edge.y));
-	
-      // only edge point is found
-      if (cosmic_line_ctor_v.size()<2) continue; 
+
+      if (cosmic_line_ctor_v.empty()) continue; 
 
       auto cosmic_ctor = LinesToContour(cosmic_line_ctor_v);
 

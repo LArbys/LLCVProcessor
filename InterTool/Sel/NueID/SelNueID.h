@@ -221,6 +221,14 @@ namespace llcv {
     float _par2_triangle_brem_Y;
     float* _par_triangle_brem;
 
+    float _par1_triangle_coverage_U;
+    float _par1_triangle_coverage_V;
+    float _par1_triangle_coverage_Y;
+    float _par2_triangle_coverage_U;
+    float _par2_triangle_coverage_V;
+    float _par2_triangle_coverage_Y;
+    float* _par_triangle_coverage;
+
     float _par1_expand_charge_U;
     float _par1_expand_charge_V;
     float _par1_expand_charge_Y;
@@ -228,6 +236,14 @@ namespace llcv {
     float _par2_expand_charge_V;
     float _par2_expand_charge_Y;
     float *_par_expand_charge;
+
+    int _par1_brem_idx_U;
+    int _par1_brem_idx_V;
+    int _par1_brem_idx_Y;
+    int _par2_brem_idx_U;
+    int _par2_brem_idx_V;
+    int _par2_brem_idx_Y;
+    int *_par_brem_idx;
 
     float _par1_length3d_U;
     float _par1_length3d_V;
