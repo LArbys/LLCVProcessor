@@ -13,7 +13,7 @@ namespace llcv {
     _match_three_planes = pset.get<bool>  ("MatchThreePlanes",true);
     _three_planes_boost = pset.get<float> ("ThreePlanesBoost",1.1);
     // _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
-    _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.15);
+    _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
   }
 
     

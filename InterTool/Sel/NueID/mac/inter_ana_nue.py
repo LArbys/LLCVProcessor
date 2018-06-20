@@ -8,7 +8,7 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 IS_MC      = int(str(sys.argv[7]))
 OUT_DIR    = str(sys.argv[8])
-EVENT = int(sys.argv[9])
+#EVENT = int(sys.argv[9])
 
 import ROOT
 from larlitecv import larlitecv
@@ -40,15 +40,16 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-# driver.AttachInterFile(INTER_FILE,"inter_tree")
+#driver.AttachInterFile(INTER_FILE,"inter_tree")
 
-NUM = 1
-# NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-driver.SetOutputFilename("nueid_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM));
+#NUM = 1
+NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
+driver.SetOutputFilename("nueid_ana_%d.root" % NUM);
 
 selection = llcv.SelNueID()
 selection.SetIsMC(IS_MC)
-selection.SetDebug(True)
+#selection.SetDebug(True)
+
 driver.AddSelection(selection);
 
 # process
@@ -69,7 +70,7 @@ proc.add_ll_input_file(TRK_FILE)
 
 proc.initialize()
 
-#proc.batch_process_lcv_reverse(EVENT,1)
+#proc.batch_process_lcv_reverse(16,1)
 proc.batch_process_lcv_reverse()
 
 proc.finalize()
