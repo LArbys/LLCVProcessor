@@ -93,6 +93,19 @@ namespace llcv {
     float _vertex_z;
     
     int _n_par;
+
+    int _vtx_xing_U;
+    int _vtx_xing_V;
+    int _vtx_xing_Y;
+
+    std::vector<float> _vtx_linelen_U_v;
+    std::vector<float> _vtx_linelen_V_v;
+    std::vector<float> _vtx_linelen_Y_v;
+
+    std::vector<float> _vtx_linefrac_U_v;
+    std::vector<float> _vtx_linefrac_V_v;
+    std::vector<float> _vtx_linefrac_Y_v;
+
     std::vector<float> _edge_dist_v;
     std::vector<int>   _edge_n_cosmic_v;
     std::vector<float> _edge_cosmic_vtx_dist_v;
