@@ -220,74 +220,35 @@ namespace llcv {
 
     _outtree->Branch("par1_smallestdefect_U_v", &_par1_smallestdefect_U_v);
     _outtree->Branch("par1_smallestdefect_V_v", &_par1_smallestdefect_V_v);
+    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
+    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
+    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
+    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
 
+    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
+    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
+    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);
+    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
     _outtree->Branch("par2_largestdefect_ns_V_v", &_par2_largestdefect_ns_V_v);
+    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);
+    
+    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
+    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
+    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
+    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);
+    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);
+    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
 
-    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
+    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
+    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
+    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
+    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
+    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);
+    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);
 
     _outtree->Branch("par1_emptyarea_U_v", &_par1_emptyarea_U_v);
-
-    _outtree->Branch("par1_smallestdefect_V_v", &_par1_smallestdefect_V_v);
-
-    _outtree->Branch("par2_largestdefect_ns_V_v", &_par2_largestdefect_ns_V_v);
-
-    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
-
-    _outtree->Branch("par1_emptyarea_U_v", &_par1_emptyarea_U_v);    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
-    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
-    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
-
-    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
-
-
-
-    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
-    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
-    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
-
-    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
-
-    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
-
-    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
-
-    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
-    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);
-
-    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
-
-    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
-
-    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
-    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
-    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
-    
-    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
-
-    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
-
-
-
-    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
-    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
-    
-    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
-
-    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
-
-    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
-
-    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
-    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
-
-    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
-
-    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
-
-    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
-    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
-
-    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
+    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);
+    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
     _outtree->Branch("par2_emptyarea_U_v", &_par2_emptyarea_U_v);
     _outtree->Branch("par2_emptyarea_V_v", &_par2_emptyarea_V_v);
     _outtree->Branch("par2_emptyarea_Y_v", &_par2_emptyarea_Y_v);
