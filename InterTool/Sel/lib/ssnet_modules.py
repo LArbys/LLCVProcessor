@@ -15,7 +15,7 @@ def Mask(prefix=""):
 
 def Image(prefix=""):
     name = "%sImage" % prefix
-    return lcv.MaskImage(ROOT.std.string(Name))
+    return lcv.MaskImage(ROOT.std.string(name))
 
 
 def attach_ssnet(proc):

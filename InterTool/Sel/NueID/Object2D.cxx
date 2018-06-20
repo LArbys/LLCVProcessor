@@ -115,6 +115,24 @@ namespace llcv {
     return res;
   }
 
+  float Object2D::Fraction(const cv::Mat& img1, const cv::Mat& img2) const {
+    float res = 0;
+
+    float top = 0;
+    float bot = 0;
+
+    for(const auto& poly : _expand_polygon_v) {
+      top += larocv::CountNonZero(larocv::MaskImage(img1,poly.Contour(),-1,false));
+      bot += larocv::CountNonZero(larocv::MaskImage(img2,poly.Contour(),-1,false));
+    }
+
+    if (bot != 0)
+      res = top / bot;
+
+    return res;
+  }
+
+
 }
 
 #endif

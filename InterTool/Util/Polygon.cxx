@@ -367,6 +367,18 @@ namespace llcv {
     return;
   }
 
+  float Polygon::Fraction(const cv::Mat& img1, const cv::Mat& img2) const {
+    float res = 0.0;
+    
+    float top = larocv::CountNonZero(larocv::MaskImage(img1,_ctor,-1,false));
+    float bot = larocv::CountNonZero(larocv::MaskImage(img2,_ctor,-1,false));
+
+    if (bot != 0)
+      res = top / bot;
+
+    return res;
+  }
+
 }
 
 #endif

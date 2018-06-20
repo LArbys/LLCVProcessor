@@ -189,6 +189,13 @@ namespace llcv {
     _outtree->Branch("par2_length3d_U", &_par2_length3d_U, "par2_length3d_U/F");
     _outtree->Branch("par2_length3d_V", &_par2_length3d_V, "par2_length3d_V/F");
     _outtree->Branch("par2_length3d_Y", &_par2_length3d_Y, "par2_length3d_Y/F");
+
+    _outtree->Branch("par1_showerfrac_U", &_par1_showerfrac_U, "par1_showerfrac_U/F");
+    _outtree->Branch("par1_showerfrac_V", &_par1_showerfrac_V, "par1_showerfrac_V/F");
+    _outtree->Branch("par1_showerfrac_Y", &_par1_showerfrac_Y, "par1_showerfrac_Y/F");
+    _outtree->Branch("par2_showerfrac_U", &_par2_showerfrac_U, "par2_showerfrac_U/F");
+    _outtree->Branch("par2_showerfrac_V", &_par2_showerfrac_V, "par2_showerfrac_V/F");
+    _outtree->Branch("par2_showerfrac_Y", &_par2_showerfrac_Y, "par2_showerfrac_Y/F");
     
     _outtree->Branch("par1_numberdefects_U_v", &_par1_numberdefects_U_v);
     _outtree->Branch("par1_numberdefects_V_v", &_par1_numberdefects_V_v);
@@ -213,35 +220,74 @@ namespace llcv {
 
     _outtree->Branch("par1_smallestdefect_U_v", &_par1_smallestdefect_U_v);
     _outtree->Branch("par1_smallestdefect_V_v", &_par1_smallestdefect_V_v);
-    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
-    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
-    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
-    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
 
-    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
-    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
-    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);
-    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
     _outtree->Branch("par2_largestdefect_ns_V_v", &_par2_largestdefect_ns_V_v);
-    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);
-    
-    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
-    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
-    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
-    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);
-    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);
-    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
 
-    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
-    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
-    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
-    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
-    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);
-    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);
+    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
 
     _outtree->Branch("par1_emptyarea_U_v", &_par1_emptyarea_U_v);
-    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);
-    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
+
+    _outtree->Branch("par1_smallestdefect_V_v", &_par1_smallestdefect_V_v);
+
+    _outtree->Branch("par2_largestdefect_ns_V_v", &_par2_largestdefect_ns_V_v);
+
+    _outtree->Branch("par2_smallestdefect_ns_U_v", &_par2_smallestdefect_ns_U_v);    _outtree->Branch("par1_emptyarearatio_V_v", &_par1_emptyarearatio_V_v);
+
+    _outtree->Branch("par1_emptyarea_U_v", &_par1_emptyarea_U_v);    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
+    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
+    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
+
+    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
+
+
+
+    _outtree->Branch("par1_smallestdefect_Y_v", &_par1_smallestdefect_Y_v);
+    _outtree->Branch("par1_largestdefect_ns_U_v", &_par1_largestdefect_ns_U_v);
+    _outtree->Branch("par2_largestdefect_ns_Y_v", &_par2_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_Y_v", &_par1_smallestdefect_ns_Y_v);
+
+    _outtree->Branch("par1_emptyarearatio_Y_v", &_par1_emptyarearatio_Y_v);
+
+    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
+
+    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
+
+    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
+    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);
+
+    _outtree->Branch("par2_smallestdefect_U_v", &_par2_smallestdefect_U_v);
+
+    _outtree->Branch("par2_largestdefect_ns_U_v", &_par2_largestdefect_ns_U_v);
+
+    _outtree->Branch("par2_smallestdefect_ns_V_v", &_par2_smallestdefect_ns_V_v);    _outtree->Branch("par1_emptyarearatio_U_v", &_par1_emptyarearatio_U_v);
+    _outtree->Branch("par2_emptyarearatio_Y_v", &_par2_emptyarearatio_Y_v);    _outtree->Branch("par1_emptyarea_V_v", &_par1_emptyarea_V_v);    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
+    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
+    
+    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
+
+    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
+
+
+
+    _outtree->Branch("par2_smallestdefect_V_v", &_par2_smallestdefect_V_v);
+    _outtree->Branch("par1_largestdefect_ns_V_v", &_par1_largestdefect_ns_V_v);
+    
+    _outtree->Branch("par1_smallestdefect_ns_V_v", &_par1_smallestdefect_ns_V_v);
+
+    _outtree->Branch("par2_emptyarearatio_U_v", &_par2_emptyarearatio_U_v);
+
+    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
+
+    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
+    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
+
+    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
+
+    _outtree->Branch("par2_smallestdefect_Y_v", &_par2_smallestdefect_Y_v);
+
+    _outtree->Branch("par1_largestdefect_ns_Y_v", &_par1_largestdefect_ns_Y_v);    _outtree->Branch("par1_smallestdefect_ns_U_v", &_par1_smallestdefect_ns_U_v);
+    _outtree->Branch("par2_smallestdefect_ns_Y_v", &_par2_smallestdefect_ns_Y_v); 
+
+    _outtree->Branch("par2_emptyarearatio_V_v", &_par2_emptyarearatio_V_v);    _outtree->Branch("par1_emptyarea_Y_v", &_par1_emptyarea_Y_v);
     _outtree->Branch("par2_emptyarea_U_v", &_par2_emptyarea_U_v);
     _outtree->Branch("par2_emptyarea_V_v", &_par2_emptyarea_V_v);
     _outtree->Branch("par2_emptyarea_Y_v", &_par2_emptyarea_Y_v);
@@ -294,6 +340,13 @@ namespace llcv {
     _outtree->Branch("par2_polybranches_U_v", &_par2_polybranches_U_v);
     _outtree->Branch("par2_polybranches_V_v", &_par2_polybranches_V_v);
     _outtree->Branch("par2_polybranches_Y_v", &_par2_polybranches_Y_v);
+
+    _outtree->Branch("par1_showerfrac_U_v", &_par1_showerfrac_U_v);
+    _outtree->Branch("par1_showerfrac_V_v", &_par1_showerfrac_V_v);
+    _outtree->Branch("par1_showerfrac_Y_v", &_par1_showerfrac_Y_v);
+    _outtree->Branch("par2_showerfrac_U_v", &_par2_showerfrac_U_v);
+    _outtree->Branch("par2_showerfrac_V_v", &_par2_showerfrac_V_v);
+    _outtree->Branch("par2_showerfrac_Y_v", &_par2_showerfrac_Y_v);
     
     
     //
@@ -341,6 +394,7 @@ namespace llcv {
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
     auto img_v  = Image().Image<larcv::Image2D>(kImageADC,_cropx,_cropy);
     auto dead_v = Image().Image<cv::Mat>(kImageDead,_cropx,_cropy);
+    auto shr_v  = Image().Image<cv::Mat>(kImageShower,_cropx,_cropy);
     
     _white_img = larocv::BlankImage(*(mat_v.front()),0);
     _white_img.setTo(cv::Scalar(0));
@@ -868,7 +922,8 @@ namespace llcv {
 	*_par_expand_charge           = obj2d.Charge(aimg_v[plane]);
 	*_par_length3d                = obj2d.Length();
 	*_par_brem_idx                = obj2d.BremIndex();
-
+	*_par_showerfrac              = obj2d.Fraction(*shr_v[plane],aimg_v[plane]);
+	
 	(*_par_cosmic_dist_v)[plane] = NearestPolygonToCosmic(obj2d.Polygons(),plane);
 
 	ResizePlanePolygon(npolygons);
@@ -890,6 +945,7 @@ namespace llcv {
 	  (*_par_polycharge_v)[polyid]        = polygon.Charge(aimg_v[plane]);
 	  (*_par_polyedges_v)[polyid]         = (int)polygon.Edges().size();
 	  (*_par_polybranches_v)[polyid]      = (int)polygon.Branches().size();
+	  (*_par_showerfrac_v)[polyid]        = (int)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
 	}
 
 
@@ -1540,6 +1596,14 @@ namespace llcv {
     _par2_length3d_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_length3d_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_length3d = nullptr;
+
+    _par1_showerfrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_showerfrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_showerfrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_showerfrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_showerfrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_showerfrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_showerfrac = nullptr;
     
     _par1_numberdefects_U_v.clear();
     _par1_numberdefects_V_v.clear();
@@ -1661,6 +1725,14 @@ namespace llcv {
     _par2_polybranches_Y_v.clear();
     _par_polybranches_v = nullptr;
 
+    _par1_showerfrac_U_v.clear();
+    _par1_showerfrac_V_v.clear();
+    _par1_showerfrac_Y_v.clear();
+    _par2_showerfrac_U_v.clear();
+    _par2_showerfrac_V_v.clear();
+    _par2_showerfrac_Y_v.clear();
+    _par_showerfrac_v = nullptr;
+
     _par1_electron_frac_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_electron_frac_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1753,6 +1825,11 @@ namespace llcv {
       throw llcv_err("die");
     }
 
+    if(!_par_showerfrac_v) {
+      LLCV_CRITICAL() << "ptr to _par_showerfrac_v is null" << std::endl;
+      throw llcv_err("die");
+    }
+
     
     _par_numberdefects_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
@@ -1783,6 +1860,8 @@ namespace llcv {
     _par_polyedges_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
     _par_polybranches_v->resize(sz,-1.0*larocv::kINVALID_INT);
+
+    _par_showerfrac_v->resize(sz,-1.0*larocv::kINVALID_INT);
 
     return;
   }
@@ -1849,6 +1928,7 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_U;
 	_par_expand_charge           = &_par1_expand_charge_U;
 	_par_length3d                = &_par1_length3d_U;
+	_par_showerfrac              = &_par1_showerfrac_U;
 
 	_par_numberdefects_v     = &_par1_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_U_v;
@@ -1865,6 +1945,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par1_polycharge_U_v;
 	_par_polyedges_v         = &_par1_polyedges_U_v;
 	_par_polybranches_v      = &_par1_polybranches_U_v;
+	_par_showerfrac_v        = &_par1_showerfrac_U_v;
 
 	break;
       }
@@ -1884,6 +1965,7 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_V;
 	_par_expand_charge           = &_par1_expand_charge_V;
 	_par_length3d                = &_par1_length3d_V;
+	_par_showerfrac              = &_par1_showerfrac_V;
 
 	_par_numberdefects_v     = &_par1_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_V_v;
@@ -1900,6 +1982,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par1_polycharge_V_v;
 	_par_polyedges_v         = &_par1_polyedges_V_v;
 	_par_polybranches_v      = &_par1_polybranches_V_v;
+	_par_showerfrac_v        = &_par1_showerfrac_V_v;
 
 	break;
       }
@@ -1919,6 +2002,7 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_Y;
 	_par_expand_charge           = &_par1_expand_charge_Y;
 	_par_length3d                = &_par1_length3d_Y;
+	_par_showerfrac              = &_par1_showerfrac_Y;
 
 	_par_numberdefects_v     = &_par1_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_Y_v;
@@ -1935,6 +2019,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par1_polycharge_Y_v;
 	_par_polyedges_v         = &_par1_polyedges_Y_v;
 	_par_polybranches_v      = &_par1_polybranches_Y_v;
+	_par_showerfrac_v        = &_par1_showerfrac_Y_v;
 
 	break;
       }
@@ -1961,6 +2046,7 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_U;
 	_par_expand_charge           = &_par2_expand_charge_U;
 	_par_length3d                = &_par2_length3d_U;
+	_par_showerfrac              = &_par2_showerfrac_U;
 
 	_par_numberdefects_v     = &_par2_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_U_v;
@@ -1977,6 +2063,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par2_polycharge_U_v;
 	_par_polyedges_v         = &_par2_polyedges_U_v;
 	_par_polybranches_v      = &_par2_polybranches_U_v;
+	_par_showerfrac_v        = &_par2_showerfrac_U_v;
 
 	break;
       }
@@ -1996,6 +2083,7 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_V;
 	_par_expand_charge           = &_par2_expand_charge_V;
 	_par_length3d                = &_par2_length3d_V;
+	_par_showerfrac              = &_par2_showerfrac_V;
 
 	_par_numberdefects_v     = &_par2_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_V_v;
@@ -2012,6 +2100,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par2_polycharge_V_v;
 	_par_polyedges_v         = &_par2_polyedges_V_v;
 	_par_polybranches_v      = &_par2_polybranches_V_v;
+	_par_showerfrac_v        = &_par2_showerfrac_V_v;
 
 	break;
       }
@@ -2031,6 +2120,7 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_Y;
 	_par_expand_charge           = &_par2_expand_charge_Y;
 	_par_length3d                = &_par2_length3d_Y;
+	_par_showerfrac              = &_par2_showerfrac_Y;
 
 	_par_numberdefects_v     = &_par2_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_Y_v;
@@ -2047,6 +2137,7 @@ namespace llcv {
 	_par_polycharge_v        = &_par2_polycharge_Y_v;
 	_par_polyedges_v         = &_par2_polyedges_Y_v;
 	_par_polybranches_v      = &_par2_polybranches_Y_v;
+	_par_showerfrac_v        = &_par2_showerfrac_Y_v;
 
 	break;
       }

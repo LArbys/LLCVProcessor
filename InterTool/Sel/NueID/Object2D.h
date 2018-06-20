@@ -57,6 +57,8 @@ namespace llcv {
 
     int BremIndex() const { return _brem_index; }
 
+    float Fraction(const cv::Mat& img1, const cv::Mat& img2) const;
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {

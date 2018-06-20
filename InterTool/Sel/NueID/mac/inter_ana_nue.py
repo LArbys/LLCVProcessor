@@ -23,10 +23,14 @@ TOP_DIR = os.environ['LARLITECV_BASEDIR']
 TOP_DIR = os.path.join(TOP_DIR,"app","LLCVProcessor","InterTool")
 sys.path.insert(0,os.path.join(TOP_DIR,"Sel"))
 
+from lib.ssnet_modules import attach_ssnet
 from lib.dead_modules import attach_dead
 
 # proc
 proc = llcv.Processor()
+
+# attach SSNet
+attach_ssnet(proc)
 
 # attach dead wire maker
 attach_dead(proc)
@@ -44,6 +48,7 @@ driver.SetOutputFilename("nueid_ana_%s_%d.root" % (INTER_FILE.split(".")[0],NUM)
 
 selection = llcv.SelNueID()
 selection.SetIsMC(IS_MC)
+selection.SetDebug(True)
 driver.AddSelection(selection);
 
 # process

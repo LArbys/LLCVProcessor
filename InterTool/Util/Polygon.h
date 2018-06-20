@@ -43,6 +43,8 @@ namespace llcv {
     const larocv::GEO2D_Contour_t Edges() const { return _edge_pt_v; }
     const larocv::GEO2D_Contour_t Branches() const { return _branch_pt_v; }
 
+    float Fraction(const cv::Mat& img1, const cv::Mat& img2) const;
+
   private:
     void Construct();
     void VetoStartPoint();

@@ -253,6 +253,14 @@ namespace llcv {
     float _par2_length3d_Y;
     float *_par_length3d;
 
+    float _par1_showerfrac_U;
+    float _par1_showerfrac_V;
+    float _par1_showerfrac_Y;
+    float _par2_showerfrac_U;
+    float _par2_showerfrac_V;
+    float _par2_showerfrac_Y;
+    float *_par_showerfrac;
+
     std::vector<int> _par1_numberdefects_U_v;
     std::vector<int> _par1_numberdefects_V_v;
     std::vector<int> _par1_numberdefects_Y_v;
@@ -373,6 +381,13 @@ namespace llcv {
     std::vector<int> _par2_polybranches_Y_v;
     std::vector<int>* _par_polybranches_v;
 
+    std::vector<float> _par1_showerfrac_U_v;
+    std::vector<float> _par1_showerfrac_V_v;
+    std::vector<float> _par1_showerfrac_Y_v;
+    std::vector<float> _par2_showerfrac_U_v;
+    std::vector<float> _par2_showerfrac_V_v;
+    std::vector<float> _par2_showerfrac_Y_v;
+    std::vector<float>* _par_showerfrac_v;
 
     float _par1_electron_frac_U;
     float _par1_electron_frac_V;
