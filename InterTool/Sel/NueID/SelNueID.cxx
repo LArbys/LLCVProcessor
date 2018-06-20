@@ -49,11 +49,25 @@ namespace llcv {
     //
     // vertex information
     //
-    _outtree->Branch("n_par"                 , &_n_par    , "n_par/I");
+    _outtree->Branch("n_par"     , &_n_par     , "n_par/I");
+
+    _outtree->Branch("vtx_xing_U", &_vtx_xing_U, "vtx_xing_U/I");
+    _outtree->Branch("vtx_xing_V", &_vtx_xing_V, "vtx_xing_V/I");
+    _outtree->Branch("vtx_xing_Y", &_vtx_xing_Y, "vtx_xing_Y/I");
+
+    _outtree->Branch("vtx_linelen_U_v", &_vtx_linelen_U_v);
+    _outtree->Branch("vtx_linelen_V_v", &_vtx_linelen_V_v);
+    _outtree->Branch("vtx_linelen_Y_v", &_vtx_linelen_Y_v);
+
+    _outtree->Branch("vtx_linefrac_U_v", &_vtx_linefrac_U_v);
+    _outtree->Branch("vtx_linefrac_V_v", &_vtx_linefrac_V_v);
+    _outtree->Branch("vtx_linefrac_Y_v", &_vtx_linefrac_Y_v);
+
     _outtree->Branch("edge_dist_v"           , &_edge_dist_v);
     _outtree->Branch("edge_n_cosmic_v"       , &_edge_n_cosmic_v);
     _outtree->Branch("edge_cosmic_vtx_dist_v", &_edge_cosmic_vtx_dist_v);
-    
+
+
     //
     // 3D information
     //
@@ -541,7 +555,6 @@ namespace llcv {
     } // end plane
 
     
-
     //
     // get the max, min, time for contours
     //
@@ -663,7 +676,7 @@ namespace llcv {
 
 	if (npar_pixels > 0)
 	  nratio = nline_pixels / npar_pixels;
-
+	
 	object._triangle  = triangle;
 	object._line      = line_ctor;
 	object._line_frac = nratio;
@@ -807,13 +820,31 @@ namespace llcv {
     }
     LLCV_DEBUG() << "...done" << std::endl;
     
-    //
-    // Write out
-    //
     ResetEvent();
 
     // number of matched particles
     _n_par = (int)obj_col_v.size();
+
+    for(size_t plane=0; plane<3; ++plane) {
+      for(const auto& object : object_vv[plane]) {
+	if (plane==0) {
+	  _vtx_xing_U = (int)object_vv[plane].size();
+	  _vtx_linelen_U_v.push_back(object.LineLength());
+	  _vtx_linefrac_U_v.push_back(object.LineFrac());
+	}
+	if (plane==1) {
+	  _vtx_xing_V = (int)object_vv[plane].size();
+	  _vtx_linelen_V_v.push_back(object.LineLength());
+	  _vtx_linefrac_V_v.push_back(object.LineFrac());
+	}
+	if (plane==2) {
+	  _vtx_xing_Y = (int)object_vv[plane].size();
+	  _vtx_linelen_Y_v.push_back(object.LineLength());
+	  _vtx_linefrac_Y_v.push_back(object.LineFrac());
+	}
+      }
+    }
+
 
     // distance of vertex contour to edge
     for(size_t plane=0; plane<3; ++plane) {
@@ -909,11 +940,9 @@ namespace llcv {
 	  (*_par_showerfrac_v)[polyid]        = (int)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
 	}
 
-
       }
 
     }
-
 
     if (_ismc) {
 
@@ -1388,6 +1417,18 @@ namespace llcv {
     _edge_n_cosmic_v.resize(3,-1);
     _edge_cosmic_vtx_dist_v.clear();
     _edge_cosmic_vtx_dist_v.resize(3,-1);
+
+    _vtx_xing_U = -1.0*larocv::kINVALID_INT;
+    _vtx_xing_V = -1.0*larocv::kINVALID_INT;
+    _vtx_xing_Y = -1.0*larocv::kINVALID_INT;
+
+    _vtx_linelen_U_v.clear();
+    _vtx_linelen_V_v.clear();
+    _vtx_linelen_Y_v.clear();
+
+    _vtx_linefrac_U_v.clear();
+    _vtx_linefrac_V_v.clear();
+    _vtx_linefrac_Y_v.clear();
 
     //
     // 3D information
