@@ -224,7 +224,7 @@ namespace llcv {
     
     bool cross_particle = false;
     
-    geo2d::Vector<float> pre_pt(0,0);
+    geo2d::Vector<float> pre_pt(-1,-1);
 
     // while inside boundary or at particle, keep stepping
     while(InBoundary(ret) or AtParticle(ret)) {
@@ -259,7 +259,10 @@ namespace llcv {
     if(!cross_particle)
       return edge;
 
-    return pre_pt;
+    if (pre_pt.x > 0)
+      ret = pre_pt;
+
+    return ret;
   }
   
   
