@@ -32,6 +32,9 @@ namespace llcv {
     _CosmicTag_v.clear();
     _CosmicTag_v.resize(3);
 
+    _LineExtension_v.clear();
+    _LineExtension_v.resize(3);
+
     _brem_dist = pset.get<float>("BremDistance",50);
     _brem_size = pset.get<int>("BremSize",6);
 
@@ -392,6 +395,7 @@ namespace llcv {
       dimg_v[plane]   = *(dead_v[plane]);
       
       // tag cosmics
+      LLCV_DEBUG() << "Tag cosmic @plane=" << plane << std::endl;
       auto& _CosmicTag = _CosmicTag_v[plane];
       _CosmicTag.Reset();
       _CosmicTag.TagCosmic(timg_v[plane],dimg_v[plane]);
@@ -400,6 +404,11 @@ namespace llcv {
 
       for(const auto& ctor : _CosmicTag.CosmicContours())
 	cimg_v[plane] = larocv::MaskImage(cimg_v[plane],ctor,-1,true);  
+      
+      LLCV_DEBUG() << "Make extension @plane=" << plane << std::endl;
+      auto& _LineExtension = _LineExtension_v[plane];
+      _LineExtension.SetImageDimension(cimg_v[plane],dimg_v[plane]);
+      _LineExtension.SetCosmicPixels(_CosmicTag.CosmicContours());
     }
     
     larocv::data::Vertex3D vtx3d;
@@ -512,12 +521,10 @@ namespace llcv {
 	  
 	  geo2d::Vector<float> local_edge;
 	  float nline_pixels = 0;
-	  auto local_line_ctor = MaximizeLine(cimg,local_triangle,nline_pixels,local_edge);
-	  
+	  float npar_pixels  = 0;
+	  auto local_line_ctor = MaximizeTriangleLine(cimg,local_triangle,nline_pixels,npar_pixels,local_edge);
 	  if (local_line_ctor.empty()) continue;
 	  
-	  float npar_pixels = larocv::CountNonZero(larocv::MaskImage(cimg,par,-1,false));
-
 	  float nratio = 0;
 	  if (npar_pixels > 0)
 	    nratio = nline_pixels / npar_pixels;
@@ -556,135 +563,90 @@ namespace llcv {
 
     
     //
-    // get the max, min, time for contours
+    // extend the lines across dead regions, keep going until we run it out
+    // make object2d
     //
-    float tlo = larocv::kINVALID_FLOAT;
-    float thi = -1.0*larocv::kINVALID_FLOAT;
-    for(size_t plane=0; plane<3; ++plane) {
-      for (const auto& edge : edge_vv[plane]) {
-	tlo = std::min(tlo,edge.x);
-	thi = std::max(thi,edge.x);
-      }
-      LLCV_DEBUG() << "@plane=" << plane << " tlo=" << tlo << " thi=" << thi << std::endl;
-    }
-
-    // per plane, per line, collection of contours
-    std::array<std::vector<std::vector<const larocv::GEO2D_Contour_t*> > ,3> ctor_overlap_vvv;
-
-    //
-    // extend line to touch potential charge
-    // if line is left, go -x
-    // if line is right, go +x
-    //
-
-    for(size_t plane=0; plane<3; ++plane) {
-      const auto& line_contour_v = line_contour_vv[plane];
-      const auto& triangle_v     = triangle_vv[plane];
-      const auto& edge_v         = edge_vv[plane];
-
-      auto& ctor_overlap_vv = ctor_overlap_vvv[plane];
-
-      const auto& plane_ctor_v = plane_ctor_vv[plane];
-      const auto& close_id = close_id_v[plane];
-      
-      ctor_overlap_vv.resize(line_contour_v.size());
-
-      for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
-	auto& ctor_overlap_v = ctor_overlap_vv[cid];
-	
-	_white_img.setTo(cv::Scalar(0));
-
-	// determine the direction
-	const auto& edge = edge_v[cid];
-	const auto& triangle = triangle_v[cid];
-	
-	geo2d::Vector<float> new_edge;
-	geo2d::Line<float> line(triangle.Apex(),edge - triangle.Apex());
-	
-	if (triangle.Apex().x == edge.x)
-	  continue;
-	
-	// extend backwards
-	if (edge.x < triangle.Apex().x) {
-	  new_edge.x = tlo;
-	  new_edge.y = line.y(new_edge.x);
-	}
-	// extend forwards
-	else {
-	  new_edge.x = thi;
-	  new_edge.y = line.y(new_edge.x);
-	}
-	
-	// Determine if line intersects new charge
-	cv::line(_white_img,triangle.Apex(),new_edge,cv::Scalar(255),3);
-	auto lc_v = larocv::FindContours(_white_img);
-	if (lc_v.empty()) continue;
-
-	const auto& lc = lc_v.front();
-
-	for(size_t ict=0; ict<plane_ctor_v.size(); ++ict) {
-	  if (ict == close_id) continue;
-	  if (!larocv::AreaOverlap(plane_ctor_v[ict],lc)) continue;
-	  ctor_overlap_v.push_back(&(plane_ctor_v[ict]));
-	} // end intersection
-      } // end this line
-    } // end this plane
-
-    //
-    // Append new charge, fill out Object2D
-    //
-
+    LLCV_DEBUG() << "Object2D creation..." << std::endl;
     std::array<std::vector<Object2D>,3> object_vv;
-
     for(size_t plane=0; plane<3; ++plane) {
-      const auto& cimg   = cimg_v[plane];
+      LLCV_DEBUG() << "@plane=" << plane << std::endl;
 
-      auto& line_contour_v = line_contour_vv[plane];
-      auto& triangle_v     = triangle_vv[plane];
-      auto& edge_v         = edge_vv[plane];
-      auto& object_v       = object_vv[plane];
+      const auto& _LineExtension = _LineExtension_v[plane];
+      const auto& plane_ctor_v   = plane_ctor_vv[plane];
+      const auto& cimg           = cimg_v[plane];
+      const auto& close_id       = close_id_v[plane];
 
-      object_v.resize(line_contour_v.size());
+      auto& triangle_v = triangle_vv[plane];
+      auto& edge_v     = edge_vv[plane];
+      auto& object_v   = object_vv[plane];
 
-      for(size_t cid=0; cid<line_contour_v.size(); ++cid) {
+      object_v.resize(triangle_v.size());
 
-	auto& triangle = triangle_v[cid];
-	auto& edge = edge_v[cid];
+      std::vector<bool> used_v;
+      for(size_t lid=0; lid<triangle_v.size(); ++lid) {
 
-	auto new_ctor = triangle.Contour();
-	auto& object = object_v[cid];
+	used_v.clear();
+	used_v.resize(plane_ctor_v.size(),false);
+	used_v[close_id] = true;
 
-	object._polygon_v.emplace_back(new_ctor,triangle.Apex());
+	auto& triangle = triangle_v[lid];
+	auto& start    = triangle.Apex();
+	auto& edge     = edge_v[lid];
+	auto& object   = object_v[lid];
 
-	float npar_pixels = (float)larocv::CountNonZero(larocv::MaskImage(cimg,new_ctor,0,false));
+	object._polygon_v.emplace_back(triangle.Contour(),start);
 
-	for(const auto ctor : ctor_overlap_vvv[plane][cid]) {
+	auto old_edge = edge;
+	auto new_edge = _LineExtension.ExtendAcross(start,edge);
+	
+	geo2d::Vector<float> inv_pt(0,0);
 
-	  for(const auto& pt : *ctor)
-	    new_ctor.emplace_back(pt);
+	while ((new_edge.x != old_edge.x) and (new_edge.y != old_edge.y)) {
 	  
-	  npar_pixels += (float)larocv::CountNonZero(larocv::MaskImage(cimg,*ctor,0,false));
-	  object._polygon_v.emplace_back(*ctor,triangle.Apex());
+	  _white_img.setTo(cv::Scalar(0));
+	  cv::line(_white_img,start,new_edge,cv::Scalar(255),3);
+	  auto lc_v = larocv::FindContours(_white_img);
+	  if (lc_v.empty()) continue;
+	  const auto& lc = lc_v.front();
+	  
+	  for(size_t ict=0; ict<plane_ctor_v.size(); ++ict) {
+	    if (used_v[ict]) continue;
+	    if (!larocv::AreaOverlap(plane_ctor_v[ict],lc)) continue;
+	    object._polygon_v.emplace_back(plane_ctor_v[ict],start);
+	    used_v[ict] = true;
+	  }
+
+	  Triangle new_triangle(start,inv_pt,inv_pt);
+	  float nline_pixels = 0;
+	  float npar_pixels  = 0;
+	  auto line_ctor = MaximizePolygonLine(cimg,object._polygon_v,new_triangle,nline_pixels,npar_pixels,new_edge);
+	  old_edge = new_edge;
+	  new_edge = _LineExtension.ExtendAcross(start,old_edge);
 	}
-
-	triangle = Triangle(new_ctor,triangle.Apex());
-
+	
+	Triangle new_triangle(start,inv_pt,inv_pt);
 	float nline_pixels = 0;
-	auto line_ctor = MaximizeLine(cimg,triangle,nline_pixels,edge);
+	float npar_pixels  = 0;
+	auto line_ctor = MaximizePolygonLine(cimg,object._polygon_v,new_triangle,nline_pixels,npar_pixels,new_edge);
 
 	float nratio = 0;
-
 	if (npar_pixels > 0)
 	  nratio = nline_pixels / npar_pixels;
-	
-	object._triangle  = triangle;
+
+	object._triangle  = new_triangle;
 	object._line      = line_ctor;
 	object._line_frac = nratio;
-	object._edge      = edge;
+	object._edge      = new_edge;
 	object._plane     = plane;
-     
-      }
+	
+	LLCV_DEBUG() << "@lid=" << lid 
+		     << " @start=[" << start.x << "," << start.y << "]"
+		     << "& @edge=[" << new_edge.x << "," << new_edge.y << "]" << std::endl;
+      } // end this triangle
     }
+
+    LLCV_DEBUG() << "...done" << std::endl;
+
 
     _Match.ClearEvent();
     _Match.ClearMatch();
@@ -1088,15 +1050,13 @@ namespace llcv {
     return res;
   }
   
-  larocv::GEO2D_Contour_t SelNueID::MaximizeLine(const cv::Mat& timg3d_mask,
+
+  larocv::GEO2D_Contour_t SelNueID::MaximizeLine(const cv::Mat& timg3d_par,
 						 const Triangle& triangle,
 						 float& nline_pixels,
 						 geo2d::Vector<float>& edge) {
-    
     larocv::GEO2D_Contour_t res;
 
-    auto timg3d_par   = larocv::MaskImage(timg3d_mask,triangle.Contour(),-1,false);
-    
     nline_pixels = -1*larocv::kINVALID_FLOAT;
 
     const geo2d::Vector<float>* base_left  = nullptr;
@@ -1189,8 +1149,54 @@ namespace llcv {
     }
 
     return res;
+    
+  }
+
+
+  larocv::GEO2D_Contour_t SelNueID::MaximizePolygonLine(const cv::Mat& timg3d_mask,
+							const std::vector<Polygon>& polygon_v,
+							Triangle& triangle,
+							float& nline_pixels,
+							float& npar_pixels,
+							geo2d::Vector<float>& edge) {
+    auto timg3d_par = timg3d_mask.clone();
+    timg3d_par.setTo(cv::Scalar(0));
+
+    for(const auto& polygon : polygon_v)
+      timg3d_par += larocv::MaskImage(timg3d_mask,polygon.Contour(),-1,false);
+    
+    npar_pixels = (float)larocv::CountNonZero(timg3d_par);
+
+    size_t size_estimate = 0;
+    for(const auto& polygon : polygon_v)
+      size_estimate += polygon.Contour().size();
+
+    larocv::GEO2D_Contour_t comb_ctor_v;
+    comb_ctor_v.reserve(size_estimate);
+
+    for(const auto& polygon : polygon_v)
+      for(const auto& pt : polygon.Contour())
+	comb_ctor_v.emplace_back(pt);
+
+    triangle = Triangle(comb_ctor_v,triangle.Apex());
+
+    return MaximizeLine(timg3d_par, triangle, nline_pixels, edge);
   }
   
+
+  larocv::GEO2D_Contour_t SelNueID::MaximizeTriangleLine(const cv::Mat& timg3d_mask,
+							 const Triangle& triangle,
+							 float& nline_pixels,
+							 float& npar_pixels,
+							 geo2d::Vector<float>& edge) {
+    
+
+    auto timg3d_par = larocv::MaskImage(timg3d_mask,triangle.Contour(),-1,false);
+    
+    npar_pixels = (float)larocv::CountNonZero(timg3d_par);
+    
+    return MaximizeLine(timg3d_par,triangle,nline_pixels,edge);
+  }
 
   //
   // adapted from https://goo.gl/Q7MBpE
