@@ -251,12 +251,13 @@ namespace llcv {
 	}
       }
 
+      if(!larocv::Contained(_img,ret)) break;
+
       cross_particle |= AtParticle(ret);
       
       if (AtParticle(ret))
 	pre_pt = ret;
       
-      if(!larocv::Contained(_img,ret)) break;
     }
 
     // cross a particle? no - return same edge
