@@ -135,9 +135,11 @@ namespace llcv {
   bool LineExtension::InBoundary(const geo2d::Vector<float>& pt) const {
     bool ret = false;
 
-    if (!larocv::Contained(_img,pt)) return ret;
+    geo2d::Vector<float> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
+
+    if (!larocv::Contained(_img,pt_i)) return ret;
     
-    int val = (int)_img.at<uchar>((int)(pt.y+0.5),(int)(pt.x+0.5));
+    int val = (int)_img.at<uchar>(pt_i.y,pt_i.x);
 
     if (val == 0) {
       return ret;
@@ -159,9 +161,11 @@ namespace llcv {
   bool LineExtension::InParticle(const geo2d::Vector<float>& pt) const {
     bool ret = false;
 
-    if (!larocv::Contained(_img,pt)) return ret;
+    geo2d::Vector<float> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
+
+    if (!larocv::Contained(_img,pt_i)) return ret;
     
-    int val = (int)_img.at<uchar>((int)(pt.y+0.5),(int)(pt.x+0.5));
+    int val = (int)_img.at<uchar>(pt_i.y,pt_i.x);
 
     if (val == 0) {
       return ret;
