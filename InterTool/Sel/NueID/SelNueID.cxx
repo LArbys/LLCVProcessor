@@ -599,10 +599,15 @@ namespace llcv {
 	auto old_edge = edge;
 	auto new_edge = _LineExtension.ExtendAcross(start,edge);
 	
+	LLCV_DEBUG() << "old_edge=(" << old_edge.x << "," << old_edge.y << ")" << std::endl;
+	LLCV_DEBUG() << "new_edge=(" << new_edge.x << "," << new_edge.y << ")" << std::endl;
+
 	geo2d::Vector<float> inv_pt(0,0);
 
+	size_t ix=0;
 	while ((new_edge.x != old_edge.x) and (new_edge.y != old_edge.y)) {
-	  
+
+	  LLCV_DEBUG() << "@ix=" << ix << std::endl;
 	  _white_img.setTo(cv::Scalar(0));
 	  cv::line(_white_img,start,new_edge,cv::Scalar(255),3);
 	  auto lc_v = larocv::FindContours(_white_img);
@@ -620,8 +625,18 @@ namespace llcv {
 	  float nline_pixels = 0;
 	  float npar_pixels  = 0;
 	  auto line_ctor = MaximizePolygonLine(cimg,object._polygon_v,new_triangle,nline_pixels,npar_pixels,new_edge);
+
+	  if ((new_edge.x == old_edge.x) and (new_edge.y == old_edge.y)) {
+	    LLCV_DEBUG() << "circular logic, break" << std::endl;
+	    break; 
+	  }
+
 	  old_edge = new_edge;
 	  new_edge = _LineExtension.ExtendAcross(start,old_edge);
+
+	  LLCV_DEBUG() << "old_edge=(" << old_edge.x << "," << old_edge.y << ")" << std::endl;
+	  LLCV_DEBUG() << "new_edge=(" << new_edge.x << "," << new_edge.y << ")" << std::endl;
+	  ix+=1;
 	}
 	
 	Triangle new_triangle(start,inv_pt,inv_pt);
