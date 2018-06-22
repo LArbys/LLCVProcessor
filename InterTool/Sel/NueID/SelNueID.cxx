@@ -52,7 +52,8 @@ namespace llcv {
     //
     // vertex information
     //
-    _outtree->Branch("n_par"     , &_n_par     , "n_par/I");
+    _outtree->Branch("n_par"       , &_n_par      , "n_par/I");
+    _outtree->Branch("par_score_v" , &_par_score_v);
 
     _outtree->Branch("vtx_xing_U", &_vtx_xing_U, "vtx_xing_U/I");
     _outtree->Branch("vtx_xing_V", &_vtx_xing_V, "vtx_xing_V/I");
@@ -801,6 +802,10 @@ namespace llcv {
 
     // number of matched particles
     _n_par = (int)obj_col_v.size();
+    _par_score_v.clear();
+    _par_score_v.resize(_n_par,-1*larocv::kINVALID_FLOAT);
+    for(size_t oid=0; oid<obj_col_v.size(); ++oid)
+      _par_score_v[oid] = obj_col_v[oid].Score();
 
     for(size_t plane=0; plane<3; ++plane) {
       for(const auto& object : object_vv[plane]) {
@@ -848,6 +853,8 @@ namespace llcv {
       const auto& obj_col = obj_col_v[oid];
       
       LLCV_DEBUG() << "@oid=" << oid << std::endl;
+
+      if (oid > 1) continue;
 
       SetParticle(oid);
       

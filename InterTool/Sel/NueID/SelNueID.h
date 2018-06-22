@@ -109,6 +109,7 @@ namespace llcv {
     float _vertex_z;
     
     int _n_par;
+    std::vector<float> _par_score_v;
 
     int _vtx_xing_U;
     int _vtx_xing_V;
