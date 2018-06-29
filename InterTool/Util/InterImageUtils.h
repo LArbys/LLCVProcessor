@@ -23,6 +23,8 @@ namespace llcv {
 
   larocv::GEO2D_Contour_t AsContour(const larcv::Pixel2DCluster& pcluster, 
 				    const larocv::ImageMeta& meta);
+
+  geo2d::Vector<int> MatToImage2D(const geo2d::Vector<int>& pt, const cv::Mat& img);
   
 }
 

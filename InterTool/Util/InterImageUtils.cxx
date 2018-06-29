@@ -102,6 +102,19 @@ namespace llcv {
     return ctor;
   }
   
+
+  geo2d::Vector<int> MatToImage2D(const geo2d::Vector<int>& pt, const cv::Mat& img) {
+    geo2d::Vector<int> ret(-1,-1);
+
+    int x = img.cols - pt.x - 1;
+    int y = pt.y;
+
+    ret.x = x;
+    ret.y = y;
+
+    return ret;
+  }
+
 }
 
 #endif

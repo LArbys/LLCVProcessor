@@ -3,6 +3,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class llcv::LineExtension+;
 #pragma link C++ class llcv::LineFollow+;
 #pragma link C++ class llcv::CosmicTag+;
 #pragma link C++ class llcv::Object2D+;

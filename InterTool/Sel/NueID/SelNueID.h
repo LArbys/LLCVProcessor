@@ -9,6 +9,7 @@
 #include "MatchObjectAlgoTimeIOU.h"
 #include "Object2D.h"
 #include "CosmicTag.h"
+#include "LineExtension.h"
 
 namespace llcv {
   
@@ -50,6 +51,7 @@ namespace llcv {
     MatchObjectAlgoTimeIOU _Match;
 
     std::vector<CosmicTag> _CosmicTag_v;
+    std::vector<LineExtension> _LineExtension_v;
 
   private:
 
@@ -63,10 +65,24 @@ namespace llcv {
 			      const geo2d::Vector<float>& pt,
 			      float& distance);
 
-    larocv::GEO2D_Contour_t MaximizeLine(const cv::Mat& timg3d_mask,
+    larocv::GEO2D_Contour_t MaximizeLine(const cv::Mat& timg3d_par,
 					 const Triangle& triangle,
 					 float& nline_pixels,
 					 geo2d::Vector<float>& edge);
+    
+    
+    larocv::GEO2D_Contour_t MaximizeTriangleLine(const cv::Mat& timg3d_mask,
+						 const Triangle& triangle,
+						 float& nline_pixels,
+						 float& npar_pixels,
+						 geo2d::Vector<float>& edge);
+    
+    larocv::GEO2D_Contour_t MaximizePolygonLine(const cv::Mat& timg3d_mask,
+						const std::vector<Polygon>& polygon_v,
+						Triangle& triangle,
+						float& nline_pixels,
+						float& npar_pixels,
+						geo2d::Vector<float>& edge);
 
     void ReconstructAngle(const std::array<cv::Mat,3>& img_v, Object2DCollection& obj_col);
 
@@ -93,6 +109,7 @@ namespace llcv {
     float _vertex_z;
     
     int _n_par;
+    std::vector<float> _par_score_v;
 
     int _vtx_xing_U;
     int _vtx_xing_V;
