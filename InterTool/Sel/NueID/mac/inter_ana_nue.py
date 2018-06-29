@@ -40,7 +40,7 @@ imod = llcv.InterModule()
 
 # configure the driver
 driver = imod.Driver()
-# driver.AttachInterFile(INTER_FILE,"inter_tree")
+
 
 NUM = 1
 # NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
@@ -59,13 +59,15 @@ if IS_MC == 1:
 else:
     proc.configure(os.path.join(BASE_PATH,"inter_nue_data.cfg"))
 
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
+
+proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%d.root" % NUM))
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "nueid_lcv_out_%d.root" % NUM),"larcv")
 
 proc.initialize()
 

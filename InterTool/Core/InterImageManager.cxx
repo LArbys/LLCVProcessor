@@ -65,8 +65,6 @@ namespace llcv {
       throw llcv_err("die");
     }
 
-
-
     SetIIT(iitype,cropx,cropy);
     _iimg_v->resize(3);
 

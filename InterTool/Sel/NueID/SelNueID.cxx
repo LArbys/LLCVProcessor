@@ -849,10 +849,15 @@ namespace llcv {
     }
 
     // object collection stuff
+    auto& out_pgraph = Data().MakePGraph();
+
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       const auto& obj_col = obj_col_v[oid];
       
       LLCV_DEBUG() << "@oid=" << oid << std::endl;
+
+      // note to future peoples: it's OK to skip particles > 2 because
+      // the matching algorithm returns particles in descending score value
 
       if (oid > 1) continue;
 
@@ -922,11 +927,55 @@ namespace llcv {
 	  (*_par_polyedges_v)[polyid]         = (int)polygon.Edges().size();
 	  (*_par_polybranches_v)[polyid]      = (int)polygon.Branches().size();
 	  (*_par_showerfrac_v)[polyid]        = (int)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
-	}
 
-      }
+	} // end polygon on plane
 
-    }
+      } // end plane
+
+      larcv::ROI proi;
+      proi.Position(Data().Vertex()->X(),
+		    Data().Vertex()->Y(),
+		    Data().Vertex()->Z(),
+		    larocv::kINVALID_DOUBLE);
+      
+      for(size_t plane=0; plane<3; ++plane) 
+	proi.AppendBB((*(img_v.at(plane))).meta());
+      
+      out_pgraph.Emplace(std::move(proi),oid);
+      
+      for(size_t plane=0; plane<3; ++plane) {
+	std::vector<larcv::Pixel2D> pixel_v;
+	
+	if (obj_col.HasObject(plane)) {
+	  const auto& obj2d = obj_col.PlaneObject(plane);
+	  
+	  for( const auto& polygon : obj2d.ExpandedPolygons()) {
+	    _white_img.setTo(cv::Scalar(255));
+	    auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(_white_img,polygon.Contour(),-1,false));
+	    for(const auto& pt : nz_pt_v) {
+	      auto pt_img2d = MatToImage2D(pt,*(mat_v.at(plane)));
+	      
+	      auto row = pt_img2d.x;
+	      auto col = pt_img2d.y;
+	      
+	      pixel_v.emplace_back(row,col);
+	      pixel_v.back().Intensity((*(img_v.at(plane))).pixel(pt_img2d.x,pt_img2d.y));
+	      
+	      // LLCV_DEBUG() << "@pt=(" << pt.x << "," << pt.y << ") "
+	      // 		   << "@pt_img2d=(" << pt_img2d.x << "," << pt_img2d.y << ")="<<img_v.at(plane)->pixel(pt_img2d.x,pt_img2d.y) << std::endl;
+	    } // cv::Mat pt
+	  
+	  } // end polygon
+	} // no plane object
+	
+	LLCV_DEBUG() << "pixel2d sz=" << pixel_v.size() << std::endl;
+	
+	auto& out_pixel_cluster = Data().MakePixel2DCluster(plane,(*(img_v.at(plane))).meta());
+	out_pixel_cluster = larcv::Pixel2DCluster(std::move(pixel_v));
+	
+      } // end plane
+
+    } // end particle
 
     if (_ismc) {
 
@@ -992,6 +1041,22 @@ namespace llcv {
     _outtree->Fill();
     
     
+    //
+    // larcv output
+    //
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
     //
     // Debug print out
     //

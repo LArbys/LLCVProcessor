@@ -378,6 +378,10 @@ namespace llcv {
     //
 
     if (_write_out) {
+
+      //
+      // LArLite
+      //
       larlite::event_vertex* ev_inter_vertex = nullptr;
       ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
     
@@ -421,6 +425,47 @@ namespace llcv {
       
       ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_shower->id(), ass_vtx_to_shr_vv);
       ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_track->id(), ass_vtx_to_trk_vv);
+
+      //
+      // LArCV
+      //
+      
+      
+      larcv::EventPGraph* ev_inter_pgraph = nullptr;
+      ev_inter_pgraph = (larcv::EventPGraph*)mgr.get_data(larcv::kProductPGraph,"inter_par");
+
+      larcv::EventPixel2D* ev_inter_par_pixel;
+      ev_inter_par_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_par_pixel");
+
+      larcv::EventPixel2D* ev_inter_img_pixel;
+      ev_inter_img_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_img_pixel");
+
+      size_t pidx = 0;
+      for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+
+	const auto& data_mgr = _driver._data_mgr_v[vtxid];
+
+	for(size_t pid=0; pid < data_mgr.OutputPixels().size(); ++pid) {
+	  const auto& plane_v = data_mgr.OutputPixelPlanes();
+	  const auto& meta_v  = data_mgr.OutputPixelMetas();
+
+	  const auto& plane = plane_v.at(pid);
+	  const auto& meta  = meta_v.at(pid);
+	  
+	  ev_inter_par_pixel->Append(plane,data_mgr.OutputPixels()[pid],meta);
+	}
+
+	for(auto pg : data_mgr.OutputPGraphs()) {
+	  auto pidx_v = pg.ClusterIndexArray();
+	  for(auto& v : pidx_v) v+=pidx;
+	  pg.Set(pg.ParticleArray(),pidx_v);
+	  ev_inter_pgraph->Emplace(std::move(pg));
+	  pidx += pidx_v.size();
+	}
+	
+      } // end vertex
+      
+      
     }
 
     _driver.Reset();

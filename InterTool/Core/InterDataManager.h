@@ -4,7 +4,6 @@
 #include "LLCVBase/llcv_err.h"
 #include "LLCVBase/llcv_base.h"
 
-
 //ll
 #include "DataFormat/vertex.h"
 #include "DataFormat/track.h"
@@ -74,16 +73,26 @@ namespace llcv {
     //writeout
   public:
     
-    larlite::track& MakeTrack();
-    larlite::shower& MakeShower();
-
-    const std::vector<larlite::track>& OutputTracks() const { return _out_track_v; }
-    const std::vector<larlite::shower>& OutputShowers() const { return _out_shower_v; }
+    larlite::track&        MakeTrack();
+    larlite::shower&       MakeShower();
+    larcv::PGraph&         MakePGraph();
+    larcv::Pixel2DCluster& MakePixel2DCluster(const size_t plane, const larcv::ImageMeta& meta);
+    
+    const std::vector<larlite::track>&        OutputTracks()      const { return _out_track_v; }
+    const std::vector<larlite::shower>&       OutputShowers()     const { return _out_shower_v; }
+    const std::vector<larcv::PGraph>&         OutputPGraphs()     const { return _out_pgraph_v; }
+    const std::vector<larcv::Pixel2DCluster>& OutputPixels()      const { return _out_pixel_cluster_v; }
+    const std::vector<size_t>&                OutputPixelPlanes() const { return _out_pixel_cluster_plane_v; }
+    const std::vector<larcv::ImageMeta>&      OutputPixelMetas()  const { return _out_pixel_cluster_meta_v; }
     
   private:
-    std::vector<larlite::track> _out_track_v;
-    std::vector<larlite::shower> _out_shower_v;
-    
+
+    std::vector<larlite::track>        _out_track_v;
+    std::vector<larlite::shower>       _out_shower_v;
+    std::vector<larcv::PGraph>         _out_pgraph_v;
+    std::vector<larcv::Pixel2DCluster> _out_pixel_cluster_v;
+    std::vector<size_t>                _out_pixel_cluster_plane_v;
+    std::vector<larcv::ImageMeta>      _out_pixel_cluster_meta_v;
 
   };
 
