@@ -700,7 +700,7 @@ namespace llcv {
 		       Data().Vertex()->Z());
       
       obj_col.SetScore(score);
-
+      
       // Fill the match
       for (auto match : match_v) {
 	auto plane = match.first;
@@ -742,7 +742,6 @@ namespace llcv {
 	  cimg_mask = larocv::MaskImage(cimg_mask,polygon.Contour(),-1,true);
 	} // end polygon
       } // end object collection
-
 
       cimg_ctor_v = larocv::FindContours(cimg_mask);
     } // end plane
@@ -984,6 +983,27 @@ namespace llcv {
       } // end plane
 
     } // end particle
+
+    //
+    // write out the cosmic removed image
+    //
+
+    for(size_t plane=0; plane<3; ++plane) {
+      std::vector<larcv::Pixel2D> pixel_v;
+      auto nz_pt_v = larocv::FindNonZero(cimg_v[plane]);
+      for(const auto& nz_pt : nz_pt_v) {
+	auto pt_img2d = MatToImage2D(nz_pt,*(mat_v.at(plane)));
+	      
+	auto row = pt_img2d.x;
+	auto col = pt_img2d.y;
+	      
+	pixel_v.emplace_back(row,col);
+	pixel_v.back().Intensity((*(img_v.at(plane))).pixel(row,col));
+      }
+      auto& out_img = Data().MakeImage(plane,(*(img_v[plane])).meta());
+      out_img = larcv::Pixel2DCluster(std::move(pixel_v));
+    }
+
 
     if (_ismc) {
 
