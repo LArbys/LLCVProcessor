@@ -1,6 +1,6 @@
 import os,sys
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 9:
     print 
     print "PGRAPH_FILE = str(sys.argv[1])"
     print "HIT_FILE    = str(sys.argv[2])"
@@ -9,6 +9,7 @@ if len(sys.argv) != 8:
     print "REQPDG      = int(sys.argv[5])"
     print "RECLUSTER   = int(sys.argv[6])"
     print "IS_MC       = int(sys.argv[7])"
+    print "CONFIG      = int(sys.argv[8])"
     print 
     sys.exit(1)
 
@@ -20,6 +21,7 @@ OUTPUT_DIR  = str(sys.argv[4])
 REQPDG      = int(sys.argv[5])
 RECLUSTER   = int(sys.argv[6])
 IS_MC       = int(sys.argv[7])
+CONFIG      = int(sys.argv[8])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
@@ -84,7 +86,7 @@ proc.add_ll_ana(dlshr3d)
 #
 # configure
 #
-proc.configure(os.path.join(BASE_PATH,"config.cfg"))
+proc.configure(os.path.join(BASE_PATH,CONFIG))
 proc.add_lcv_input_file(PGRAPH_FILE)
 proc.add_ll_input_file(HIT_FILE)
 if MCINFO_FILE != "INVALID":

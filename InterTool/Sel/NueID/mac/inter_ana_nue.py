@@ -62,7 +62,7 @@ else:
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
-proc.add_ll_input_file(SHR_FILE)
+#proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
 
 proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%d.root" % NUM))
