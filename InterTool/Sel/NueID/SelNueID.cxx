@@ -3,18 +3,16 @@
 
 #include "SelNueID.h"
 
-#include "InterTool_Util/InterImageUtils.h"
-
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
 
 #include "Geo2D/Core/LineSegment.h"
-
-#include "LArUtil/GeometryHelper.h"
 #include "Base/DataFormatConstants.h"
 
 #include "TVector2.h"
+
+#include "InterTool_Util/InterImageUtils.h"
 
 namespace llcv {
 
@@ -200,6 +198,13 @@ namespace llcv {
     _outtree->Branch("par2_expand_charge_U", &_par2_expand_charge_U, "par2_expand_charge_U/F");
     _outtree->Branch("par2_expand_charge_V", &_par2_expand_charge_V, "par2_expand_charge_V/F");
     _outtree->Branch("par2_expand_charge_Y", &_par2_expand_charge_Y, "par2_expand_charge_Y/F");
+
+    _outtree->Branch("par1_dqdx_U", &_par1_dqdx_U, "par1_dqdx_U/F");
+    _outtree->Branch("par1_dqdx_V", &_par1_dqdx_V, "par1_dqdx_V/F");
+    _outtree->Branch("par1_dqdx_Y", &_par1_dqdx_Y, "par1_dqdx_Y/F");
+    _outtree->Branch("par2_dqdx_U", &_par2_dqdx_U, "par2_dqdx_U/F");
+    _outtree->Branch("par2_dqdx_V", &_par2_dqdx_V, "par2_dqdx_V/F");
+    _outtree->Branch("par2_dqdx_Y", &_par2_dqdx_Y, "par2_dqdx_Y/F");
 
     _outtree->Branch("par1_length3d_U", &_par1_length3d_U, "par1_length3d_U/F");
     _outtree->Branch("par1_length3d_V", &_par1_length3d_V, "par1_length3d_V/F");
@@ -703,15 +708,17 @@ namespace llcv {
 	LLCV_DEBUG() << "@plane=" << plane << " id=" << id << std::endl;
 	obj_col.emplace_back(object_vv[plane][id]);
       }
+
+      LLCV_DEBUG() << "@mid=" << mid << std::endl;
      
-      ReconstructAngle(aimg_v,obj_col);
-      ReconstructLength(img_v,aimg_v,obj_col);
+      _ShowerTools.ReconstructAngle(img_v,aimg_v,obj_col);
+      _ShowerTools.ReconstructLength(img_v,aimg_v,obj_col);
+      _ShowerTools.ReconstructdQdx(img_v,aimg_v,obj_col,3+3); //offset by ~2cm for 5 pixel vertex mask out
       
       LLCV_DEBUG() << "theta=" << obj_col.Theta() << " phi=" << obj_col.Phi() << std::endl;
       LLCV_DEBUG() << "(" << obj_col.dX() << "," << obj_col.dY() << "," << obj_col.dZ() << ")" << std::endl;
       LLCV_DEBUG() << "length=" << obj_col.Length() << std::endl;
       LLCV_DEBUG() << "score=" << score << std::endl;
-      LLCV_DEBUG() << "..." << std::endl;
     }
 
     
@@ -900,7 +907,8 @@ namespace llcv {
 	*_par_triangle_area           = obj2d.triangle().Area();
 	*_par_triangle_brem           = obj2d.NBrem();
 	*_par_triangle_coverage       = obj2d.brem_triangle().Coverage(aimg_v[plane]);
-	*_par_expand_charge           = obj2d.Charge(aimg_v[plane]);
+	*_par_expand_charge           = obj2d.Charge(*(img_v[plane]),aimg_v[plane]);
+	*_par_dqdx                    = obj2d.dQdx();
 	*_par_length3d                = obj2d.Length();
 	*_par_brem_idx                = obj2d.BremIndex();
 	*_par_showerfrac              = obj2d.Fraction(*shr_v[plane],aimg_v[plane]);
@@ -923,7 +931,7 @@ namespace llcv {
 	  (*_par_pocketarea_ns_v)[polyid]     = polygon.PocketAreaNoStart();
 	  (*_par_polyarea_v)[polyid]          = polygon.Area();
 	  (*_par_polyperimeter_v)[polyid]     = polygon.Perimeter();
-	  (*_par_polycharge_v)[polyid]        = polygon.Charge(aimg_v[plane]);
+	  (*_par_polycharge_v)[polyid]        = polygon.Charge(*(img_v[plane]),aimg_v[plane]);
 	  (*_par_polyedges_v)[polyid]         = (int)polygon.Edges().size();
 	  (*_par_polybranches_v)[polyid]      = (int)polygon.Branches().size();
 	  (*_par_showerfrac_v)[polyid]        = (int)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
@@ -959,7 +967,7 @@ namespace llcv {
 	      auto col = pt_img2d.y;
 	      
 	      pixel_v.emplace_back(row,col);
-	      pixel_v.back().Intensity((*(img_v.at(plane))).pixel(pt_img2d.x,pt_img2d.y));
+	      pixel_v.back().Intensity((*(img_v.at(plane))).pixel(row,col));
 	      
 	      // LLCV_DEBUG() << "@pt=(" << pt.x << "," << pt.y << ") "
 	      // 		   << "@pt_img2d=(" << pt_img2d.x << "," << pt_img2d.y << ")="<<img_v.at(plane)->pixel(pt_img2d.x,pt_img2d.y) << std::endl;
@@ -1041,22 +1049,6 @@ namespace llcv {
     _outtree->Fill();
     
     
-    //
-    // larcv output
-    //
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     //
     // Debug print out
     //
@@ -1285,221 +1277,7 @@ namespace llcv {
     return MaximizeLine(timg3d_par,triangle,nline_pixels,edge);
   }
 
-  //
-  // adapted from https://goo.gl/Q7MBpE
-  //
-  void SelNueID::ReconstructAngle(const std::array<cv::Mat,3>& img_v,
-				  Object2DCollection& obj_col) {
 
-    auto geomH = larutil::GeometryHelper::GetME();
-    
-    // planes with largest number of hits used to get 3D direction
-    std::vector<int> planeHits(3,0);
-    std::vector<larutil::Point2D> planeDir(3);
-    
-    for(const auto& obj : obj_col) {
-
-      const auto pl = obj._plane;
-      
-      larutil::Point2D weightedDir;
-      weightedDir.w = 0;
-      weightedDir.t = 0;
-      float Qtot = 0;
-      
-      int nhits = 0;
-      for(const auto& poly : obj._polygon_v) {
-	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(img_v[pl],poly.Contour(),-1,false));
-	
-	for (const auto& nz_pt  : nz_pt_v){
-	  float charge = (float) (img_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
-	  weightedDir.w += (nz_pt.y - obj.Start().y) * charge;
-	  weightedDir.t += (nz_pt.x - obj.Start().x) * charge;
-	  Qtot += charge;
-	  nhits++;
-	}
-      }
-      
-      weightedDir.w /= Qtot;
-      weightedDir.t /= Qtot;
-
-      planeHits[pl] = nhits;
-      planeDir[pl]  = weightedDir;
-    }
-
-    int pl_max = larlite::data::kINVALID_INT;
-    int pl_mid = larlite::data::kINVALID_INT;
-    int pl_min = larlite::data::kINVALID_INT;
-
-    int n_max  = -1.0*larlite::data::kINVALID_INT;
-    int n_min  =      larlite::data::kINVALID_INT;
-
-    for (size_t pl=0; pl < planeHits.size(); pl++){
-      if (planeHits[pl] > n_max){
-	pl_max = pl;
-	n_max  = planeHits[pl];
-      }
-      if (planeHits[pl] < n_min){
-	pl_min = pl;
-	n_min  = planeHits[pl];
-      }
-    }
-
-    assert(pl_max != larlite::data::kINVALID_INT);
-    assert(pl_min != larlite::data::kINVALID_INT);
-
-    // find the medium plane
-    for(int pp=0; pp<3; ++pp) {
-      if (pp == pl_max) continue;
-      if (pp == pl_min) continue;
-      pl_mid = pp;
-    }
-
-    assert(pl_mid != larlite::data::kINVALID_INT);
-
-    float slope_max, slope_mid;
-    float angle_max, angle_mid;
-    slope_max = planeDir[pl_max].t / planeDir[pl_max].w;
-    angle_max = std::atan(slope_max);
-    angle_max = std::atan2( planeDir[pl_max].t , planeDir[pl_max].w );
-    slope_mid = planeDir[pl_mid].t / planeDir[pl_mid].w;
-    angle_mid = std::atan(slope_mid);
-    angle_mid = std::atan2( planeDir[pl_mid].t , planeDir[pl_mid].w );
-    
-    double theta, phi;
-    geomH->Get3DAxisN(pl_max, pl_mid,
-		      angle_max, angle_mid,
-		      phi, theta);
-    
-    obj_col.SetTheta(theta);
-    obj_col.SetPhi(phi);
-    
-  }
-
-  // adapted from https://goo.gl/1pCDEa
-
-  void SelNueID::ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
-				   const std::array<cv::Mat,3>& aimg_v,
-				   Object2DCollection& obj_col) {
-    
-    auto geomH = larutil::GeometryHelper::GetME();
-
-    // output
-    std::array<double,3> length_v;
-
-    // geometry
-    std::array<double,3> plane_f_v;
-    std::array<TVector2,3> line_dir_v;
-
-    //initialize
-    for(auto& v : length_v) 
-      v = -1.0*::larlite::data::kINVALID_DOUBLE;
-    
-    plane_f_v = length_v;
-    
-    // calcluate line
-    float alpha = 5;
-
-    TVector3 dir3D(obj_col.dX(),obj_col.dY(),obj_col.dZ());
-    
-    for(size_t plane=0; plane<3; ++plane) {
-      plane_f_v[plane] = geomH->Project_3DLine_OnPlane(dir3D, plane).Mag();
-      
-      const auto& startPoint2D = obj_col.front().Start();
-      TVector3 secondPoint3D = obj_col.Start() + alpha * dir3D;
-      
-      int px_x, px_y;
-      ProjectMat(img_v[plane]->meta(),
-		 secondPoint3D.X(),secondPoint3D.Y(),secondPoint3D.Z(),
-		 px_x, px_y);
-      
-      geo2d::Vector<float> secondPoint2D(px_y,px_x);
-      LLCV_DEBUG() << "@plane=" << plane << " start=" << startPoint2D << " end=" << secondPoint2D << std::endl;
-
-      TVector2 dir(secondPoint2D.y - startPoint2D.y, secondPoint2D.x - startPoint2D.x);
-      dir *= 1.0 / dir.Mod();
-      line_dir_v[plane] = dir;
-    }
-
-    // calculate the length
-    for(const auto& obj : obj_col) {
-
-      const auto pl = obj._plane;
-
-      const auto& dr_w = line_dir_v[pl].X();
-      const auto& dr_t = line_dir_v[pl].Y();
-      
-      std::vector<std::pair<float,float> > dist_v;
-
-      float qsum = 0;
-      float d2D = 0;
-      
-      for(const auto& poly : obj._polygon_v) {
-	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
-	for (const auto& nz_pt  : nz_pt_v)
-	  qsum += (float) (aimg_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
-      }
-
-      for(const auto& poly : obj._polygon_v) {
-	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
-     
-	for(size_t nid=0; nid < nz_pt_v.size(); ++nid) {
-	  auto nz_pt = nz_pt_v[nid];
-
-	  float charge = (float) (aimg_v[pl].at<uchar>(nz_pt.y,nz_pt.x));
-
-	  float ptw = (nz_pt.y - obj.Start().y)*0.3;
-	  float ptt = (nz_pt.x - obj.Start().x)*0.3;
-	
-	  // calculate distance along the line
-	  d2D  = (ptw * dr_w) + (ptt * dr_t);
-	  d2D  = std::abs(d2D);
-	  dist_v.emplace_back(std::make_pair(d2D, charge / qsum));
-	}
-      } // end "hit" loop
-      
-      std::sort(std::begin(dist_v),std::end(dist_v),
-		[](const std::pair<float,float>& lhs, const std::pair<float,float>& rhs)
-		{ return lhs.first < rhs.first; });
-      
-      qsum = 0;
-      d2D = 0;
-      float _qfraction = 1.0;
-      for(const auto& dist_pair : dist_v) {
-	d2D   = dist_pair.first;
-	qsum += dist_pair.second;
-	if (qsum>_qfraction) break;
-      }
-      
-      auto f = plane_f_v.at(pl);
-      
-      double length = d2D / f;
-
-      LLCV_DEBUG() << "@pl=" << pl << " f=" << f << " length=" << length << std::endl;
-      length_v[pl] = length;
-    }
-    
-    // auto length = *(std::max_element(std::begin(length_v),std::end(length_v)));
-
-    float sum = 0.0;
-    float nplanes = 0.0;
-
-    for(size_t plane=0; plane<3; ++plane) {
-      const auto length = length_v[plane];
-      
-      if (length == -1.0*::larlite::data::kINVALID_DOUBLE)
-	continue;
-
-      auto& obj2d = obj_col.PlaneObjectRW(plane);
-      obj2d._length = length;
-
-      nplanes += 1;
-      sum += (float)length;
-    }
-    
-    sum /= nplanes;
-
-    obj_col.SetLength(sum);
-  }
 
   void SelNueID::ResetEvent() {
     
@@ -1675,6 +1453,14 @@ namespace llcv {
     _par2_expand_charge_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_expand_charge_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_expand_charge = nullptr;
+
+    _par1_dqdx_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_dqdx = nullptr;
     
     _par1_brem_idx_U = -1.0*larocv::kINVALID_INT;
     _par1_brem_idx_V = -1.0*larocv::kINVALID_INT;
@@ -2022,6 +1808,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par1_triangle_coverage_U;
 	_par_brem_idx                = &_par1_brem_idx_U;
 	_par_expand_charge           = &_par1_expand_charge_U;
+	_par_dqdx                    = &_par1_dqdx_U;
 	_par_length3d                = &_par1_length3d_U;
 	_par_showerfrac              = &_par1_showerfrac_U;
 
@@ -2059,6 +1846,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par1_triangle_coverage_V;
 	_par_brem_idx                = &_par1_brem_idx_V;
 	_par_expand_charge           = &_par1_expand_charge_V;
+	_par_dqdx                    = &_par1_dqdx_V;
 	_par_length3d                = &_par1_length3d_V;
 	_par_showerfrac              = &_par1_showerfrac_V;
 
@@ -2096,6 +1884,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par1_triangle_coverage_Y;
 	_par_brem_idx                = &_par1_brem_idx_Y;
 	_par_expand_charge           = &_par1_expand_charge_Y;
+	_par_dqdx                    = &_par1_dqdx_Y;
 	_par_length3d                = &_par1_length3d_Y;
 	_par_showerfrac              = &_par1_showerfrac_Y;
 
@@ -2140,6 +1929,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par2_triangle_coverage_U;
 	_par_brem_idx                = &_par2_brem_idx_U;
 	_par_expand_charge           = &_par2_expand_charge_U;
+	_par_dqdx                    = &_par2_dqdx_U;
 	_par_length3d                = &_par2_length3d_U;
 	_par_showerfrac              = &_par2_showerfrac_U;
 
@@ -2177,6 +1967,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par2_triangle_coverage_V;
 	_par_brem_idx                = &_par2_brem_idx_V;
 	_par_expand_charge           = &_par2_expand_charge_V;
+	_par_dqdx                    = &_par2_dqdx_V;
 	_par_length3d                = &_par2_length3d_V;
 	_par_showerfrac              = &_par2_showerfrac_V;
 
@@ -2214,6 +2005,7 @@ namespace llcv {
 	_par_triangle_coverage       = &_par2_triangle_coverage_Y;
 	_par_brem_idx                = &_par2_brem_idx_Y;
 	_par_expand_charge           = &_par2_expand_charge_Y;
+	_par_dqdx                    = &_par2_dqdx_Y;
 	_par_length3d                = &_par2_length3d_Y;
 	_par_showerfrac              = &_par2_showerfrac_Y;
 

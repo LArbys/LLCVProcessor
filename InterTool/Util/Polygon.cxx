@@ -14,6 +14,8 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "InterImageUtils.h"
+
 namespace llcv {
   
   Polygon::Polygon(const larocv::GEO2D_Contour_t& ctor,const geo2d::Vector<float>& start) {
@@ -245,13 +247,25 @@ namespace llcv {
     return ret;
   }
   
-  float Polygon::Charge(const cv::Mat& img) const {
+  float Polygon::Charge(const larcv::Image2D& img2d, const cv::Mat& img) const {
     float ret = -1.0*larocv::kINVALID_FLOAT;
-    ret = larocv::SumNonZero(larocv::MaskImage(img,_ctor,-1,false));
+    auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(img,_ctor,-1,false));
+
+    ret = 0;
+    for(const auto& nz_pt : nz_pt_v) {
+      float charge = MatToImage2DPixel(nz_pt,img,img2d); 
+      if (charge<=0) continue;
+      ret += charge;
+    }
+
     return ret;
   }
 
-  void Polygon::DetectBranching(const cv::Mat& img, const float rad, const float thickness,const int edge_size, const int branch_size) {
+  void Polygon::DetectBranching(const cv::Mat& img, 
+				const float rad,
+				const float thickness,
+				const int edge_size,
+				const int branch_size) {
 
     _edge_pt_v.clear();
     _branch_pt_v.clear();

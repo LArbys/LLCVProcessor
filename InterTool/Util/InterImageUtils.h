@@ -2,7 +2,7 @@
 #define __INTERIMAGEUTILS_H__
 
 //lcv
-#include "DataFormat/ImageMeta.h"
+#include "DataFormat/Image2D.h"
 #include "DataFormat/EventPixel2D.h"
 
 // locv
@@ -26,6 +26,8 @@ namespace llcv {
 
   geo2d::Vector<int> MatToImage2D(const geo2d::Vector<int>& pt, const cv::Mat& img);
   
+  float MatToImage2DPixel(const geo2d::Vector<int>& pt, const cv::Mat& img, const larcv::Image2D& img2d);
+
 }
 
 

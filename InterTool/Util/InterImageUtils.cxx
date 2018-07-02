@@ -115,6 +115,19 @@ namespace llcv {
     return ret;
   }
 
+  float MatToImage2DPixel(const geo2d::Vector<int>& pt, const cv::Mat& img, const larcv::Image2D& img2d) {
+    float ret = -1;
+    
+    auto pt2 = MatToImage2D(pt,img);
+    
+    auto row = pt2.x;
+    auto col = pt2.y;    
+    
+    ret = img2d.pixel(row,col);
+
+    return ret;
+  }
+
 }
 
 #endif
