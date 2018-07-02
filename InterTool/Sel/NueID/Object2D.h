@@ -6,6 +6,8 @@
 
 #include "TVector3.h"
 
+#include "DataFormat/Image2D.h"
+
 namespace llcv {
 
   class Object2D {
@@ -31,6 +33,9 @@ namespace llcv {
     // 3D length estimated from plane
     float _length;
 
+    // 3D dQdx estimated from plane
+    double _dqdx;
+
     int _brem_index;
 
   public:
@@ -45,15 +50,19 @@ namespace llcv {
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
     const std::vector<Polygon>& ExpandedPolygons() const { return _expand_polygon_v; }
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
+
     size_t Plane() const { return _plane; }
+
     int NBrem() const { return _n_brem; }
 
     float LinedX() const;
     float LinedY() const;
     
-    float Charge(const cv::Mat& mat) const;
+    float Charge(const larcv::Image2D& img2d, const cv::Mat& img) const;
     
     float Length() const { return _length; }
+
+    double dQdx() const { return _dqdx; }
 
     int BremIndex() const { return _brem_index; }
 

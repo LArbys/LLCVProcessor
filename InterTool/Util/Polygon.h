@@ -4,6 +4,8 @@
 #include "LArOpenCV/ImageCluster/AlgoFunction/Contour2DAnalysis.h"
 #include "LArOpenCV/ImageCluster/AlgoFunction/ImagePatchAnalysis.h"
 
+#include "DataFormat/Image2D.h"
+
 namespace llcv {
 
   class Polygon {
@@ -32,7 +34,7 @@ namespace llcv {
 
     float Area() const;
     float Perimeter() const;
-    float Charge(const cv::Mat& img) const;
+    float Charge(const larcv::Image2D& img2d, const cv::Mat& img) const;
     void DetectBranching(const cv::Mat& img,
 			 const float rad,
 			 const float thickness,

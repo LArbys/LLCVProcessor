@@ -106,11 +106,11 @@ namespace llcv {
     return ret;
   }  
 
-  float Object2D::Charge(const cv::Mat& mat) const {
+  float Object2D::Charge(const larcv::Image2D& img2d, const cv::Mat& img) const {
     float res = 0;
     
     for(const auto& poly : _expand_polygon_v)
-      res += poly.Charge(mat);
+      res += poly.Charge(img2d,img);
     
     return res;
   }

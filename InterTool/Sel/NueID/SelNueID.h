@@ -3,13 +3,13 @@
 
 #include "InterTool_Core/InterSelBase.h"
 #include "TStopwatch.h"
-#include <array>
 #include "ContourScan.h"
 #include "InterTool_Util/Triangle.h"
 #include "MatchObjectAlgoTimeIOU.h"
 #include "Object2D.h"
 #include "CosmicTag.h"
 #include "LineExtension.h"
+#include "ShowerTools.h"
 
 namespace llcv {
   
@@ -42,6 +42,8 @@ namespace llcv {
 
     float _extension_cutoff;
     
+    ShowerTools _ShowerTools;
+
     ContourScan _ContourScan;
 
     TStopwatch _twatch;
@@ -84,15 +86,10 @@ namespace llcv {
 						float& npar_pixels,
 						geo2d::Vector<float>& edge);
 
-    void ReconstructAngle(const std::array<cv::Mat,3>& img_v, Object2DCollection& obj_col);
-
-    void ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
-			   const std::array<cv::Mat,3>& aimg_v,
-			   Object2DCollection& obj_col);
-
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
+
     int DetectBrem(Triangle& triangle, 
 		   const larocv::GEO2D_ContourArray_t& other_ctor_v,
 		   std::vector<size_t>& id_v,
@@ -266,6 +263,14 @@ namespace llcv {
     float _par2_expand_charge_V;
     float _par2_expand_charge_Y;
     float *_par_expand_charge;
+
+    float _par1_dqdx_U;
+    float _par1_dqdx_V;
+    float _par1_dqdx_Y;
+    float _par2_dqdx_U;
+    float _par2_dqdx_V;
+    float _par2_dqdx_Y;
+    float *_par_dqdx;
 
     int _par1_brem_idx_U;
     int _par1_brem_idx_V;
