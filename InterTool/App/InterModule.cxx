@@ -429,8 +429,6 @@ namespace llcv {
       //
       // LArCV
       //
-      
-      
       larcv::EventPGraph* ev_inter_pgraph = nullptr;
       ev_inter_pgraph = (larcv::EventPGraph*)mgr.get_data(larcv::kProductPGraph,"inter_par");
 
@@ -462,9 +460,18 @@ namespace llcv {
 	  ev_inter_pgraph->Emplace(std::move(pg));
 	  pidx += pidx_v.size();
 	}
+
+	for(size_t pid=0; pid < data_mgr.OutputImages().size(); ++pid) {
+	  const auto& plane_v = data_mgr.OutputImagePlanes();
+	  const auto& meta_v  = data_mgr.OutputImageMetas();
+
+	  const auto& plane = plane_v.at(pid);
+	  const auto& meta  = meta_v.at(pid);
+	  
+	  ev_inter_img_pixel->Append(plane,data_mgr.OutputImages()[pid],meta);
+	}
 	
       } // end vertex
-      
       
     }
 

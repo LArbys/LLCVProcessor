@@ -67,15 +67,17 @@ namespace llcv {
 
     //larcv
     const larcv::PGraph* PGraph() const { return _pgraph; }
-
+    
     const std::vector<std::vector<larcv::Pixel2DCluster> >& Particles() const { return _pcluster_vv; }
 
+ 
     //writeout
   public:
     
     larlite::track&        MakeTrack();
     larlite::shower&       MakeShower();
     larcv::PGraph&         MakePGraph();
+    larcv::Pixel2DCluster& MakeImage(const size_t plane, const larcv::ImageMeta& meta);
     larcv::Pixel2DCluster& MakePixel2DCluster(const size_t plane, const larcv::ImageMeta& meta);
     
     const std::vector<larlite::track>&        OutputTracks()      const { return _out_track_v; }
@@ -84,7 +86,11 @@ namespace llcv {
     const std::vector<larcv::Pixel2DCluster>& OutputPixels()      const { return _out_pixel_cluster_v; }
     const std::vector<size_t>&                OutputPixelPlanes() const { return _out_pixel_cluster_plane_v; }
     const std::vector<larcv::ImageMeta>&      OutputPixelMetas()  const { return _out_pixel_cluster_meta_v; }
-    
+
+    const std::vector<larcv::Pixel2DCluster>& OutputImages()      const { return _out_pimg_v; }
+    const std::vector<size_t>&                OutputImagePlanes() const { return _out_pimg_plane_v; }
+    const std::vector<larcv::ImageMeta>&      OutputImageMetas()  const { return _out_pimg_meta_v; }
+
   private:
 
     std::vector<larlite::track>        _out_track_v;
@@ -94,6 +100,9 @@ namespace llcv {
     std::vector<size_t>                _out_pixel_cluster_plane_v;
     std::vector<larcv::ImageMeta>      _out_pixel_cluster_meta_v;
 
+    std::vector<larcv::Pixel2DCluster> _out_pimg_v;
+    std::vector<size_t>                _out_pimg_plane_v;
+    std::vector<larcv::ImageMeta>      _out_pimg_meta_v;
   };
 
 }
