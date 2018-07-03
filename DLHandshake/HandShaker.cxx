@@ -367,9 +367,6 @@ namespace llcv {
     if(ev_pgraph.PGraphArray().empty())
       return;
 
-    if (ev_pixel2d.Pixel2DClusterArray().empty())
-      return;
-
     //
     // handle clusters
     //
@@ -457,58 +454,60 @@ namespace llcv {
     size_t plane=0;
     double wire=0;
     double time=0;
-    for(const auto& h : *ev_hit) {
-      plane = h.WireID().Plane;
+
+    if (!ev_pixel2d.Pixel2DClusterArray().empty()) {
+      for(const auto& h : *ev_hit) {
+	plane = h.WireID().Plane;
       
-      const auto& meta_v     = meta_vv.at(plane);
-      const auto& time_bound = time_bounds.at(plane);
-      const auto& wire_bound = wire_bounds.at(plane);
+	const auto& meta_v     = meta_vv.at(plane);
+	const auto& time_bound = time_bounds.at(plane);
+	const auto& wire_bound = wire_bounds.at(plane);
 
-      time = h.PeakTime() + 2400;
-      wire = h.WireID().Wire;
+	time = h.PeakTime() + 2400;
+	wire = h.WireID().Wire;
 
-      if(time > time_bound.second) continue;
-      if(time < time_bound.first ) continue;
-      if(wire > wire_bound.second) continue;
-      if(wire < wire_bound.first ) continue;
+	if(time > time_bound.second) continue;
+	if(time < time_bound.first ) continue;
+	if(wire > wire_bound.second) continue;
+	if(wire < wire_bound.first ) continue;
 
-      const auto& img_v = img_vv[plane]; // on this plane an image array of particle
+	const auto& img_v = img_vv[plane]; // on this plane an image array of particle
      
-      double dist = 0.;
-      double dist_thresh = _dist_thresh;
-      size_t parent_ctor_idx  = larcv::kINVALID_INDEX;
+	double dist = 0.;
+	double dist_thresh = _dist_thresh;
+	size_t parent_ctor_idx  = larcv::kINVALID_INDEX;
 
-      // per particle
-      for(size_t particle_idx=0; particle_idx<img_v.size(); ++particle_idx) {
+	// per particle
+	for(size_t particle_idx=0; particle_idx<img_v.size(); ++particle_idx) {
 
-	const auto& img  = img_v[particle_idx];
-	const auto& meta = meta_v[particle_idx];
+	  const auto& img  = img_v[particle_idx];
+	  const auto& meta = meta_v[particle_idx];
 
-	if (meta.plane() != plane) continue;
+	  if (meta.plane() != plane) continue;
 
-	auto xpixel = (wire - meta.min_x()) / meta.pixel_width();
-	auto ypixel = (meta.max_y() - time) / meta.pixel_height();
+	  auto xpixel = (wire - meta.min_x()) / meta.pixel_width();
+	  auto ypixel = (meta.max_y() - time) / meta.pixel_height();
 	    
-	int xx = (int)(xpixel+0.5);
-	int yy = (int)(ypixel+0.5);
+	  int xx = (int)(xpixel+0.5);
+	  int yy = (int)(ypixel+0.5);
 	    
-	if ( (xx < 0) or (yy < 0) ) continue;
-	if ( (xx >= meta.cols()) or (yy >= meta.rows()) ) continue;
+	  if ( (xx < 0) or (yy < 0) ) continue;
+	  if ( (xx >= meta.cols()) or (yy >= meta.rows()) ) continue;
 
-	auto px_value  = img.pixel(yy,xx);
+	  auto px_value  = img.pixel(yy,xx);
 
-	if (px_value == 0) continue;
+	  if (px_value == 0) continue;
 
-	parent_ctor_idx = particle_idx;
-	pxcluster_to_hit[plane][parent_ctor_idx].push_back(_ev_hit->size());
+	  parent_ctor_idx = particle_idx;
+	  pxcluster_to_hit[plane][parent_ctor_idx].push_back(_ev_hit->size());
 
-      } // end particle
+	} // end particle
 
-      if(parent_ctor_idx == larcv::kINVALID_INDEX) continue;
+	if(parent_ctor_idx == larcv::kINVALID_INDEX) continue;
 
-      _ev_hit->push_back(h);
-    } // end hit
-
+	_ev_hit->push_back(h);
+      } // end hit
+    }
     
     // take care of an association: cluster=>hit
     _ass_cluster_to_hit.clear();
