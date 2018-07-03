@@ -554,6 +554,7 @@ namespace llcv {
       child_id_v.reserve(roi_v.size());
 
       std::cout << "GOT: " << roi_v.size() << " particles @pgraph_idx=" << pgraph_idx << std::endl;
+
       if (roi_v.empty()) {
 	std::cout << "No particles found for this vertex" << std::endl;
 	vtx_xyz[0] = -1;
@@ -563,12 +564,28 @@ namespace llcv {
 	_ev_vertex->push_back(vtx);
 	_ass_vertex_to_track.resize(_ev_vertex->size());
 	_ass_vertex_to_shower.resize(_ev_vertex->size());
-	continue;
+
+	// define a fake child particle
+	size_t child_id = parent_id + 1 + child_pfpart_v.size();
+	larlite::pfpart child_pfpart(-1,
+				     child_id,
+				     parent_id,
+				     empty_daughters);
+
+	child_pfpart_v.push_back(child_pfpart);
+	child_id_v.push_back(child_id);
+
+	_ass_pfpart_to_track.resize   (parent_id + 1 + 1);
+	_ass_pfpart_to_shower.resize  (parent_id + 1 + 1);
+	_ass_pfpart_to_cluster.resize (parent_id + 1 + 1);
+	_ass_pfpart_to_vertex.resize  (parent_id + 1 + 1);
       }
-      _ass_pfpart_to_track.resize   (parent_id + 1 + roi_v.size());
-      _ass_pfpart_to_shower.resize  (parent_id + 1 + roi_v.size());
-      _ass_pfpart_to_cluster.resize (parent_id + 1 + roi_v.size());
-      _ass_pfpart_to_vertex.resize  (parent_id + 1 + roi_v.size());
+      else {
+	_ass_pfpart_to_track.resize   (parent_id + 1 + roi_v.size());
+	_ass_pfpart_to_shower.resize  (parent_id + 1 + roi_v.size());
+	_ass_pfpart_to_cluster.resize (parent_id + 1 + roi_v.size());
+	_ass_pfpart_to_vertex.resize  (parent_id + 1 + roi_v.size());
+      }
 
       for(size_t roi_idx=0; roi_idx<roi_v.size(); ++roi_idx) {
 	const auto& roi = roi_v[roi_idx];
@@ -657,14 +674,18 @@ namespace llcv {
 	  }
 	}
 	_ass_pfpart_to_vertex[child_id].push_back(_ev_vertex->size()-1);
-      }
+      } 
+      
+      // end roi_v size
 
       // Record nu
       _ev_pfpart->emplace_back(larlite::pfpart(12,parent_id, parent_id, std::move(child_id_v)));
       _ass_pfpart_to_vertex[parent_id].push_back(_ev_vertex->size()-1);
+      
       // Record secondaries
       for(size_t child_idx=0; child_idx<child_pfpart_v.size(); ++child_idx)
 	_ev_pfpart->emplace_back(std::move(child_pfpart_v[child_idx]));
+
     }
     _ev_ass->set_association( _ev_pfpart->id(),  _ev_vertex->id(),  _ass_pfpart_to_vertex  );
     _ev_ass->set_association( _ev_pfpart->id(),  _ev_shower->id(),  _ass_pfpart_to_shower  );
