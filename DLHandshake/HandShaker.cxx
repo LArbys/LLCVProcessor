@@ -554,7 +554,17 @@ namespace llcv {
       child_id_v.reserve(roi_v.size());
 
       std::cout << "GOT: " << roi_v.size() << " particles @pgraph_idx=" << pgraph_idx << std::endl;
-      if (roi_v.empty()) continue;
+      if (roi_v.empty()) {
+	std::cout << "No particles found for this vertex" << std::endl;
+	vtx_xyz[0] = -1;
+	vtx_xyz[1] = -1;
+	vtx_xyz[2] = -1;
+	larlite::vertex vtx(vtx_xyz,_ev_vertex->size());
+	_ev_vertex->push_back(vtx);
+	_ass_vertex_to_track.resize(_ev_vertex->size());
+	_ass_vertex_to_shower.resize(_ev_vertex->size());
+	continue;
+      }
       _ass_pfpart_to_track.resize   (parent_id + 1 + roi_v.size());
       _ass_pfpart_to_shower.resize  (parent_id + 1 + roi_v.size());
       _ass_pfpart_to_cluster.resize (parent_id + 1 + roi_v.size());
