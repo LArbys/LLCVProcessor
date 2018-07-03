@@ -382,98 +382,106 @@ namespace llcv {
       //
       // LArLite
       //
-      larlite::event_vertex* ev_inter_vertex = nullptr;
-      ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
-    
-      larlite::event_shower* ev_inter_shower = nullptr;
-      ev_inter_shower = (larlite::event_shower*)sto.get_data(larlite::data::kShower,"inter_shower");
-    
-      larlite::event_track* ev_inter_track = nullptr;
-      ev_inter_track = (larlite::event_track*)sto.get_data(larlite::data::kTrack,"inter_track");
 
-      larlite::event_ass* ev_inter_ass = nullptr;
-      ev_inter_ass = (larlite::event_ass*) sto.get_data(larlite::data::kAssociation,"inter_ass");
+      if(sto.is_ready_io()) {
+	larlite::event_vertex* ev_inter_vertex = nullptr;
+	ev_inter_vertex = (larlite::event_vertex*)sto.get_data(larlite::data::kVertex,"inter_vertex");
+    
+	larlite::event_shower* ev_inter_shower = nullptr;
+	ev_inter_shower = (larlite::event_shower*)sto.get_data(larlite::data::kShower,"inter_shower");
+    
+	larlite::event_track* ev_inter_track = nullptr;
+	ev_inter_track = (larlite::event_track*)sto.get_data(larlite::data::kTrack,"inter_track");
+
+	larlite::event_ass* ev_inter_ass = nullptr;
+	ev_inter_ass = (larlite::event_ass*) sto.get_data(larlite::data::kAssociation,"inter_ass");
       
-      std::vector<std::vector<unsigned int> > ass_vtx_to_shr_vv;
-      std::vector<std::vector<unsigned int> > ass_vtx_to_trk_vv;
+	std::vector<std::vector<unsigned int> > ass_vtx_to_shr_vv;
+	std::vector<std::vector<unsigned int> > ass_vtx_to_trk_vv;
 
-      ass_vtx_to_shr_vv.resize(num_vertex);
-      ass_vtx_to_trk_vv.resize(num_vertex);
+	ass_vtx_to_shr_vv.resize(num_vertex);
+	ass_vtx_to_trk_vv.resize(num_vertex);
 
-      for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
-	const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];	
-	const auto& par = pgraph_vertex.ParticleArray().front();
-	double out_vertex[3];
-	out_vertex[0] = par.X();
-	out_vertex[1] = par.Y();
-	out_vertex[2] = par.Z();
-	ev_inter_vertex->emplace_back(larlite::vertex(out_vertex));
+	for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+	  const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];	
+	  const auto& par = pgraph_vertex.ParticleArray().front();
+	  double out_vertex[3];
+	  out_vertex[0] = par.X();
+	  out_vertex[1] = par.Y();
+	  out_vertex[2] = par.Z();
+	  ev_inter_vertex->emplace_back(larlite::vertex(out_vertex));
 	
-	const auto& data_mgr = _driver._data_mgr_v[vtxid];
+	  const auto& data_mgr = _driver._data_mgr_v[vtxid];
 	
-	for(const auto& out_shr : data_mgr.OutputShowers()) {
-	  ass_vtx_to_shr_vv[vtxid].push_back(ev_inter_shower->size());
-	  ev_inter_shower->emplace_back(out_shr);
+	  for(const auto& out_shr : data_mgr.OutputShowers()) {
+	    ass_vtx_to_shr_vv[vtxid].push_back(ev_inter_shower->size());
+	    ev_inter_shower->emplace_back(out_shr);
+	  }
+
+	  for(const auto& out_trk : data_mgr.OutputTracks()) {
+	    ass_vtx_to_trk_vv[vtxid].push_back(ev_inter_track->size());
+	    ev_inter_track->emplace_back(out_trk);
+	  }
+	
 	}
-
-	for(const auto& out_trk : data_mgr.OutputTracks()) {
-	  ass_vtx_to_trk_vv[vtxid].push_back(ev_inter_track->size());
-	  ev_inter_track->emplace_back(out_trk);
-	}
-	
+      
+	ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_shower->id(), ass_vtx_to_shr_vv);
+	ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_track->id(), ass_vtx_to_trk_vv);
       }
-      
-      ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_shower->id(), ass_vtx_to_shr_vv);
-      ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_track->id(), ass_vtx_to_trk_vv);
+
+
 
       //
       // LArCV
       //
-      larcv::EventPGraph* ev_inter_pgraph = nullptr;
-      ev_inter_pgraph = (larcv::EventPGraph*)mgr.get_data(larcv::kProductPGraph,"inter_par");
+      if(mgr.io_mode() != larcv::IOManager::kREAD) {
+	larcv::EventPGraph* ev_inter_pgraph = nullptr;
+	ev_inter_pgraph = (larcv::EventPGraph*)mgr.get_data(larcv::kProductPGraph,"inter_par");
 
-      larcv::EventPixel2D* ev_inter_par_pixel;
-      ev_inter_par_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_par_pixel");
+	larcv::EventPixel2D* ev_inter_par_pixel;
+	ev_inter_par_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_par_pixel");
 
-      larcv::EventPixel2D* ev_inter_img_pixel;
-      ev_inter_img_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_img_pixel");
+	larcv::EventPixel2D* ev_inter_img_pixel;
+	ev_inter_img_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_img_pixel");
 
-      size_t pidx = 0;
-      for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+	size_t pidx = 0;
+	for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
 
-	const auto& data_mgr = _driver._data_mgr_v[vtxid];
+	  const auto& data_mgr = _driver._data_mgr_v[vtxid];
 
-	for(size_t pid=0; pid < data_mgr.OutputPixels().size(); ++pid) {
-	  const auto& plane_v = data_mgr.OutputPixelPlanes();
-	  const auto& meta_v  = data_mgr.OutputPixelMetas();
+	  for(size_t pid=0; pid < data_mgr.OutputPixels().size(); ++pid) {
+	    const auto& plane_v = data_mgr.OutputPixelPlanes();
+	    const auto& meta_v  = data_mgr.OutputPixelMetas();
 
-	  const auto& plane = plane_v.at(pid);
-	  const auto& meta  = meta_v.at(pid);
+	    const auto& plane = plane_v.at(pid);
+	    const auto& meta  = meta_v.at(pid);
 	  
-	  ev_inter_par_pixel->Append(plane,data_mgr.OutputPixels()[pid],meta);
-	}
+	    ev_inter_par_pixel->Append(plane,data_mgr.OutputPixels()[pid],meta);
+	  }
 
-	for(auto pg : data_mgr.OutputPGraphs()) {
-	  auto pidx_v = pg.ClusterIndexArray();
-	  for(auto& v : pidx_v) v+=pidx;
-	  pg.Set(pg.ParticleArray(),pidx_v);
-	  ev_inter_pgraph->Emplace(std::move(pg));
-	  pidx += pidx_v.size();
-	}
+	  for(auto pg : data_mgr.OutputPGraphs()) {
+	    auto pidx_v = pg.ClusterIndexArray();
+	    for(auto& v : pidx_v) v+=pidx;
+	    pg.Set(pg.ParticleArray(),pidx_v);
+	    ev_inter_pgraph->Emplace(std::move(pg));
+	    pidx += pidx_v.size();
+	  }
 
-	for(size_t pid=0; pid < data_mgr.OutputImages().size(); ++pid) {
-	  const auto& plane_v = data_mgr.OutputImagePlanes();
-	  const auto& meta_v  = data_mgr.OutputImageMetas();
+	  for(size_t pid=0; pid < data_mgr.OutputImages().size(); ++pid) {
+	    const auto& plane_v = data_mgr.OutputImagePlanes();
+	    const auto& meta_v  = data_mgr.OutputImageMetas();
 
-	  const auto& plane = plane_v.at(pid);
-	  const auto& meta  = meta_v.at(pid);
+	    const auto& plane = plane_v.at(pid);
+	    const auto& meta  = meta_v.at(pid);
 	  
-	  ev_inter_img_pixel->Append(plane,data_mgr.OutputImages()[pid],meta);
-	}
+	    ev_inter_img_pixel->Append(plane,data_mgr.OutputImages()[pid],meta);
+	  }
 	
-      } // end vertex
+	} // end vertex
       
-    }
+      } // end larcv::IOManager::kREAD
+
+    } // end write out
 
     _driver.Reset();
     

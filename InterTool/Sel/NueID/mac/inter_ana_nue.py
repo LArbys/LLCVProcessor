@@ -41,6 +41,7 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 
+#NUM=1
 NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
 driver.SetOutputFilename("nueid_ana_%d.root" % NUM);
 
@@ -63,9 +64,9 @@ proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
 #proc.add_ll_input_file(SHR_FILE)
-proc.add_ll_input_file(TRK_FILE)
+#proc.add_ll_input_file(TRK_FILE)
 
-proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%d.root" % NUM))
+#proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%d.root" % NUM))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "nueid_lcv_out_%d.root" % NUM),"larcv")
 
 proc.initialize()

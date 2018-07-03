@@ -57,8 +57,12 @@ namespace llcv {
 	_img_mgr.SetVertex(data_mgr.Vertex()->X(),
 			   data_mgr.Vertex()->Y(),
 			   data_mgr.Vertex()->Z());
-      else
+      else {
 	LLCV_WARNING() << "PGraph only input w. limited support" << std::endl;
+	_img_mgr.SetVertex(data_mgr.PGraph()->ParticleArray().front().X(),
+			   data_mgr.PGraph()->ParticleArray().front().Y(),
+			   data_mgr.PGraph()->ParticleArray().front().Z());
+      }
       
       for(size_t selid=0; selid<_sel_base_v.size(); ++selid) {
 	auto sel_base = _sel_base_v[selid];

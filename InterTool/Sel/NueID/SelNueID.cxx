@@ -368,11 +368,15 @@ namespace llcv {
     LLCV_DEBUG() << "start" << std::endl;
 
     
+    float Vertex_X = Data().PGraph()->ParticleArray().front().X();
+    float Vertex_Y = Data().PGraph()->ParticleArray().front().Y();
+    float Vertex_Z = Data().PGraph()->ParticleArray().front().Z();
+
     LLCV_DEBUG() << "(RSEV)=("<< Run() << "," << SubRun() << "," << Event() << "," << VertexID() << ")" << std::endl;    
     LLCV_DEBUG() << "VTX=(" 
-		 << Data().Vertex()->X() << "," 
-		 << Data().Vertex()->Y() << "," 
-		 << Data().Vertex()->Z() << ")" << std::endl;
+		 << Vertex_X << "," 
+		 << Vertex_Y << "," 
+		 << Vertex_Z << ")" << std::endl;
 
     auto mat_v  = Image().Image<cv::Mat>(kImageADC,_cropx,_cropy);
     auto meta_v = Image().Image<larocv::ImageMeta>(kImageADC,_cropx,_cropy);
@@ -418,9 +422,9 @@ namespace llcv {
     }
     
     larocv::data::Vertex3D vtx3d;
-    vtx3d.x = Data().Vertex()->X();
-    vtx3d.y = Data().Vertex()->Y();
-    vtx3d.z = Data().Vertex()->Z();
+    vtx3d.x = Vertex_X;
+    vtx3d.y = Vertex_Y;
+    vtx3d.z = Vertex_Z;
 
     _vertex_x = (float)vtx3d.x;
     _vertex_y = (float)vtx3d.y;
@@ -695,9 +699,9 @@ namespace llcv {
 
       auto& obj_col = obj_col_v[mid];
       
-      obj_col.SetStart(Data().Vertex()->X(),
-		       Data().Vertex()->Y(),
-		       Data().Vertex()->Z());
+      obj_col.SetStart(Vertex_X,
+		       Vertex_Y,
+		       Vertex_Z);
       
       obj_col.SetScore(score);
       
@@ -940,9 +944,9 @@ namespace llcv {
       } // end plane
 
       larcv::ROI proi;
-      proi.Position(Data().Vertex()->X(),
-		    Data().Vertex()->Y(),
-		    Data().Vertex()->Z(),
+      proi.Position(Vertex_X,
+		    Vertex_Y,
+		    Vertex_Z,
 		    larocv::kINVALID_DOUBLE);
       
       for(size_t plane=0; plane<3; ++plane) 
