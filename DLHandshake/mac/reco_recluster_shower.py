@@ -9,7 +9,7 @@ if len(sys.argv) != 9:
     print "REQPDG      = int(sys.argv[5])"
     print "RECLUSTER   = int(sys.argv[6])"
     print "IS_MC       = int(sys.argv[7])"
-    print "CONFIG      = int(sys.argv[8])"
+    print "CONFIG      = str(sys.argv[8])"
     print 
     sys.exit(1)
 
@@ -21,7 +21,7 @@ OUTPUT_DIR  = str(sys.argv[4])
 REQPDG      = int(sys.argv[5])
 RECLUSTER   = int(sys.argv[6])
 IS_MC       = int(sys.argv[7])
-CONFIG      = int(sys.argv[8])
+CONFIG      = str(sys.argv[8])
 
 num = int(os.path.basename(PGRAPH_FILE).split(".")[0].split("_")[-1])
 
