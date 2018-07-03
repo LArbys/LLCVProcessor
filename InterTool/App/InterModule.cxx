@@ -498,6 +498,8 @@ namespace llcv {
   void InterModule::AssertEqual(const larlite::vertex& vtx1,
 				const larlite::vertex& vtx2) {
 
+    if (vtx1.X() == -1 or vtx2.X() == -1) return;
+
     LLCV_DEBUG() << "Compare vtx1=(" << vtx1.X() << "," << vtx1.Y() << "," << vtx1.Z() << ")" << std::endl;
     LLCV_DEBUG() << "Compare vtx2=(" << vtx2.X() << "," << vtx2.Y() << "," << vtx2.Z() << ")" << std::endl;
 
@@ -512,6 +514,8 @@ namespace llcv {
   void InterModule::AssertEqual(const larlite::vertex& vtx1,
 				const larcv::PGraph& pgraph) {
     
+    if (pgraph.ParticleArray().empty()) return;
+
     const auto& vtx2 = pgraph.ParticleArray().front();
 
     LLCV_DEBUG() << "Compare vtx1=(" << vtx1.X() << "," << vtx1.Y() << "," << vtx1.Z() << ")" << std::endl;
