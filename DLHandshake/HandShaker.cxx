@@ -555,7 +555,7 @@ namespace llcv {
       child_id_v.reserve(roi_v.size());
 
       std::cout << "GOT: " << roi_v.size() << " particles @pgraph_idx=" << pgraph_idx << std::endl;
-
+      if (roi_v.empty()) continue;
       _ass_pfpart_to_track.resize   (parent_id + 1 + roi_v.size());
       _ass_pfpart_to_shower.resize  (parent_id + 1 + roi_v.size());
       _ass_pfpart_to_cluster.resize (parent_id + 1 + roi_v.size());

@@ -60,10 +60,14 @@ namespace llcv {
 				     ev_cluster, ev_hit,
 				     ev_ass);
       
-    if (_use_ctor) 
+    if (_use_ctor) { 
+      LLCV_DEBUG() << "Using contours" << std::endl;
       _HandShaker.construct_contour(*ev_pgraph, *ev_pixel2d, ev_hit_in);
-    else 
+    }
+    else {
+      LLCV_DEBUG() << "Using image" << std::endl;
       _HandShaker.construct_image(*ev_pgraph, *ev_pixel2d, ev_hit_in);
+    }
 
     
     LLCV_DEBUG() << "end" << std::endl;
