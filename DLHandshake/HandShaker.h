@@ -28,7 +28,7 @@ namespace llcv {
     
   public:
     
-    HandShaker(){this->reset();}
+    HandShaker(){ this->reset(); }
     ~HandShaker(){}
 
     void set_larlite_pointers(larlite::event_pfpart*  ev_pfpart,
@@ -39,11 +39,16 @@ namespace llcv {
 			      larlite::event_hit*     ev_hit,
 			      larlite::event_ass*     ev_ass);
 
-    void construct(const larcv::EventPGraph&  ev_pgraph,
-		   const larcv::EventPixel2D& ev_pixel2d,
-		   const larlite::event_hit*  ev_hit);
-    
-    
+    void construct_contour(const larcv::EventPGraph&  ev_pgraph,
+			   const larcv::EventPixel2D& ev_pixel2d,
+			   const larlite::event_hit*  ev_hit);
+        
+
+    void construct_image(const larcv::EventPGraph&  ev_pgraph,
+			 const larcv::EventPixel2D& ev_pixel2d,
+			 const larlite::event_hit*  ev_hit);
+
+
     void reset();
 
     void pixel_distance_threshold(double dist)

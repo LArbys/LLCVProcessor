@@ -33,10 +33,8 @@ BASE_PATH = os.path.dirname(BASE_PATH)
 print "Base path at: ",BASE_PATH
 sys.path.insert(0,BASE_PATH)
 
-#from lib.ssnet_modules import attach_ssnet
 
 proc = llcv.Processor()
-
 
 # intermodule
 imod = llcv.InterModule()
@@ -61,7 +59,7 @@ proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
-proc.add_ll_input_file(SHR_FILE)
+#proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
 
 # output name

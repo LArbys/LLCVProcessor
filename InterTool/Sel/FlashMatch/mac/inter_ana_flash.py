@@ -1,6 +1,6 @@
 import os,sys,gc
 
-if len(sys.argv) != 9:
+if len(sys.argv) != 10:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
@@ -11,6 +11,7 @@ if len(sys.argv) != 9:
     print "INTER_FILE = str(sys.argv[6])"
     print "IS_MC      = int(str(sys.argv[7]))"
     print "OUT_DIR    = str(sys.argv[8])"
+    print "CONFIG     = str(sys.argv[9])"
     print
     print
     sys.exit(1)
@@ -23,6 +24,7 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 IS_MC      = int(str(sys.argv[7]))
 OUT_DIR    = str(sys.argv[8])
+CONFIG     = str(sys.argv[9])
 
 import ROOT
 from larlitecv import larlitecv
@@ -33,12 +35,7 @@ BASE_PATH = os.path.dirname(BASE_PATH)
 print "Base path at: ",BASE_PATH
 sys.path.insert(0,BASE_PATH)
 
-#from lib.ssnet_modules import attach_ssnet
-
 proc = llcv.Processor()
-
-# attach ssnet
-# attach_ssnet(proc)
 
 # intermodule
 imod = llcv.InterModule()
@@ -56,7 +53,7 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(os.path.join(BASE_PATH,"inter_flash.cfg"))
+proc.configure(os.path.join(BASE_PATH,CONFIG))
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
 proc.add_lcv_input_file(SSNET_FILE)

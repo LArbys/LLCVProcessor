@@ -1,5 +1,5 @@
-#ifndef DLHANDSHAKE_H
-#define DLHANDSHAKE_H
+#ifndef __DLHANDSHAKE_H__
+#define __DLHANDSHAKE_H__
 
 #include "LLCVBase/AnaBase.h"
 #include "HandShaker.h"
@@ -26,6 +26,8 @@ namespace llcv {
     std::string _in_pgraph_prod;
     std::string _in_ctor_prod;
     std::string _out_prod;
+
+    bool _use_ctor;
 
   };
 

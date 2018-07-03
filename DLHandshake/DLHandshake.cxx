@@ -1,5 +1,5 @@
-#ifndef DLHANDSHAKE_CXX
-#define DLHANDSHAKE_CXX
+#ifndef __DLHANDSHAKE_CXX__
+#define __DLHANDSHAKE_CXX__
 
 #include "DLHandshake.h"
 
@@ -12,7 +12,8 @@ namespace llcv {
     _in_pgraph_prod  = cfg.get<std::string>("InputPGraphProducer", "test");
     _in_ctor_prod    = cfg.get<std::string>("InputCtorProducer", "test_ctor");
     _out_prod        = cfg.get<std::string>("OutputProducer","dl");
-    
+    _use_ctor        = cfg.get<bool>("UseContour",true);
+
     LLCV_DEBUG() << "end" << std::endl;
   }
 
@@ -24,6 +25,7 @@ namespace llcv {
 
   bool DLHandshake::process(larcv::IOManager& mgr, larlite::storage_manager& sto) {
     LLCV_DEBUG() << "start" << std::endl;
+
     _HandShaker.reset();
 
     auto ev_pfpart  = (larlite::event_pfpart*)  sto.get_data(larlite::data::kPFParticle, _out_prod);
@@ -51,19 +53,25 @@ namespace llcv {
     LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DArray().size() << " pixel array" << std::endl;
     LLCV_DEBUG() << "GOT: " << ev_pixel2d->Pixel2DClusterArray().size() << " pixel cluster array" << std::endl;
 
+
     _HandShaker.pixel_distance_threshold(1.);
     _HandShaker.set_larlite_pointers(ev_pfpart, ev_vertex,
 				     ev_shower, ev_track,
 				     ev_cluster, ev_hit,
 				     ev_ass);
-    
-    _HandShaker.construct(*ev_pgraph, *ev_pixel2d, ev_hit_in);
+      
+    if (_use_ctor) 
+      _HandShaker.construct_contour(*ev_pgraph, *ev_pixel2d, ev_hit_in);
+    else 
+      _HandShaker.construct_image(*ev_pgraph, *ev_pixel2d, ev_hit_in);
+
     
     LLCV_DEBUG() << "end" << std::endl;
     return true;
   }
   
   void DLHandshake::finalize() {
+
     LLCV_DEBUG() << "start" << std::endl;
       
     LLCV_DEBUG() << "end" << std::endl;

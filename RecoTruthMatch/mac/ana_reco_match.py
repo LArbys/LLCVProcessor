@@ -17,6 +17,7 @@ PGRAPH_FILE  = str(sys.argv[3])
 TRK_FILE     = str(sys.argv[4])
 OUTPUT_DIR   = str(sys.argv[5])
 
+#num = 1
 num = int(os.path.basename(TRK_FILE).split(".")[0].split("_")[-1])
 
 import ROOT
