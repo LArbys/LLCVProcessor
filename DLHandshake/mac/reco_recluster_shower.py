@@ -86,7 +86,7 @@ proc.add_ll_ana(dlshr3d)
 #
 # configure
 #
-proc.configure(os.path.join(BASE_PATH,CONFIG))
+proc.configure(CONFIG)
 proc.add_lcv_input_file(PGRAPH_FILE)
 proc.add_ll_input_file(HIT_FILE)
 if MCINFO_FILE != "INVALID":
