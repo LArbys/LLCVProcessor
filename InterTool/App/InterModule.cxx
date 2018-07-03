@@ -404,11 +404,21 @@ namespace llcv {
 
 	for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
 	  const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];	
-	  const auto& par = pgraph_vertex.ParticleArray().front();
+
 	  double out_vertex[3];
-	  out_vertex[0] = par.X();
-	  out_vertex[1] = par.Y();
-	  out_vertex[2] = par.Z();
+
+	  if (pgraph_vertex.ParticleArray().empty()) { 
+	    out_vertex[0] = -1;
+	    out_vertex[1] = -1;
+	    out_vertex[2] = -1;
+	    
+	  } else {
+	    const auto& par = pgraph_vertex.ParticleArray().front();
+	    out_vertex[0] = par.X();
+	    out_vertex[1] = par.Y();
+	    out_vertex[2] = par.Z();
+	  }
+
 	  ev_inter_vertex->emplace_back(larlite::vertex(out_vertex));
 	
 	  const auto& data_mgr = _driver._data_mgr_v[vtxid];
@@ -498,7 +508,10 @@ namespace llcv {
   void InterModule::AssertEqual(const larlite::vertex& vtx1,
 				const larlite::vertex& vtx2) {
 
-    if (vtx1.X() == -1 or vtx2.X() == -1) return;
+    if (vtx1.X() == -1 or vtx2.X() == -1) {
+      LLCV_WARNING() << "LArLite vertex is negative. This has a special meaning for this module." << std::endl;
+      return;
+    }
 
     LLCV_DEBUG() << "Compare vtx1=(" << vtx1.X() << "," << vtx1.Y() << "," << vtx1.Z() << ")" << std::endl;
     LLCV_DEBUG() << "Compare vtx2=(" << vtx2.X() << "," << vtx2.Y() << "," << vtx2.Z() << ")" << std::endl;
@@ -514,7 +527,10 @@ namespace llcv {
   void InterModule::AssertEqual(const larlite::vertex& vtx1,
 				const larcv::PGraph& pgraph) {
     
-    if (pgraph.ParticleArray().empty()) return;
+    if (pgraph.ParticleArray().empty()) {
+      LLCV_WARNING() << "PGraph ROI field is empty. This has a special meaning for this module." << std::endl;
+      return;
+    }
 
     const auto& vtx2 = pgraph.ParticleArray().front();
 
