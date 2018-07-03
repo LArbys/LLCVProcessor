@@ -366,6 +366,10 @@ namespace llcv {
   {
     if(ev_pgraph.PGraphArray().empty())
       return;
+
+    if (ev_pixel2d.Pixel2DClusterArray().empty())
+      return;
+
     //
     // handle clusters
     //
