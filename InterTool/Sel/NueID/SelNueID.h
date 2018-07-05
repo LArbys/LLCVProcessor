@@ -200,6 +200,30 @@ namespace llcv {
     float _par2_linedy_Y;
     float* _par_linedy;
 
+    float _par1_line_vtx_density_U;
+    float _par1_line_vtx_density_V;
+    float _par1_line_vtx_density_Y;
+    float _par2_line_vtx_density_U;
+    float _par2_line_vtx_density_V;
+    float _par2_line_vtx_density_Y;
+    float* _par_line_vtx_density;
+
+    float _par1_line_vtx_coverage_U;
+    float _par1_line_vtx_coverage_V;
+    float _par1_line_vtx_coverage_Y;
+    float _par2_line_vtx_coverage_U;
+    float _par2_line_vtx_coverage_V;
+    float _par2_line_vtx_coverage_Y;
+    float* _par_line_vtx_coverage;
+
+    float _par1_line_vtx_charge_U;
+    float _par1_line_vtx_charge_V;
+    float _par1_line_vtx_charge_Y;
+    float _par2_line_vtx_charge_U;
+    float _par2_line_vtx_charge_V;
+    float _par2_line_vtx_charge_Y;
+    float* _par_line_vtx_charge;
+
     float _par1_triangle_height_U;
     float _par1_triangle_height_V;
     float _par1_triangle_height_Y;

@@ -68,6 +68,11 @@ namespace llcv {
 
     float Fraction(const cv::Mat& img1, const cv::Mat& img2) const;
 
+    std::vector<float> LineVertex(const larcv::Image2D& img2d,
+				  const cv::Mat& img,
+				  const cv::Mat& white_img, 
+				  float radius) const;
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {

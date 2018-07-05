@@ -136,6 +136,27 @@ namespace llcv {
     _outtree->Branch("par2_linedy_V", &_par2_linedy_V, "par2_linedy_V/F");
     _outtree->Branch("par2_linedy_Y", &_par2_linedy_Y, "par2_linedy_Y/F");
 
+    _outtree->Branch("par1_line_vtx_density_U", &_par1_line_vtx_density_U, "par1_line_vtx_density_U/F");
+    _outtree->Branch("par1_line_vtx_density_V", &_par1_line_vtx_density_V, "par1_line_vtx_density_V/F");
+    _outtree->Branch("par1_line_vtx_density_Y", &_par1_line_vtx_density_Y, "par1_line_vtx_density_Y/F");
+    _outtree->Branch("par2_line_vtx_density_U", &_par2_line_vtx_density_U, "par2_line_vtx_density_U/F");
+    _outtree->Branch("par2_line_vtx_density_V", &_par2_line_vtx_density_V, "par2_line_vtx_density_V/F");
+    _outtree->Branch("par2_line_vtx_density_Y", &_par2_line_vtx_density_Y, "par2_line_vtx_density_Y/F");
+
+    _outtree->Branch("par1_line_vtx_coverage_U", &_par1_line_vtx_coverage_U, "par1_line_vtx_coverage_U/F");
+    _outtree->Branch("par1_line_vtx_coverage_V", &_par1_line_vtx_coverage_V, "par1_line_vtx_coverage_V/F");
+    _outtree->Branch("par1_line_vtx_coverage_Y", &_par1_line_vtx_coverage_Y, "par1_line_vtx_coverage_Y/F");
+    _outtree->Branch("par2_line_vtx_coverage_U", &_par2_line_vtx_coverage_U, "par2_line_vtx_coverage_U/F");
+    _outtree->Branch("par2_line_vtx_coverage_V", &_par2_line_vtx_coverage_V, "par2_line_vtx_coverage_V/F");
+    _outtree->Branch("par2_line_vtx_coverage_Y", &_par2_line_vtx_coverage_Y, "par2_line_vtx_coverage_Y/F");
+
+    _outtree->Branch("par1_line_vtx_charge_U", &_par1_line_vtx_charge_U, "par1_line_vtx_charge_U/F");
+    _outtree->Branch("par1_line_vtx_charge_V", &_par1_line_vtx_charge_V, "par1_line_vtx_charge_V/F");
+    _outtree->Branch("par1_line_vtx_charge_Y", &_par1_line_vtx_charge_Y, "par1_line_vtx_charge_Y/F");
+    _outtree->Branch("par2_line_vtx_charge_U", &_par2_line_vtx_charge_U, "par2_line_vtx_charge_U/F");
+    _outtree->Branch("par2_line_vtx_charge_V", &_par2_line_vtx_charge_V, "par2_line_vtx_charge_V/F");
+    _outtree->Branch("par2_line_vtx_charge_Y", &_par2_line_vtx_charge_Y, "par2_line_vtx_charge_Y/F");
+
     _outtree->Branch("par1_triangle_height_U", &_par1_triangle_height_U, "par1_triangle_height_U/F");
     _outtree->Branch("par1_triangle_height_V", &_par1_triangle_height_V, "par1_triangle_height_V/F");
     _outtree->Branch("par1_triangle_height_Y", &_par1_triangle_height_Y, "par1_triangle_height_Y/F");
@@ -860,7 +881,7 @@ namespace llcv {
 
     // object collection stuff
     auto& out_pgraph = Data().MakePGraph();
-
+    
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       const auto& obj_col = obj_col_v[oid];
       
@@ -903,6 +924,13 @@ namespace llcv {
 	*_par_linedx      = obj2d.LinedX();
 	*_par_linedy      = obj2d.LinedY();
 
+	_white_img.setTo(cv::Scalar(1));
+	auto linevertex_v = obj2d.LineVertex(*(img_v[plane]),aimg_v[plane],_white_img,5);
+	
+	*_par_line_vtx_density  = linevertex_v[0];
+	*_par_line_vtx_coverage = linevertex_v[1];
+	*_par_line_vtx_charge   = linevertex_v[2];
+	
 	*_par_triangle_height         = obj2d.triangle().Height();
 	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
 	*_par_triangle_emptyarea      = obj2d.triangle().EmptyArea();
@@ -944,10 +972,7 @@ namespace llcv {
       } // end plane
 
       larcv::ROI proi;
-      proi.Position(Vertex_X,
-		    Vertex_Y,
-		    Vertex_Z,
-		    larocv::kINVALID_DOUBLE);
+      proi.Position(Vertex_X,Vertex_Y,Vertex_Z,larocv::kINVALID_DOUBLE);
       
       for(size_t plane=0; plane<3; ++plane) 
 	proi.AppendBB((*(img_v.at(plane))).meta());
@@ -1414,6 +1439,30 @@ namespace llcv {
     _par2_linedy_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_linedy = nullptr;
 
+    _par1_line_vtx_density_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_density_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_density_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_density_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_density_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_density_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_vtx_density = nullptr;
+
+    _par1_line_vtx_coverage_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_coverage_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_coverage_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_coverage_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_coverage_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_coverage_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_vtx_coverage = nullptr;
+
+    _par1_line_vtx_charge_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_charge_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_vtx_charge_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_charge_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_charge_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_vtx_charge_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_vtx_charge = nullptr;
+
     _par1_triangle_height_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_triangle_height_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_triangle_height_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1823,6 +1872,9 @@ namespace llcv {
 	_par_linefrac                = &_par1_linefrac_U;
 	_par_linedx                  = &_par1_linedx_U;
 	_par_linedy                  = &_par1_linedy_U;
+	_par_line_vtx_density        = &_par1_line_vtx_density_U;
+	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_U;
+	_par_line_vtx_charge         = &_par1_line_vtx_charge_U;
 	_par_triangle_height         = &_par1_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_U;
@@ -1861,6 +1913,9 @@ namespace llcv {
 	_par_linefrac                = &_par1_linefrac_V;
 	_par_linedx                  = &_par1_linedx_V;
 	_par_linedy                  = &_par1_linedy_V;
+	_par_line_vtx_coverage       = &_par1_line_vtx_density_V;
+	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_V;
+	_par_line_vtx_charge         = &_par1_line_vtx_charge_V;
 	_par_triangle_height         = &_par1_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_V;
@@ -1899,6 +1954,9 @@ namespace llcv {
 	_par_linefrac                = &_par1_linefrac_Y;
 	_par_linedx                  = &_par1_linedx_Y;
 	_par_linedy                  = &_par1_linedy_Y;
+	_par_line_vtx_density        = &_par1_line_vtx_density_Y;
+	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_Y;
+	_par_line_vtx_charge         = &_par1_line_vtx_charge_Y;
 	_par_triangle_height         = &_par1_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_Y;
@@ -1944,6 +2002,9 @@ namespace llcv {
 	_par_linefrac                = &_par2_linefrac_U;
 	_par_linedx                  = &_par2_linedx_U;
 	_par_linedy                  = &_par2_linedy_U;
+	_par_line_vtx_density        = &_par2_line_vtx_density_U;
+	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_U;
+	_par_line_vtx_charge         = &_par2_line_vtx_charge_U;
 	_par_triangle_height         = &_par2_triangle_height_U;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_U;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_U;
@@ -1982,6 +2043,9 @@ namespace llcv {
 	_par_linefrac                = &_par2_linefrac_V;
 	_par_linedx                  = &_par2_linedx_V;
 	_par_linedy                  = &_par2_linedy_V;
+	_par_line_vtx_density        = &_par2_line_vtx_density_V;
+	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_V;
+	_par_line_vtx_charge         = &_par2_line_vtx_charge_V;
 	_par_triangle_height         = &_par2_triangle_height_V;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_V;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_V;
@@ -2020,6 +2084,9 @@ namespace llcv {
 	_par_linefrac                = &_par2_linefrac_Y;
 	_par_linedx                  = &_par2_linedx_Y;
 	_par_linedy                  = &_par2_linedy_Y;
+	_par_line_vtx_density        = &_par2_line_vtx_density_Y;
+	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_Y;
+	_par_line_vtx_charge         = &_par2_line_vtx_charge_Y;
 	_par_triangle_height         = &_par2_triangle_height_Y;
 	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_Y;
 	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_Y;

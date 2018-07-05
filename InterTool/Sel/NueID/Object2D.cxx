@@ -5,6 +5,8 @@
 
 #include <stdexcept>
 
+#include "InterTool_Util/InterImageUtils.h"
+
 namespace llcv {
 
   bool Object2DCollection::HasObject(size_t plane) const {
@@ -133,6 +135,52 @@ namespace llcv {
   }
 
 
+  std::vector<float> Object2D::LineVertex(const larcv::Image2D& img2d,
+					  const cv::Mat& img,
+					  const cv::Mat& white_img,
+					  float radius) const {
+    std::vector<float> ret_v;
+    ret_v.resize(3,-1*larocv::kINVALID_FLOAT);
+    
+    auto mask_adc    = larocv::MaskImage(img,geo2d::Circle<float>(Start(),radius),-1,false);
+    auto mask_white  = larocv::MaskImage(white_img,geo2d::Circle<float>(Start(),radius),-1,false);
+
+    float n_mask_adc   = larocv::CountNonZero(mask_adc);
+    float n_mask_white = larocv::CountNonZero(mask_white);
+
+    float density = 0.0;
+    if (n_mask_white > 0)
+      density = n_mask_adc / n_mask_white;
+
+    auto mask_adc_line = larocv::MaskImage(mask_adc,_line,-1,false);
+
+    float nadc  = larocv::CountNonZero(mask_adc_line);
+    float nline = larocv::CountNonZero(larocv::MaskImage(mask_white,_line,-1,false));
+
+    float coverage = 0.0;
+    if (nline > 0)
+      coverage = nadc / nline;
+
+    auto nz_pt_v = larocv::FindNonZero(mask_adc_line);
+    float charge = 0.0;
+
+    for(const auto& nz_pt : nz_pt_v)
+      charge += MatToImage2DPixel(nz_pt,img,img2d);
+
+    ret_v[0] = density;
+    ret_v[1] = coverage;
+    ret_v[2] = charge;
+
+    return ret_v;
+  }
+
 }
 
 #endif
+
+
+
+
+
+
+
