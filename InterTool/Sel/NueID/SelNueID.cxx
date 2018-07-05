@@ -1913,7 +1913,7 @@ namespace llcv {
 	_par_linefrac                = &_par1_linefrac_V;
 	_par_linedx                  = &_par1_linedx_V;
 	_par_linedy                  = &_par1_linedy_V;
-	_par_line_vtx_coverage       = &_par1_line_vtx_density_V;
+	_par_line_vtx_density        = &_par1_line_vtx_density_V;
 	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_V;
 	_par_line_vtx_charge         = &_par1_line_vtx_charge_V;
 	_par_triangle_height         = &_par1_triangle_height_V;
