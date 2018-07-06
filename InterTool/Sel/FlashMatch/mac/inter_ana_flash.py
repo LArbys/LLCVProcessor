@@ -1,6 +1,6 @@
 import os,sys,gc
 
-if len(sys.argv) != 10:
+if len(sys.argv) != 11:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
@@ -12,6 +12,7 @@ if len(sys.argv) != 10:
     print "IS_MC      = int(str(sys.argv[7]))"
     print "OUT_DIR    = str(sys.argv[8])"
     print "CONFIG     = str(sys.argv[9])"
+    print "HIT_FILE   = str(sys.argv[10])"
     print
     print
     sys.exit(1)
@@ -25,6 +26,7 @@ INTER_FILE = str(sys.argv[6])
 IS_MC      = int(str(sys.argv[7]))
 OUT_DIR    = str(sys.argv[8])
 CONFIG     = str(sys.argv[9])
+HIT_FILE   = str(sys.argv[10])
 
 import ROOT
 from larlitecv import larlitecv
@@ -61,6 +63,7 @@ proc.add_lcv_input_file(VTX_FILE)
 proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
+proc.add_ll_input_file(HIT_FILE)
 
 proc.initialize()
 
