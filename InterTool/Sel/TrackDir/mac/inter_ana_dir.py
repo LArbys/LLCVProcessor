@@ -1,6 +1,6 @@
 import os,sys,gc
 
-if len(sys.argv) != 9:
+if len(sys.argv) != 10:
     print
     print
     print "SSNET_FILE = str(sys.argv[1])"
@@ -11,6 +11,7 @@ if len(sys.argv) != 9:
     print "INTER_FILE = str(sys.argv[6])"
     print "IS_MC      = int(sys.argv[7])"
     print "OUT_DIR    = str(sys.argv[8])"
+    print "HIT_FILE   = str(sys.argv[9])"
     print
     print
     sys.exit(1)
@@ -32,7 +33,6 @@ BASE_PATH = os.path.realpath(__file__)
 BASE_PATH = os.path.dirname(BASE_PATH)
 print "Base path at: ",BASE_PATH
 sys.path.insert(0,BASE_PATH)
-
 
 proc = llcv.Processor()
 
@@ -61,6 +61,7 @@ proc.add_lcv_input_file(VTX_FILE)
 #proc.add_ll_input_file(FLASH_FILE)
 #proc.add_ll_input_file(SHR_FILE)
 proc.add_ll_input_file(TRK_FILE)
+proc.add_ll_input_file(HIT_FILE)
 
 # output name
 proc.set_output_ll_name(os.path.join(OUT_DIR,"track_dir_out_%d.root" % NUM))
