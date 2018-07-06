@@ -24,6 +24,7 @@ TRK_FILE   = str(sys.argv[5])
 INTER_FILE = str(sys.argv[6])
 IS_MC      = int(str(sys.argv[7]))
 OUT_DIR    = str(sys.argv[8])
+HIT_FILE   = str(sys.argv[9])
 
 import ROOT
 from larlitecv import larlitecv
