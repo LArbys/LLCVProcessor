@@ -1032,7 +1032,62 @@ namespace llcv {
       auto& out_img = Data().MakeImage(plane,(*(img_v[plane])).meta());
       out_img = larcv::Pixel2DCluster(std::move(pixel_v));
     }
+    
 
+    //
+    // write out the interaction image
+    //
+
+
+    for(size_t plane=0; plane<3; ++plane) {
+
+      std::vector<larcv::Pixel2D> pixel_v;
+      geo2d::Vector<float> start_pt;
+      
+      // insert the particle clusters
+      for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
+	const auto& obj_col = obj_col_v[oid];
+	if (!obj_col.HasObject(plane)) continue;
+	const auto& obj2d = obj_col.PlaneObject(plane);
+	
+	start_pt = obj2d.Start();
+
+	for( const auto& polygon : obj2d.ExpandedPolygons()) {
+	    _white_img.setTo(cv::Scalar(255));
+	    auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(_white_img,polygon.Contour(),-1,false));
+	    for(const auto& pt : nz_pt_v) {
+	      auto pt_img2d = MatToImage2D(pt,*(mat_v.at(plane)));
+	      
+	      auto row = pt_img2d.x;
+	      auto col = pt_img2d.y;
+	      
+	      pixel_v.emplace_back(row,col);
+	      pixel_v.back().Intensity((*(img_v.at(plane))).pixel(row,col));
+	    }
+	  
+	  }
+	
+      }
+
+      // insert the vertex region
+      _white_img.setTo(cv::Scalar(255));
+
+      auto cimg_start = larocv::MaskImage(*(mat_v.at(plane)),geo2d::Circle<float>(start_pt,5),-1,false);
+      auto nz_pt_v = larocv::FindNonZero(cimg_start);
+      
+      for(const auto& pt : nz_pt_v) {
+	auto pt_img2d = MatToImage2D(pt,*(mat_v.at(plane)));
+	
+	auto row = pt_img2d.x;
+	auto col = pt_img2d.y;
+	      
+	pixel_v.emplace_back(row,col);
+	pixel_v.back().Intensity((*(img_v.at(plane))).pixel(row,col));
+      }
+      
+      auto& out_inter = Data().MakeInteraction(plane,(*(img_v[plane])).meta());
+      out_inter = larcv::Pixel2DCluster(std::move(pixel_v));
+    }
 
     if (_ismc) {
 

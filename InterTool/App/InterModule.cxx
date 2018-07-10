@@ -454,6 +454,9 @@ namespace llcv {
 	larcv::EventPixel2D* ev_inter_img_pixel;
 	ev_inter_img_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_img_pixel");
 
+	larcv::EventPixel2D* ev_inter_int_pixel;
+	ev_inter_int_pixel = (larcv::EventPixel2D*)mgr.get_data(larcv::kProductPixel2D,"inter_int_pixel");
+
 	size_t pidx = 0;
 	for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
 
@@ -485,6 +488,16 @@ namespace llcv {
 	    const auto& meta  = meta_v.at(pid);
 	  
 	    ev_inter_img_pixel->Append(plane,data_mgr.OutputImages()[pid],meta);
+	  }
+
+	  for(size_t pid=0; pid < data_mgr.OutputInteractions().size(); ++pid) {
+	    const auto& plane_v = data_mgr.OutputInteractionPlanes();
+	    const auto& meta_v  = data_mgr.OutputInteractionMetas();
+
+	    const auto& plane = plane_v.at(pid);
+	    const auto& meta  = meta_v.at(pid);
+	  
+	    ev_inter_int_pixel->Append(plane,data_mgr.OutputInteractions()[pid],meta);
 	  }
 	
 	} // end vertex

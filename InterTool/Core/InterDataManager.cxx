@@ -31,6 +31,18 @@ namespace llcv {
     return _out_pimg_v.back();
   }
 
+
+  larcv::Pixel2DCluster& InterDataManager::MakeInteraction(const size_t plane, const larcv::ImageMeta& meta) {
+    _out_pinter_v.resize(_out_pinter_v.size()+1);
+    _out_pinter_plane_v.resize(_out_pinter_plane_v.size()+1);
+    _out_pinter_meta_v.resize(_out_pinter_meta_v.size()+1);
+
+    _out_pinter_plane_v.back() = plane;
+    _out_pinter_meta_v.back() = meta;
+
+    return _out_pinter_v.back();
+  }
+
   larcv::Pixel2DCluster& InterDataManager::MakePixel2DCluster(const size_t plane, const larcv::ImageMeta& meta) {
     _out_pixel_cluster_v.resize(_out_pixel_cluster_v.size()+1);
     _out_pixel_cluster_plane_v.resize(_out_pixel_cluster_plane_v.size()+1);
