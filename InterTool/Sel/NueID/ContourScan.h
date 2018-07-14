@@ -22,6 +22,11 @@ namespace llcv {
       _plane_comb_v[0] = {{0,1,2}};
       _plane_comb_v[1] = {{0,2,1}};
       _plane_comb_v[2] = {{1,2,0}};
+
+      _plane_comb_2d_v[0] = std::make_pair(0,1);
+      _plane_comb_2d_v[1] = std::make_pair(0,2);
+      _plane_comb_2d_v[2] = std::make_pair(1,2);
+      
     }
     
     ~ContourScan() {}
@@ -41,15 +46,22 @@ namespace llcv {
     void Scan(const std::array<cv::Mat,3>& in_img_v,
 	      const std::array<cv::Mat,3>& dead_img_v,
 	      std::array<cv::Mat,3>& out_img_v);
-	      
+
+    void Scan();
+
+    std::vector<std::array<float,3> > Voxelize(const float dx, const float dy, const float dz) const;
     
   private:
-    
+
     larocv::LArPlaneGeo _geo;
 
     std::array<larocv::GEO2D_Contour_t,3> _ctor_v;
 
     std::array<std::array<int,3>,3> _plane_comb_v;
+
+    std::array<std::pair<int,int>,3> _plane_comb_2d_v;
+
+    std::vector<larocv::data::Vertex3D> _scan_v;
     
   };
 

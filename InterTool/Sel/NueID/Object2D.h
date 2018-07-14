@@ -15,28 +15,6 @@ namespace llcv {
     Object2D(){}
     ~Object2D() {}
     
-    Triangle _triangle;
-    Triangle _brem_triangle;
-
-    // list of "large enough" clusters which consititue 2D particle
-    std::vector<Polygon> _polygon_v; 
-
-    // list of all clusters which lie inside expanded triangle
-    std::vector<Polygon> _expand_polygon_v;
-
-    larocv::GEO2D_Contour_t _line;
-    geo2d::Vector<float> _edge;
-    float _line_frac;
-    size_t _plane;
-    int _n_brem;
-
-    // 3D length estimated from plane
-    float _length;
-
-    // 3D dQdx estimated from plane
-    double _dqdx;
-
-    int _brem_index;
 
   public:
     float LineLength() const { return geo2d::dist(_triangle.Apex(),_edge); }
@@ -50,6 +28,7 @@ namespace llcv {
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
     const std::vector<Polygon>& ExpandedPolygons() const { return _expand_polygon_v; }
     const larocv::GEO2D_Contour_t& Line() const { return _line; }
+    const geo2d::Vector<float> Dir() const { return _dir; }
 
     size_t Plane() const { return _plane; }
 
@@ -63,16 +42,48 @@ namespace llcv {
     float Length() const { return _length; }
 
     double dQdx() const { return _dqdx; }
+    
+    const std::vector<float>& dQdxProfile() const { return _dqdx_v; }
+    const std::vector<float>& dxProfile() const { return _dx_v; }
 
+    float dQdxStep() const { return _dqdx_step; }
+    
     int BremIndex() const { return _brem_index; }
-
+    
     float Fraction(const cv::Mat& img1, const cv::Mat& img2) const;
-
+    
     std::vector<float> LineVertex(const larcv::Image2D& img2d,
 				  const cv::Mat& img,
 				  const cv::Mat& white_img, 
 				  float radius) const;
 
+  public:
+
+    Triangle _triangle;
+    Triangle _brem_triangle;
+    
+    std::vector<Polygon> _polygon_v; 
+    std::vector<Polygon> _expand_polygon_v;
+
+    larocv::GEO2D_Contour_t _line;
+    geo2d::Vector<float> _edge;
+    float _line_frac;
+    size_t _plane;
+    int _n_brem;
+
+    float _length;
+    double _dqdx;
+
+    std::vector<float> _dqdx_v;
+    std::vector<float> _dx_v;
+
+    float _dqdx_step;
+
+    int _brem_index;
+    
+    geo2d::Vector<float> _dir;
+
+    
   };
 
   class Object2DCollection : public std::vector<Object2D> {
@@ -87,14 +98,15 @@ namespace llcv {
     
     void SetTheta(float theta) { _theta = theta; }
     void SetPhi(float phi)     { _phi = phi;     }
-    void SetStart(float x, float y, float z) 
-    { _start = TVector3(x,y,z); }
+
+    void SetStart(float x, float y, float z)  { _start = TVector3(x,y,z); }
+
     void SetLength(float length) { _length = length; };
     void SetScore(float score) { _score = score; }
 
+    const TVector3& Start() const { return _start; }
     float Theta() const { return _theta; }
     float Phi()   const { return _phi; }
-    const TVector3& Start() const { return _start; }
     float Length() const { return _length; }
     float Score() const { return _score; }
 
@@ -108,13 +120,25 @@ namespace llcv {
 			   const cv::Mat& white_img,
 			   float radius=3) const;
     
+    void SetddX(float x) { _ddx = x; }
+    void SetddY(float y) { _ddy = y; }
+    void SetddZ(float z) { _ddz = z; }
+    
+    float ddX() const { return _ddx; }
+    float ddY() const { return _ddy; }
+    float ddZ() const { return _ddz; }
     
   private:
+
     float _theta;
     float _phi;
     float _length;
     TVector3 _start;
     float _score;
+
+    float _ddx;
+    float _ddy;
+    float _ddz;
 
   };
 

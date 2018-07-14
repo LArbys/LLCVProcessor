@@ -5,6 +5,9 @@
 #include "LArUtil/GeometryHelper.h"
 #include "InterTool_Util/InterImageUtils.h"
 #include <cassert>
+#include "Geo2D/Core/Geo2D.h"
+#include "LLCVBase/llcv_err.h"
+#include "LArOpenCV/ImageCluster/AlgoFunction/VectorAnalysis.h"
 
 namespace llcv {
 
@@ -19,7 +22,7 @@ namespace llcv {
     // planes with largest number of hits used to get 3D direction
     std::vector<int> planeHits(3,0);
     std::vector<larutil::Point2D> planeDir(3);
-    
+
     for(const auto& obj : obj_col) {
 
       const auto pl = obj._plane;
@@ -30,14 +33,17 @@ namespace llcv {
       float Qtot = 0;
       
       int nhits = 0;
+      
       for(const auto& poly : obj._polygon_v) {
 	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
 	
 	for (const auto& nz_pt  : nz_pt_v){
 	  float charge = MatToImage2DPixel(nz_pt,aimg_v[pl],*(img_v[pl]));
+
 	  if (charge<=0) continue;
 	  weightedDir.w += (nz_pt.y - obj.Start().y) * charge;
 	  weightedDir.t += (nz_pt.x - obj.Start().x) * charge;
+
 	  Qtot += charge;
 	  nhits++;
 	}
@@ -82,12 +88,15 @@ namespace llcv {
 
     float slope_max, slope_mid;
     float angle_max, angle_mid;
-    slope_max = planeDir[pl_max].t / planeDir[pl_max].w;
-    angle_max = std::atan(slope_max);
-    angle_max = std::atan2( planeDir[pl_max].t , planeDir[pl_max].w );
+
     slope_mid = planeDir[pl_mid].t / planeDir[pl_mid].w;
+    slope_max = planeDir[pl_max].t / planeDir[pl_max].w;
+    
     angle_mid = std::atan(slope_mid);
     angle_mid = std::atan2( planeDir[pl_mid].t , planeDir[pl_mid].w );
+    
+    angle_max = std::atan(slope_max);
+    angle_max = std::atan2( planeDir[pl_max].t , planeDir[pl_max].w );
     
     double theta, phi;
     geomH->Get3DAxisN(pl_max, pl_mid,
@@ -98,7 +107,7 @@ namespace llcv {
     obj_col.SetPhi(phi);
     
   }
-
+  
   // adapted from https://goo.gl/1pCDEa
 
   void ShowerTools::ReconstructLength(const std::vector<larcv::Image2D*>& img_v,
@@ -124,7 +133,7 @@ namespace llcv {
     float alpha = 5;
 
     TVector3 dir3D(obj_col.dX(),obj_col.dY(),obj_col.dZ());
-    
+
     for(size_t plane=0; plane<3; ++plane) {
       plane_f_v[plane] = geomH->Project_3DLine_OnPlane(dir3D, plane).Mag();
       
@@ -240,7 +249,7 @@ namespace llcv {
     auto geomHelper = larutil::GeometryHelper::GetME();
     
     TVector3 dir3D(obj_col.dX(),obj_col.dY(),obj_col.dZ());
-    
+
     std::array<double,3> plane_f_v;
     std::array<double,3> pitch_v;
     
@@ -318,7 +327,191 @@ namespace llcv {
     return;
   }
   
+  void ShowerTools::ReconstructdQdxProfile(const std::vector<larcv::Image2D*>& img_v,
+					   const std::array<cv::Mat,3>& aimg_v,
+					   Object2DCollection& obj_col) {
+    
+    auto geomHelper = larutil::GeometryHelper::GetME();
+    
+    TVector3 dir3D(obj_col.ddX(),obj_col.ddY(),obj_col.ddZ());
+    
+    std::array<geo2d::Line<float>,3> plane_r_v;
+    std::array<float,3> plane_f_v;
+    
+    for(size_t plane=0; plane<3; ++plane) {
+
+      int pt1_x;
+      int pt1_y;
+
+      int pt2_x;
+      int pt2_y;
+      
+      // project the vertex
+      ProjectMat(img_v[plane]->meta(),
+		 obj_col.Start().X(),
+		 obj_col.Start().Y(),
+		 obj_col.Start().Z(),
+    		 pt1_y, pt1_x);
+      
+      // project the next point
+      ProjectMat(img_v[plane]->meta(),
+		 obj_col.Start().X() + 10*dir3D.X(),
+		 obj_col.Start().Y() + 10*dir3D.Y(),
+		 obj_col.Start().Z() + 10*dir3D.Z(),
+    		 pt2_y, pt2_x);
+
+      geo2d::Vector<float> pt1(pt1_x,pt1_y);
+      geo2d::Vector<float> pt2(pt2_x,pt2_y);
+      
+      auto ldir = pt2-pt1;
+      auto ldir_len = geo2d::length(ldir);
+      if (ldir_len!=0)
+	ldir /= geo2d::length(ldir);
+
+      std::cout << "ldir=(" << ldir.x << "," << ldir.y << ")" << std::endl;
+      plane_r_v[plane] = geo2d::Line<float>(pt1,ldir);
+      plane_f_v[plane] = geomHelper->Project_3DLine_OnPlane(dir3D, plane).Mag();
+    }
+    
+    // loop through planes
+    for(auto& obj : obj_col) {
+
+      const auto pl = obj._plane;
+
+      // grab the 2D start point of the cluster
+      const auto& start2D = obj.Start();
+      
+      const auto& line = plane_r_v[pl];
+      float f = plane_f_v[pl];
+      
+      std::vector<float> q_v;
+      std::vector<float> dx_v;
+      
+      // loop over hits
+      for(const auto& poly : obj._polygon_v) {
+	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
+	
+	for(size_t nid=0; nid < nz_pt_v.size(); ++nid) {
+	  const auto& nz_pt = nz_pt_v[nid];
+	  
+	  geo2d::Vector<float> pt_nz(nz_pt.x,nz_pt.y);
+	  geo2d::Vector<float> pt_li;
+	  
+	  geo2d::ClosestPoint(line, pt_nz, pt_li, pt_nz);
+	  
+	  float q = MatToImage2DPixel(nz_pt,aimg_v[pl],*(img_v[pl]));
+	  
+	  q_v.emplace_back(q);
+	  
+	  auto dx = geo2d::dist(pt_li*0.3,start2D*0.3);
+
+	  // go to 3D
+	  dx *= 1/f;
+	  
+	  dx_v.emplace_back(dx);
+	  
+	} // end "hit"
+      } // loop over all polygons
+
+
+      // sort the dx vector
+      std::vector<size_t> idx_v(dx_v.size());
+      std::iota(idx_v.begin(), idx_v.end(), 0);
+
+      std::sort(idx_v.begin(), idx_v.end(),
+		[&dx_v](size_t i1, size_t i2) { return dx_v[i1] < dx_v[i2]; });
+      
+      
+      float min_dx = 0;
+      float max_dx = dx_v.at(idx_v.back());
+
+      float ddx = 0.3;
+      size_t xlo = 0;
+      size_t xhi = (size_t)((max_dx / ddx)+0.5)+1;
+
+      if (xhi == 0) return;
+
+      std::vector<float> dqdx_v(xhi,0.0);
+      std::vector<float> ddx_v(xhi,0.0);
+      
+      for(size_t ix=1; ix < ddx_v.size(); ++ix)
+	ddx_v[ix] = ddx_v[ix-1] + ddx;
+      
+      for(auto idx : idx_v) {
+	auto q  = q_v.at(idx);
+	auto dx = dx_v.at(idx);
+	
+	int bin = (size_t)((dx / ddx)+0.5);
+
+	if (bin >= (int)ddx_v.size() or bin < 0) {
+	  std::stringstream ss;
+	  ss << "@bin=" << bin << " & ddx_v sz=" << ddx_v.size() << "!";
+	  throw llcv_err(ss.str());
+	}
+	
+	dqdx_v.at(bin) += (q / (ddx * f));
+      }
+      
+      obj._dqdx_v = std::move(dqdx_v);
+      obj._dx_v   = std::move(ddx_v);
+      
+      obj._dqdx_step = ddx;
+
+      obj._dir = line.dir;
+
+    } // end plane
+    
+    return;
+  }
+
+  std::array<float,3> ShowerTools::ComputePCA(std::vector<std::array<float,3> > pts_v, const Object2DCollection& obj_col) {
   
+    cv::Mat vertex_mat(pts_v.size(), 3, CV_32FC1);
+
+    for(size_t pid=0; pid < pts_v.size(); ++pid) {
+      vertex_mat.at<float>(pid, 0) = pts_v[pid][0];
+      vertex_mat.at<float>(pid, 1) = pts_v[pid][1];
+      vertex_mat.at<float>(pid, 2) = pts_v[pid][2];
+    }
+
+    cv::PCA pca_ana(vertex_mat, cv::Mat(), CV_PCA_DATA_AS_ROW, 0);
+
+    std::array<std::array<float,3>, 3> mean_vv;
+    std::array<std::array<float,3>, 3> eigen_vv;
+    
+    for(size_t pid=0; pid<3; ++pid) {
+      for(size_t plane=0; plane<3; ++plane) {
+	mean_vv[pid][plane]  = pca_ana.mean.at<float>(pid,plane);
+	eigen_vv[pid][plane] = pca_ana.eigenvectors.at<float>(pid,plane);
+      }
+      
+      float eigen_len = larocv::Norm(eigen_vv[pid]);
+      for(size_t plane=0; plane<3; ++plane)
+	eigen_vv[pid][plane] /= eigen_len;
+    }
+
+    std::array<float,3> mean_dir_v;
+
+    mean_dir_v[0] = mean_vv[0][0] - obj_col.Start().X();
+    mean_dir_v[1] = mean_vv[0][1] - obj_col.Start().Y();
+    mean_dir_v[2] = mean_vv[0][2] - obj_col.Start().Z();
+
+    auto mean_dir_len = larocv::Norm(mean_dir_v);
+
+    for(size_t plane=0; plane<3; ++plane)
+      mean_dir_v[plane] /= mean_dir_len;
+
+    // implement direction handling, negative dot product, flip the sign on eigen
+    float dot_product = larocv::Dot(mean_dir_v,eigen_vv[0]);
+
+    if (dot_product < 0) {
+      eigen_vv[0][0] *= -1;
+      eigen_vv[0][1] *= -1;
+      eigen_vv[0][2] *= -1;
+    }
+
+    return mean_dir_v;
+  }  
 
 }
 

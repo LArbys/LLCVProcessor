@@ -10,6 +10,7 @@
 #include "CosmicTag.h"
 #include "LineExtension.h"
 #include "ShowerTools.h"
+#include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
 
 namespace llcv {
   
@@ -55,6 +56,8 @@ namespace llcv {
     std::vector<CosmicTag> _CosmicTag_v;
     std::vector<LineExtension> _LineExtension_v;
 
+    larocv::PixelScan3D _PixelScan3D;
+
   private:
 
     void ResetEvent();
@@ -95,6 +98,7 @@ namespace llcv {
 		   std::vector<size_t>& id_v,
 		   std::vector<size_t>& inside_v);
     
+    std::array<float,3> EstimateDirection(Object2DCollection obj_col);
     
   private:
     
@@ -128,9 +132,12 @@ namespace llcv {
     float _par1_phi;
     float _par1_length;
     float _par1_score;
-    float _par1_dx;
-    float _par1_dy;
-    float _par1_dz;
+    float _par1_dx1;
+    float _par1_dy1;
+    float _par1_dz1;
+    float _par1_dx2;
+    float _par1_dy2;
+    float _par1_dz2;
     int   _par1_nplanes;
     std::vector<int>   _par1_planes_v;
     std::vector<int>   _par1_xdead_v;
@@ -140,9 +147,12 @@ namespace llcv {
     float _par2_phi;
     float _par2_length;
     float _par2_score;
-    float _par2_dx;
-    float _par2_dy;
-    float _par2_dz;
+    float _par2_dx1;
+    float _par2_dy1;
+    float _par2_dz1;
+    float _par2_dx2;
+    float _par2_dy2;
+    float _par2_dz2;
     int   _par2_nplanes;
     std::vector<int>   _par2_planes_v;
     std::vector<int>   _par2_xdead_v;
@@ -152,9 +162,12 @@ namespace llcv {
     float* _par_phi;
     float* _par_length;
     float* _par_score;
-    float* _par_dx;
-    float* _par_dy;
-    float* _par_dz;
+    float* _par_dx1;
+    float* _par_dy1;
+    float* _par_dz1;
+    float* _par_dx2;
+    float* _par_dy2;
+    float* _par_dz2;
     int*   _par_nplanes;
     std::vector<int>*   _par_planes_v;
     std::vector<int>*   _par_xdead_v;
@@ -295,6 +308,22 @@ namespace llcv {
     float _par2_dqdx_V;
     float _par2_dqdx_Y;
     float *_par_dqdx;
+
+    float _par1_dqdx_step_U;
+    float _par1_dqdx_step_V;
+    float _par1_dqdx_step_Y;
+    float _par2_dqdx_step_U;
+    float _par2_dqdx_step_V;
+    float _par2_dqdx_step_Y;
+    float *_par_dqdx_step;
+
+    std::vector<float> _par1_dqdx_U_v;
+    std::vector<float> _par1_dqdx_V_v;
+    std::vector<float> _par1_dqdx_Y_v;
+    std::vector<float> _par2_dqdx_U_v;
+    std::vector<float> _par2_dqdx_V_v;
+    std::vector<float> _par2_dqdx_Y_v;
+    std::vector<float>* _par_dqdx_v;
 
     int _par1_brem_idx_U;
     int _par1_brem_idx_V;

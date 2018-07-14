@@ -2,12 +2,15 @@
 #define __CONTOURSCAN_CXX__
 
 #include "ContourScan.h"
+#include "LLCVBase/llcv_err.h"
 
 namespace llcv {
   
   void ContourScan::Reset() {
     for(auto& ctor : _ctor_v)
       ctor.clear();
+
+    _scan_v.clear();
     return;
   }
   
@@ -69,7 +72,117 @@ namespace llcv {
     return;
   }
 
+  void ContourScan::Scan() {
+    
+    for(const auto&  plane_comb : _plane_comb_2d_v) {
+      
+      auto plane1 = plane_comb.first;
+      auto plane2 = plane_comb.second;
+      
+      const auto& nz_pt1_v = _ctor_v[plane1];
+      const auto& nz_pt2_v = _ctor_v[plane2];
 
+      if (nz_pt1_v.empty()) continue;
+      if (nz_pt2_v.empty()) continue;
+
+      _scan_v.reserve(_scan_v.size() + nz_pt1_v.size()*nz_pt2_v.size());
+
+      static larocv::data::Vertex3D res;
+      for(const auto& nz_pt1 : nz_pt1_v) {
+	for(const auto& nz_pt2 : nz_pt2_v) {
+	  if (!_geo.YZPoint(nz_pt1,plane1,
+			    nz_pt2,plane2,
+			    res)) continue;
+	  _scan_v.emplace_back(res);
+	} // end pt2
+      } // end pt1
+    } // end plane_comb
+    
+    return;
+  }
+  
+
+  std::vector<std::array<float,3> > ContourScan::Voxelize(const float dx, const float dy, const float dz) const {
+
+    std::vector<std::array<float, 3> > ret_v;
+    
+    // get the minimum x,y,z
+    double min_x = larocv::kINVALID_DOUBLE;
+    double min_y = larocv::kINVALID_DOUBLE;
+    double min_z = larocv::kINVALID_DOUBLE;
+
+    double max_x = -1*larocv::kINVALID_DOUBLE;
+    double max_y = -1*larocv::kINVALID_DOUBLE;
+    double max_z = -1*larocv::kINVALID_DOUBLE;
+
+    for(const auto& scan : _scan_v) {
+      min_x = std::min(min_x,scan.x);
+      min_y = std::min(min_y,scan.y);
+      min_z = std::min(min_z,scan.z);
+      max_x = std::max(max_x,scan.x);
+      max_y = std::max(max_y,scan.y);
+      max_z = std::max(max_z,scan.z);
+    }
+    
+    std::cout << "min=(" << min_x << "," << min_y << "," << min_z << ")" << std::endl;
+    std::cout << "max=(" << max_x << "," << max_y << "," << max_z << ")" << std::endl;
+
+    int nbins_x = (int)((max_x - min_x) / dx + 0.5) + 1;
+    int nbins_y = (int)((max_y - min_y) / dy + 0.5) + 1;
+    int nbins_z = (int)((max_z - min_z) / dz + 0.5) + 1;
+    
+    std::vector<std::vector<std::vector<int> > > voxel_vvv;
+    voxel_vvv.resize(nbins_x);
+    for(auto& voxel_vv : voxel_vvv) {
+      voxel_vv.resize(nbins_y);
+      for(auto& voxel_v : voxel_vv) {
+	voxel_v.resize(nbins_z,0);
+      }
+    }
+
+    for(const auto& scan : _scan_v) {
+      int binx = (int)(((scan.x - min_x) / dx) + 0.5);
+      int biny = (int)(((scan.y - min_y) / dy) + 0.5);
+      int binz = (int)(((scan.z - min_z) / dz) + 0.5);
+
+      if (binx >= nbins_x or biny >= nbins_y or binz >= nbins_z) {
+	std::stringstream ss;
+	ss << "@(binx,biny,binz)="
+	   << "(" << binx << "," << biny << "," << binz << ") "
+	   << ">= " 
+	   << "(" << nbins_x << "," << nbins_y << "," << nbins_z << ")";
+	throw llcv_err(ss.str());
+      }
+      voxel_vvv.at(binx).at(biny).at(binz) = 1;
+    }
+
+    
+    for(int bx=0; bx<nbins_x; ++bx) {
+      for(int by=0; by<nbins_y; ++by) {
+	for(int bz=0; bz<nbins_z; ++bz) {
+
+	  if (!voxel_vvv.at(bx).at(by).at(bz)) 
+	    continue;
+	  
+	  float pt_x, pt_y, pt_z;
+	  
+	  pt_x = (min_x + bx*dx) + (dx / 0.5);
+	  pt_y = (min_y + by*dy) + (dy / 0.5);
+	  pt_z = (min_z + bz*dz) + (dz / 0.5);
+	  
+	  std::array<float,3> pt_v;
+	  pt_v[0] = pt_x;
+	  pt_v[1] = pt_y;
+	  pt_v[2] = pt_z;
+
+	  ret_v.emplace_back(std::move(pt_v));
+	}
+      }
+    }
+    
+
+    return ret_v;
+  }
 
 }
 

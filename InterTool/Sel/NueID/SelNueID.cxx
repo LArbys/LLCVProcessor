@@ -77,9 +77,12 @@ namespace llcv {
     _outtree->Branch("par1_phi"      , &_par1_phi    , "par1_phi/F");
     _outtree->Branch("par1_length"   , &_par1_length , "par1_length/F");
     _outtree->Branch("par1_score"    , &_par1_score  , "par1_score/F");
-    _outtree->Branch("par1_dx"       , &_par1_dx     , "par1_dx/F");
-    _outtree->Branch("par1_dy"       , &_par1_dy     , "par1_dy/F");
-    _outtree->Branch("par1_dz"       , &_par1_dz     , "par1_dz/F");
+    _outtree->Branch("par1_dx1"      , &_par1_dx1    , "par1_dx1/F");
+    _outtree->Branch("par1_dy1"      , &_par1_dy1    , "par1_dy1/F");
+    _outtree->Branch("par1_dz1"      , &_par1_dz1    , "par1_dz1/F");
+    _outtree->Branch("par1_dx2"      , &_par1_dx2    , "par1_dx2/F");
+    _outtree->Branch("par1_dy2"      , &_par1_dy2    , "par1_dy2/F");
+    _outtree->Branch("par1_dz2"      , &_par1_dz2    , "par1_dz2/F");
     _outtree->Branch("par1_nplanes"  , &_par1_nplanes, "par1_nplanes/I");
     _outtree->Branch("par1_planes_v" , &_par1_planes_v);
     _outtree->Branch("par1_xdead_v"  , &_par1_xdead_v);
@@ -89,9 +92,12 @@ namespace llcv {
     _outtree->Branch("par2_phi"      , &_par2_phi    , "par2_phi/F");
     _outtree->Branch("par2_length"   , &_par2_length , "par2_length/F");
     _outtree->Branch("par2_score"    , &_par2_score  , "par2_score/F");
-    _outtree->Branch("par2_dx"       , &_par2_dx     , "par2_dx/F");
-    _outtree->Branch("par2_dy"       , &_par2_dy     , "par2_dy/F");
-    _outtree->Branch("par2_dz"       , &_par2_dz     , "par2_dz/F");
+    _outtree->Branch("par2_dx1"      , &_par2_dx1    , "par2_dx1/F");
+    _outtree->Branch("par2_dy1"      , &_par2_dy1    , "par2_dy1/F");
+    _outtree->Branch("par2_dz1"      , &_par2_dz1    , "par2_dz1/F");
+    _outtree->Branch("par2_dx2"      , &_par2_dx2    , "par2_dx2/F");
+    _outtree->Branch("par2_dy2"      , &_par2_dy2    , "par2_dy2/F");
+    _outtree->Branch("par2_dz2"      , &_par2_dz2    , "par2_dz2/F");
     _outtree->Branch("par2_nplanes"  , &_par2_nplanes, "par2_nplanes/I");
     _outtree->Branch("par2_planes_v" , &_par2_planes_v);
     _outtree->Branch("par2_xdead_v"  , &_par2_xdead_v);
@@ -226,6 +232,20 @@ namespace llcv {
     _outtree->Branch("par2_dqdx_U", &_par2_dqdx_U, "par2_dqdx_U/F");
     _outtree->Branch("par2_dqdx_V", &_par2_dqdx_V, "par2_dqdx_V/F");
     _outtree->Branch("par2_dqdx_Y", &_par2_dqdx_Y, "par2_dqdx_Y/F");
+
+    _outtree->Branch("par1_dqdx_step_U", &_par1_dqdx_step_U, "par1_dqdx_step_U/F");
+    _outtree->Branch("par1_dqdx_step_V", &_par1_dqdx_step_V, "par1_dqdx_step_V/F");
+    _outtree->Branch("par1_dqdx_step_Y", &_par1_dqdx_step_Y, "par1_dqdx_step_Y/F");
+    _outtree->Branch("par2_dqdx_step_U", &_par2_dqdx_step_U, "par2_dqdx_step_U/F");
+    _outtree->Branch("par2_dqdx_step_V", &_par2_dqdx_step_V, "par2_dqdx_step_V/F");
+    _outtree->Branch("par2_dqdx_step_Y", &_par2_dqdx_step_Y, "par2_dqdx_step_Y/F");
+
+    _outtree->Branch("par1_dqdx_U_v", &_par1_dqdx_U_v);
+    _outtree->Branch("par1_dqdx_V_v", &_par1_dqdx_V_v);
+    _outtree->Branch("par1_dqdx_Y_v", &_par1_dqdx_Y_v);
+    _outtree->Branch("par2_dqdx_U_v", &_par2_dqdx_U_v);
+    _outtree->Branch("par2_dqdx_V_v", &_par2_dqdx_V_v);
+    _outtree->Branch("par2_dqdx_Y_v", &_par2_dqdx_Y_v);
 
     _outtree->Branch("par1_length3d_U", &_par1_length3d_U, "par1_length3d_U/F");
     _outtree->Branch("par1_length3d_V", &_par1_length3d_V, "par1_length3d_V/F");
@@ -405,6 +425,9 @@ namespace llcv {
     auto dead_v = Image().Image<cv::Mat>(kImageDead,_cropx,_cropy);
     auto shr_v  = Image().Image<cv::Mat>(kImageShower,_cropx,_cropy);
     
+    for(const auto& meta : meta_v)
+      _PixelScan3D.SetPlaneInfo(*meta);
+
     _white_img = larocv::BlankImage(*(mat_v.front()),0);
     _white_img.setTo(cv::Scalar(0));
     
@@ -474,20 +497,20 @@ namespace llcv {
     std::array<larocv::GEO2D_ContourArray_t,3> plane_ctor_vv;
     std::array<larocv::GEO2D_Contour_t,3> vertex_ctor_v;
     std::array<size_t,3> close_id_v;
-
+    
     std::array<larocv::GEO2D_ContourArray_t,3> par_ctor_v;
     std::array<larocv::GEO2D_ContourArray_t,3> line_contour_vv;
     std::array<std::vector<Triangle>,3> triangle_vv;
     std::array<geo2d::VectorArray<float>,3> edge_vv;
-
+    
     float _distance_tol = 20;
-
+    
     for(size_t plane=0; plane<3; ++plane) {
       auto& cimg         = cimg_v[plane];
       auto& close_id     = close_id_v[plane];
       auto& vertex_ctor  = vertex_ctor_v[plane];
       auto& plane_ctor_v = plane_ctor_vv[plane];
-
+      
       plane_ctor_v = larocv::FindContours(cimg);
       
       LLCV_DEBUG() << "@plane=" << plane 
@@ -739,11 +762,22 @@ namespace llcv {
       _ShowerTools.ReconstructAngle(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructLength(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructdQdx(img_v,aimg_v,obj_col,3+3); //offset by ~2cm for 5 pixel vertex mask out
-      
+
       LLCV_DEBUG() << "theta=" << obj_col.Theta() << " phi=" << obj_col.Phi() << std::endl;
       LLCV_DEBUG() << "(" << obj_col.dX() << "," << obj_col.dY() << "," << obj_col.dZ() << ")" << std::endl;
       LLCV_DEBUG() << "length=" << obj_col.Length() << std::endl;
       LLCV_DEBUG() << "score=" << score << std::endl;
+
+      auto pca_v = EstimateDirection(obj_col);
+
+      LLCV_DEBUG() << "pca=(" << pca_v[0] << "," << pca_v[1] << "," << pca_v[2] << ")" << std::endl;
+     
+      obj_col.SetddX(pca_v[0]);
+      obj_col.SetddY(pca_v[1]);
+      obj_col.SetddZ(pca_v[2]);
+
+      _ShowerTools.ReconstructdQdxProfile(img_v,aimg_v,obj_col);
+
     }
 
     
@@ -898,9 +932,12 @@ namespace llcv {
       *_par_phi      = obj_col.Phi();
       *_par_length   = obj_col.Length();
       *_par_score    = obj_col.Score();
-      *_par_dx       = obj_col.dX();
-      *_par_dy       = obj_col.dY();
-      *_par_dz       = obj_col.dZ();
+      *_par_dx1      = obj_col.dX();
+      *_par_dy1      = obj_col.dY();
+      *_par_dz1      = obj_col.dZ();
+      *_par_dx2      = obj_col.ddX();
+      *_par_dy2      = obj_col.ddY();
+      *_par_dz2      = obj_col.ddZ();
       *_par_nplanes  = (int)obj_col.size();
       *_par_planes_v = obj_col.Planes();
 
@@ -940,6 +977,8 @@ namespace llcv {
 	*_par_triangle_coverage       = obj2d.brem_triangle().Coverage(aimg_v[plane]);
 	*_par_expand_charge           = obj2d.Charge(*(img_v[plane]),aimg_v[plane]);
 	*_par_dqdx                    = obj2d.dQdx();
+	*_par_dqdx_v                  = obj2d.dQdxProfile();
+	*_par_dqdx_step               = obj2d.dQdxStep(); 
 	*_par_length3d                = obj2d.Length();
 	*_par_brem_idx                = obj2d.BremIndex();
 	*_par_showerfrac              = obj2d.Fraction(*shr_v[plane],aimg_v[plane]);
@@ -1157,6 +1196,9 @@ namespace llcv {
     // Debug print out
     //
     if (_debug) {
+
+      LLCV_DEBUG() << "DEBUG" << std::endl;
+
       for(size_t plane=0; plane<3; ++plane) {
 	
 	auto write_img = timg_v[plane].clone();
@@ -1189,16 +1231,29 @@ namespace llcv {
 	  for(const auto& poly : obj2d.ExpandedPolygons()) 
 	    cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,0,255));
 
-	  // for(const auto& poly : obj2d.Polygons()) 
-	  //   cv::drawContours(mat3d,larocv::GEO2D_ContourArray_t(1,poly.Hull()),-1,cv::Scalar(0,255,0));
-
+	  geo2d::Line<float> line(obj2d.Start(),obj2d.Dir());
+	  
+	  if (obj2d.Dir().x!=0) {
+	    for(int i = -150; i < 150; ++i) {
+	      int pt_i_x = obj2d.Start().x+i;
+	      int pt_i_y = line.y(pt_i_x);
+	      
+	      if (pt_i_x>=400) continue;
+	      if (pt_i_y>=400) continue;
+	      
+	      if (pt_i_x<0) continue;
+	      if (pt_i_y<0) continue;
+	      
+	      mat3d.at<cv::Vec3b>(pt_i_y,pt_i_x) = {0,165,255};
+	    }
+	  }
 	}
+	
       
 	// _CosmicTag.DrawLines(mat3d);
 	_CosmicTag.DrawContours(mat3d);
 	
 	std::stringstream ss;
-
 	ss.str("");
 	ss << "cpng/plane_img_" << Run() << "_" << SubRun() << "_" << Event() << "_" << VertexID() << "_" << plane << ".png";
 	cv::imwrite(ss.str(),mat3d);
@@ -1412,9 +1467,12 @@ namespace llcv {
     _par1_phi      = -1.0*larocv::kINVALID_FLOAT;
     _par1_length   = -1.0*larocv::kINVALID_FLOAT;
     _par1_score    = -1.0*larocv::kINVALID_FLOAT;
-    _par1_dx       = -1.0*larocv::kINVALID_FLOAT;
-    _par1_dy       = -1.0*larocv::kINVALID_FLOAT;
-    _par1_dz       = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dx1      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dy1      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dz1      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dx2      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dy2      = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dz2      = -1.0*larocv::kINVALID_FLOAT;
     _par1_nplanes  = -1*larocv::kINVALID_INT;
     _par1_planes_v.clear();
     _par1_planes_v.resize(3,-1);
@@ -1427,9 +1485,12 @@ namespace llcv {
     _par2_phi     = -1.0*larocv::kINVALID_FLOAT;
     _par2_length  = -1.0*larocv::kINVALID_FLOAT;
     _par2_score   = -1.0*larocv::kINVALID_FLOAT;
-    _par2_dx      = -1.0*larocv::kINVALID_FLOAT;
-    _par2_dy      = -1.0*larocv::kINVALID_FLOAT;
-    _par2_dz      = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dx1     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dy1     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dz1     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dx2     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dy2     = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dz2     = -1.0*larocv::kINVALID_FLOAT;
     _par2_nplanes = -1*larocv::kINVALID_INT;
     _par2_planes_v.clear();
     _par2_planes_v.resize(3,-1);
@@ -1442,9 +1503,12 @@ namespace llcv {
     _par_phi           = nullptr;
     _par_length        = nullptr;
     _par_score         = nullptr;
-    _par_dx            = nullptr;
-    _par_dy            = nullptr;
-    _par_dz            = nullptr;
+    _par_dx1           = nullptr;
+    _par_dy1           = nullptr;
+    _par_dz1           = nullptr;
+    _par_dx2           = nullptr;
+    _par_dy2           = nullptr;
+    _par_dz2           = nullptr;
     _par_nplanes       = nullptr;
     _par_planes_v      = nullptr;
     _par_xdead_v       = nullptr;
@@ -1589,6 +1653,22 @@ namespace llcv {
     _par2_dqdx_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_dqdx_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_dqdx = nullptr;
+
+    _par1_dqdx_U_v.clear();
+    _par1_dqdx_V_v.clear();
+    _par1_dqdx_Y_v.clear();
+    _par2_dqdx_U_v.clear();
+    _par2_dqdx_V_v.clear();
+    _par2_dqdx_Y_v.clear();
+    _par_dqdx_v = nullptr;
+
+    _par1_dqdx_step_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_step_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_step_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_step_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_step_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_step_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_dqdx_step = nullptr;
     
     _par1_brem_idx_U = -1.0*larocv::kINVALID_INT;
     _par1_brem_idx_V = -1.0*larocv::kINVALID_INT;
@@ -1883,9 +1963,12 @@ namespace llcv {
       _par_phi      = &_par1_phi;
       _par_length   = &_par1_length;
       _par_score    = &_par1_score;
-      _par_dx       = &_par1_dx;
-      _par_dy       = &_par1_dy;
-      _par_dz       = &_par1_dz;
+      _par_dx1      = &_par1_dx1;
+      _par_dy1      = &_par1_dy1;
+      _par_dz1      = &_par1_dz1;
+      _par_dx2      = &_par1_dx2;
+      _par_dy2      = &_par1_dy2;
+      _par_dz2      = &_par1_dz2;
       _par_nplanes  = &_par1_nplanes;
       _par_planes_v = &_par1_planes_v;
       _par_xdead_v  = &_par1_xdead_v;
@@ -1898,9 +1981,12 @@ namespace llcv {
       _par_phi      = &_par2_phi;
       _par_length   = &_par2_length;
       _par_score    = &_par2_score;
-      _par_dx       = &_par2_dx;
-      _par_dy       = &_par2_dy;
-      _par_dz       = &_par2_dz;
+      _par_dx1      = &_par2_dx1;
+      _par_dy1      = &_par2_dy1;
+      _par_dz1      = &_par2_dz1;
+      _par_dx2      = &_par2_dx2;
+      _par_dy2      = &_par2_dy2;
+      _par_dz2      = &_par2_dz2;
       _par_nplanes  = &_par2_nplanes;
       _par_planes_v = &_par2_planes_v;
       _par_xdead_v  = &_par2_xdead_v;
@@ -1940,6 +2026,8 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_U;
 	_par_expand_charge           = &_par1_expand_charge_U;
 	_par_dqdx                    = &_par1_dqdx_U;
+	_par_dqdx_step               = &_par1_dqdx_step_U;
+	_par_dqdx_v                  = &_par1_dqdx_U_v;
 	_par_length3d                = &_par1_length3d_U;
 	_par_showerfrac              = &_par1_showerfrac_U;
 
@@ -1981,6 +2069,8 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_V;
 	_par_expand_charge           = &_par1_expand_charge_V;
 	_par_dqdx                    = &_par1_dqdx_V;
+	_par_dqdx_step               = &_par1_dqdx_step_V;
+	_par_dqdx_v                  = &_par1_dqdx_V_v;
 	_par_length3d                = &_par1_length3d_V;
 	_par_showerfrac              = &_par1_showerfrac_V;
 
@@ -2022,6 +2112,8 @@ namespace llcv {
 	_par_brem_idx                = &_par1_brem_idx_Y;
 	_par_expand_charge           = &_par1_expand_charge_Y;
 	_par_dqdx                    = &_par1_dqdx_Y;
+	_par_dqdx_step               = &_par1_dqdx_step_Y;
+	_par_dqdx_v                  = &_par1_dqdx_Y_v;
 	_par_length3d                = &_par1_length3d_Y;
 	_par_showerfrac              = &_par1_showerfrac_Y;
 
@@ -2070,6 +2162,8 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_U;
 	_par_expand_charge           = &_par2_expand_charge_U;
 	_par_dqdx                    = &_par2_dqdx_U;
+	_par_dqdx_step               = &_par2_dqdx_step_U;
+	_par_dqdx_v                  = &_par2_dqdx_U_v;
 	_par_length3d                = &_par2_length3d_U;
 	_par_showerfrac              = &_par2_showerfrac_U;
 
@@ -2111,6 +2205,8 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_V;
 	_par_expand_charge           = &_par2_expand_charge_V;
 	_par_dqdx                    = &_par2_dqdx_V;
+	_par_dqdx_step               = &_par2_dqdx_step_V;
+	_par_dqdx_v                  = &_par2_dqdx_V_v;
 	_par_length3d                = &_par2_length3d_V;
 	_par_showerfrac              = &_par2_showerfrac_V;
 
@@ -2152,6 +2248,8 @@ namespace llcv {
 	_par_brem_idx                = &_par2_brem_idx_Y;
 	_par_expand_charge           = &_par2_expand_charge_Y;
 	_par_dqdx                    = &_par2_dqdx_Y;
+	_par_dqdx_step               = &_par2_dqdx_step_Y;
+	_par_dqdx_v                  = &_par2_dqdx_Y_v;
 	_par_length3d                = &_par2_length3d_Y;
 	_par_showerfrac              = &_par2_showerfrac_Y;
 
@@ -2301,6 +2399,31 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     return res;
   }
   
+  std::array<float,3> SelNueID::EstimateDirection(Object2DCollection obj_col) {
+    std::array<float,3> ret_v;
+
+    _ContourScan.Reset();
+
+    // register the lines for this object
+    for(const auto& obj2d : obj_col) {
+      _white_img.setTo(cv::Scalar(255));
+      _ContourScan.RegisterContour(_white_img,obj2d.Line(),obj2d.Plane(),-1);
+    }
+
+    
+    // scan 
+    _ContourScan.Scan();
+    
+    // return voxels
+    auto vox_v = _ContourScan.Voxelize(0.3,0.3,0.3);
+
+    LLCV_DEBUG() << "vox_v sz=" << vox_v.size() << std::endl;
+
+    // calculate PCA
+    ret_v = _ShowerTools.ComputePCA(vox_v,obj_col);
+ 
+    return ret_v;
+  }
   
   void SelNueID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;

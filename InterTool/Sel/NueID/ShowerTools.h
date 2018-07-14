@@ -30,6 +30,11 @@ namespace llcv {
 			 Object2DCollection& obj_col,
 			 double dtrunk);
     
+    void ReconstructdQdxProfile(const std::vector<larcv::Image2D*>& img_v,
+				const std::array<cv::Mat,3>& aimg_v,
+				Object2DCollection& obj_col);
+    
+    std::array<float,3> ComputePCA(std::vector<std::array<float,3> > pts_v, const Object2DCollection& obj_col);
 
   };
 
