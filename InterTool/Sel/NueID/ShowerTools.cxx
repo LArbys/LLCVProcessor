@@ -336,6 +336,7 @@ namespace llcv {
     TVector3 dir3D(obj_col.ddX(),obj_col.ddY(),obj_col.ddZ());
     
     std::array<geo2d::Line<float>,3> plane_r_v;
+    std::array<bool,3> valid_v;
     std::array<float,3> plane_f_v;
     
     for(size_t plane=0; plane<3; ++plane) {
@@ -367,8 +368,12 @@ namespace llcv {
       auto ldir_len = geo2d::length(ldir);
       if (ldir_len!=0)
 	ldir /= geo2d::length(ldir);
+      
+      valid_v[plane] = true;
+      if (ldir.x==0 and ldir.y==0)
+	valid_v[plane] = false;
 
-      std::cout << "ldir=(" << ldir.x << "," << ldir.y << ")" << std::endl;
+      std::cout << "ldir=(" << ldir.x << "," << ldir.y << ") valid=" << valid_v[plane] << std::endl;
       plane_r_v[plane] = geo2d::Line<float>(pt1,ldir);
       plane_f_v[plane] = geomHelper->Project_3DLine_OnPlane(dir3D, plane).Mag();
     }
@@ -377,6 +382,8 @@ namespace llcv {
     for(auto& obj : obj_col) {
 
       const auto pl = obj._plane;
+
+      if (!valid_v[pl]) continue;
 
       // grab the 2D start point of the cluster
       const auto& start2D = obj.Start();
@@ -404,9 +411,6 @@ namespace llcv {
 	  q_v.emplace_back(q);
 	  
 	  auto dx = geo2d::dist(pt_li*0.3,start2D*0.3);
-
-	  // go to 3D
-	  dx *= 1/f;
 	  
 	  dx_v.emplace_back(dx);
 	  
@@ -449,6 +453,7 @@ namespace llcv {
 	  throw llcv_err(ss.str());
 	}
 	
+	// correct for pitch
 	dqdx_v.at(bin) += (q / (ddx * f));
       }
       
