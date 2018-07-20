@@ -57,6 +57,14 @@ namespace llcv {
     _outtree->Branch("vtx_xing_V", &_vtx_xing_V, "vtx_xing_V/I");
     _outtree->Branch("vtx_xing_Y", &_vtx_xing_Y, "vtx_xing_Y/I");
 
+    _outtree->Branch("vtx_charge_U", &_vtx_charge_U, "vtx_charge_U/I");
+    _outtree->Branch("vtx_charge_V", &_vtx_charge_V, "vtx_charge_V/I");
+    _outtree->Branch("vtx_charge_Y", &_vtx_charge_Y, "vtx_charge_Y/I");
+
+    _outtree->Branch("vtx_dead_U", &_vtx_dead_U, "vtx_dead_U/I");
+    _outtree->Branch("vtx_dead_V", &_vtx_dead_V, "vtx_dead_V/I");
+    _outtree->Branch("vtx_dead_Y", &_vtx_dead_Y, "vtx_dead_Y/I");
+
     _outtree->Branch("vtx_linelen_U_v", &_vtx_linelen_U_v);
     _outtree->Branch("vtx_linelen_V_v", &_vtx_linelen_V_v);
     _outtree->Branch("vtx_linelen_Y_v", &_vtx_linelen_Y_v);
@@ -913,6 +921,42 @@ namespace llcv {
       auto near_id = _CosmicTag.NearestCosmicToPoint(vertex_pt,edge_cosmic_vtx_dist);
     }
 
+    // vertex stuff
+    for(size_t plane=0; plane<3; ++plane) {
+      // mask out the vertex from image
+      const auto& vertex_pt = vertex_pt_v[plane];
+      geo2d::Circle<float> vtx_circle(vertex_pt.x,vertex_pt.y,5);
+
+      _white_img.setTo(cv::Scalar(255));
+      auto cimg_mask  = larocv::MaskImage(cimg_v[plane],vtx_circle,-1,false);
+      auto dead_mask  = larocv::MaskImage(dimg_v[plane],vtx_circle,-1,false);
+      auto white_mask = larocv::MaskImage(_white_img,vtx_circle,-1,false);
+
+      int cimg_count  = (int)larocv::CountNonZero(cimg_mask);
+      int dead_count  = (int)larocv::CountNonZero(dead_mask);
+      int white_count = (int)larocv::CountNonZero(white_mask);
+
+      int is_charge = 0;
+      int near_dead = 0;
+
+      if (cimg_count > 0) is_charge = 1;
+      if (white_count != dead_count) near_dead = 1;
+
+      if (plane==0) {
+	_vtx_charge_U = is_charge;
+	_vtx_dead_U   = near_dead;
+      }
+      if (plane==1) {
+	_vtx_charge_V = is_charge;
+	_vtx_dead_V   = near_dead;
+      }
+      if (plane==2) {
+	_vtx_charge_Y = is_charge;
+	_vtx_dead_Y   = near_dead;
+      }
+    }
+
+
     // object collection stuff
     auto& out_pgraph = Data().MakePGraph();
     
@@ -1441,16 +1485,27 @@ namespace llcv {
   void SelNueID::ResetEvent() {
     
     _n_par     = -1.0*larocv::kINVALID_INT;
+
     _edge_dist_v.clear();
     _edge_dist_v.resize(3,-1);
+
     _edge_n_cosmic_v.clear();
     _edge_n_cosmic_v.resize(3,-1);
+
     _edge_cosmic_vtx_dist_v.clear();
     _edge_cosmic_vtx_dist_v.resize(3,-1);
 
     _vtx_xing_U = -1.0*larocv::kINVALID_INT;
     _vtx_xing_V = -1.0*larocv::kINVALID_INT;
     _vtx_xing_Y = -1.0*larocv::kINVALID_INT;
+
+    _vtx_charge_U = -1.0*larocv::kINVALID_INT;
+    _vtx_charge_V = -1.0*larocv::kINVALID_INT;
+    _vtx_charge_Y = -1.0*larocv::kINVALID_INT;
+
+    _vtx_dead_U = -1.0*larocv::kINVALID_INT;
+    _vtx_dead_V = -1.0*larocv::kINVALID_INT;
+    _vtx_dead_Y = -1.0*larocv::kINVALID_INT;
 
     _vtx_linelen_U_v.clear();
     _vtx_linelen_V_v.clear();
@@ -2401,6 +2456,10 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
   
   std::array<float,3> SelNueID::EstimateDirection(Object2DCollection obj_col) {
     std::array<float,3> ret_v;
+    ret_v[0] = -1*larocv::kINVALID_FLOAT;
+    ret_v[1] = -1*larocv::kINVALID_FLOAT;
+    ret_v[2] = -1*larocv::kINVALID_FLOAT;
+
 
     _ContourScan.Reset();
 
@@ -2410,7 +2469,6 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
       _ContourScan.RegisterContour(_white_img,obj2d.Line(),obj2d.Plane(),-1);
     }
 
-    
     // scan 
     _ContourScan.Scan();
     

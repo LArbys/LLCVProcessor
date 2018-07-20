@@ -54,7 +54,7 @@ namespace llcv {
 	  int img_pt   = (int)in_img_v[plane2].at<uchar>(py,px);
 	  
 	  int not_dead = (int)dead_img_v[plane2].at<uchar>(py,px);
-							 
+					
 	  if (img_pt<10 and not_dead) continue;
 	  
 	  out_img_v[plane0].at<uchar>(_ctor_v[plane0][pid0].y,
@@ -82,6 +82,10 @@ namespace llcv {
       const auto& nz_pt1_v = _ctor_v[plane1];
       const auto& nz_pt2_v = _ctor_v[plane2];
 
+      // std::cout << "@(plane1,plane2)=" 
+      // 		<< "(" << plane1 << "," << plane2 << ")" 
+      // 		<< "sz=(" << nz_pt1_v.size() << "," << nz_pt2_v.size() << ")" << std::endl;
+
       if (nz_pt1_v.empty()) continue;
       if (nz_pt2_v.empty()) continue;
 
@@ -96,6 +100,8 @@ namespace llcv {
 	  _scan_v.emplace_back(res);
 	} // end pt2
       } // end pt1
+
+      //std::cout << "... _scan_v sz=" << _scan_v.size() << std::endl;
     } // end plane_comb
     
     return;
@@ -114,6 +120,8 @@ namespace llcv {
     double max_x = -1*larocv::kINVALID_DOUBLE;
     double max_y = -1*larocv::kINVALID_DOUBLE;
     double max_z = -1*larocv::kINVALID_DOUBLE;
+    
+    if (_scan_v.empty()) return ret_v;
 
     for(const auto& scan : _scan_v) {
       min_x = std::min(min_x,scan.x);
@@ -124,8 +132,8 @@ namespace llcv {
       max_z = std::max(max_z,scan.z);
     }
     
-    std::cout << "min=(" << min_x << "," << min_y << "," << min_z << ")" << std::endl;
-    std::cout << "max=(" << max_x << "," << max_y << "," << max_z << ")" << std::endl;
+    //std::cout << "min=(" << min_x << "," << min_y << "," << min_z << ")" << std::endl;
+    //std::cout << "max=(" << max_x << "," << max_y << "," << max_z << ")" << std::endl;
 
     int nbins_x = (int)((max_x - min_x) / dx + 0.5) + 1;
     int nbins_y = (int)((max_y - min_y) / dy + 0.5) + 1;

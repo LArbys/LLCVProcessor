@@ -471,6 +471,13 @@ namespace llcv {
 
   std::array<float,3> ShowerTools::ComputePCA(std::vector<std::array<float,3> > pts_v, const Object2DCollection& obj_col) {
   
+    std::array<float,3> ret_v;
+    ret_v[0] = -1*larocv::kINVALID_FLOAT;
+    ret_v[1] = -1*larocv::kINVALID_FLOAT;
+    ret_v[2] = -1*larocv::kINVALID_FLOAT;
+
+    if (pts_v.empty()) return ret_v;
+
     cv::Mat vertex_mat(pts_v.size(), 3, CV_32FC1);
 
     for(size_t pid=0; pid < pts_v.size(); ++pid) {

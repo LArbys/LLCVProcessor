@@ -112,9 +112,20 @@ namespace llcv {
     int _n_par;
     std::vector<float> _par_score_v;
 
+    // crossing points at vertex
     int _vtx_xing_U;
     int _vtx_xing_V;
     int _vtx_xing_Y;
+
+    // is there charge
+    int _vtx_charge_U;
+    int _vtx_charge_V;
+    int _vtx_charge_Y;
+
+    // is there dead wires
+    int _vtx_dead_U;
+    int _vtx_dead_V;
+    int _vtx_dead_Y;
 
     std::vector<float> _vtx_linelen_U_v;
     std::vector<float> _vtx_linelen_V_v;
