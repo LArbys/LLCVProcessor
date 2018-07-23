@@ -857,7 +857,7 @@ namespace llcv {
 
 
     //
-    // Detect branches for obj2d polygons
+    // Detect branches for obj2d extended polygons
     //
     LLCV_DEBUG() << "Detecting branches..." << std::endl;
     for(auto& obj_col : obj_col_v) {
@@ -865,7 +865,7 @@ namespace llcv {
 	if (!obj_col.HasObject(plane)) continue;
 	const auto& cimg = cimg_v[plane];
 	auto& obj2d = obj_col.PlaneObjectRW(plane);
-	for(auto& polygon : obj2d._polygon_v) 
+	for(auto& polygon : obj2d._expand_polygon_v) 
 	  polygon.DetectBranching(cimg,4,2,5,5);
       }
     }
@@ -1029,10 +1029,11 @@ namespace llcv {
 	
 	(*_par_cosmic_dist_v)[plane] = NearestPolygonToCosmic(obj2d.Polygons(),plane);
 
-	ResizePlanePolygon(npolygons);
+	auto nexpanded_polygons = obj2d.ExpandedPolygons().size();
+	ResizePlanePolygon(nexpanded_polygons);
 
-	for(size_t polyid=0; polyid<npolygons; ++polyid) {
-	  const auto& polygon = obj2d.Polygons()[polyid];
+	for(size_t polyid=0; polyid<nexpanded_polygons; ++polyid) {
+	  const auto& polygon = obj2d.ExpandedPolygons()[polyid];
 	  (*_par_numberdefects_v)[polyid]     = polygon.NumberDefects(5);
 	  (*_par_numberdefects_ns_v)[polyid]  = polygon.NumberDefectsNoStart(5);
 	  (*_par_largestdefect_v)[polyid]     = polygon.LargestDefect();
