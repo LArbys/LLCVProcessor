@@ -12,6 +12,7 @@
 #include "ShowerTools.h"
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
 
+
 namespace llcv {
   
   class SelNueID : public InterSelBase { 
@@ -40,6 +41,8 @@ namespace llcv {
     size_t _n_neighbors;
     float _brem_dist;
     int _brem_size;
+    float _tradius;
+    float _tsigma;
 
     float _extension_cutoff;
     
@@ -55,7 +58,7 @@ namespace llcv {
 
     std::vector<CosmicTag> _CosmicTag_v;
     std::vector<LineExtension> _LineExtension_v;
-
+    
     larocv::PixelScan3D _PixelScan3D;
 
   private:
@@ -92,6 +95,8 @@ namespace llcv {
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
+
+    float PointCosmicDistance(const geo2d::Vector<float>& pt, const size_t plane);
 
     int DetectBrem(Triangle& triangle, 
 		   const larocv::GEO2D_ContourArray_t& other_ctor_v,
@@ -153,6 +158,7 @@ namespace llcv {
     std::vector<int>   _par1_planes_v;
     std::vector<int>   _par1_xdead_v;
     std::vector<float> _par1_cosmic_dist_v;
+    std::vector<float> _par1_cosmic_dist_end_v;
 
     float _par2_theta;
     float _par2_phi;
@@ -168,6 +174,7 @@ namespace llcv {
     std::vector<int>   _par2_planes_v;
     std::vector<int>   _par2_xdead_v;
     std::vector<float> _par2_cosmic_dist_v;
+    std::vector<float> _par2_cosmic_dist_end_v;
 
     float* _par_theta;
     float* _par_phi;
@@ -183,6 +190,7 @@ namespace llcv {
     std::vector<int>*   _par_planes_v;
     std::vector<int>*   _par_xdead_v;
     std::vector<float>* _par_cosmic_dist_v;
+    std::vector<float>* _par_cosmic_dist_end_v;
 
     int _par1_n_polygons_U;
     int _par1_n_polygons_V;
@@ -328,6 +336,14 @@ namespace llcv {
     float _par2_dqdx_step_Y;
     float *_par_dqdx_step;
 
+    float _par1_dqdx_pitch_U;
+    float _par1_dqdx_pitch_V;
+    float _par1_dqdx_pitch_Y;
+    float _par2_dqdx_pitch_U;
+    float _par2_dqdx_pitch_V;
+    float _par2_dqdx_pitch_Y;
+    float *_par_dqdx_pitch;
+
     std::vector<float> _par1_dqdx_U_v;
     std::vector<float> _par1_dqdx_V_v;
     std::vector<float> _par1_dqdx_Y_v;
@@ -335,6 +351,14 @@ namespace llcv {
     std::vector<float> _par2_dqdx_V_v;
     std::vector<float> _par2_dqdx_Y_v;
     std::vector<float>* _par_dqdx_v;
+
+    std::vector<float> _par1_tdqdx_U_v;
+    std::vector<float> _par1_tdqdx_V_v;
+    std::vector<float> _par1_tdqdx_Y_v;
+    std::vector<float> _par2_tdqdx_U_v;
+    std::vector<float> _par2_tdqdx_V_v;
+    std::vector<float> _par2_tdqdx_Y_v;
+    std::vector<float>* _par_tdqdx_v;
 
     int _par1_brem_idx_U;
     int _par1_brem_idx_V;

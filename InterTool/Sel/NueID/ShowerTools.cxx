@@ -373,7 +373,7 @@ namespace llcv {
       if (ldir.x==0 and ldir.y==0)
 	valid_v[plane] = false;
 
-      std::cout << "ldir=(" << ldir.x << "," << ldir.y << ") valid=" << valid_v[plane] << std::endl;
+      // std::cout << "ldir=(" << ldir.x << "," << ldir.y << ") valid=" << valid_v[plane] << std::endl;
       plane_r_v[plane] = geo2d::Line<float>(pt1,ldir);
       plane_f_v[plane] = geomHelper->Project_3DLine_OnPlane(dir3D, plane).Mag();
     }
@@ -385,7 +385,7 @@ namespace llcv {
 
       if (!valid_v[pl]) continue;
 
-      // grab the 2D start point of the cluster
+      // get the 2D start point of the cluster
       const auto& start2D = obj.Start();
       
       const auto& line = plane_r_v[pl];
@@ -428,6 +428,7 @@ namespace llcv {
       
       float min_dx = 0;
       float max_dx = dx_v.at(idx_v.back());
+      max_dx /= f;
 
       float ddx = 0.3;
       size_t xlo = 0;
@@ -444,6 +445,8 @@ namespace llcv {
       for(auto idx : idx_v) {
 	auto q  = q_v.at(idx);
 	auto dx = dx_v.at(idx);
+
+	dx /= f;
 	
 	int bin = (size_t)((dx / ddx)+0.5);
 
@@ -454,13 +457,15 @@ namespace llcv {
 	}
 	
 	// correct for pitch
-	dqdx_v.at(bin) += (q / (ddx * f));
+
+	dqdx_v.at(bin) += q  * (f / ddx);
       }
       
       obj._dqdx_v = std::move(dqdx_v);
       obj._dx_v   = std::move(ddx_v);
       
       obj._dqdx_step = ddx;
+      obj._dqdx_pitch = f;
 
       obj._dir = line.dir;
 
@@ -468,6 +473,20 @@ namespace llcv {
     
     return;
   }
+
+
+  void ShowerTools::TruncatedQdxProfile(Object2DCollection& obj_col, const float ftsigma) {
+    std::vector<float> tdqdx_v;
+    
+    for(auto& obj : obj_col) {
+      tdqdx_v.clear();
+      _TruncMean.CalcTruncMeanProfile(obj._dx_v, obj._dqdx_v, tdqdx_v, ftsigma);
+      obj._tdqdx_v = std::move(tdqdx_v);
+    }
+
+    return;
+  }
+  
 
   std::array<float,3> ShowerTools::ComputePCA(std::vector<std::array<float,3> > pts_v, const Object2DCollection& obj_col) {
   
@@ -525,7 +544,6 @@ namespace llcv {
     return mean_dir_v;
   }  
 
+  
 }
-
-
 #endif

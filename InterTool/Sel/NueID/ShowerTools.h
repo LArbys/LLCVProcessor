@@ -5,6 +5,7 @@
 
 #include "Object2D.h"
 #include "DataFormat/Image2D.h"
+#include "InterTool_Util/TruncMean.h"
 
 #include <array>
 
@@ -33,8 +34,14 @@ namespace llcv {
     void ReconstructdQdxProfile(const std::vector<larcv::Image2D*>& img_v,
 				const std::array<cv::Mat,3>& aimg_v,
 				Object2DCollection& obj_col);
+
+    void TruncatedQdxProfile(Object2DCollection& obj_col, const float ftsigma);
     
-    std::array<float,3> ComputePCA(std::vector<std::array<float,3> > pts_v, const Object2DCollection& obj_col);
+    std::array<float,3> ComputePCA(std::vector<std::array<float,3> > pts_v, 
+				   const Object2DCollection& obj_col);
+
+
+    TruncMean _TruncMean;    
 
   };
 

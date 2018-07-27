@@ -44,9 +44,12 @@ namespace llcv {
     double dQdx() const { return _dqdx; }
     
     const std::vector<float>& dQdxProfile() const { return _dqdx_v; }
+    const std::vector<float>& TdQdxProfile() const { return _tdqdx_v; }
     const std::vector<float>& dxProfile() const { return _dx_v; }
 
     float dQdxStep() const { return _dqdx_step; }
+
+    float dQdxPitch() const { return _dqdx_pitch; }
     
     int BremIndex() const { return _brem_index; }
     
@@ -75,9 +78,11 @@ namespace llcv {
     double _dqdx;
 
     std::vector<float> _dqdx_v;
+    std::vector<float> _tdqdx_v;
     std::vector<float> _dx_v;
 
     float _dqdx_step;
+    float _dqdx_pitch;
 
     int _brem_index;
     

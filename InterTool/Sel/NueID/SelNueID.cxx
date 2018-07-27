@@ -35,6 +35,10 @@ namespace llcv {
 
     _brem_dist = pset.get<float>("BremDistance",50);
     _brem_size = pset.get<int>("BremSize",6);
+    _tradius = pset.get<float>("TruncatedRadius",3);
+    _tsigma  = pset.get<float>("TruncatedSigma",0.5);
+    
+    _ShowerTools._TruncMean.setRadius(_tradius);
 
     LLCV_DEBUG() << "end" << std::endl;
   }
@@ -94,7 +98,8 @@ namespace llcv {
     _outtree->Branch("par1_nplanes"  , &_par1_nplanes, "par1_nplanes/I");
     _outtree->Branch("par1_planes_v" , &_par1_planes_v);
     _outtree->Branch("par1_xdead_v"  , &_par1_xdead_v);
-    _outtree->Branch("par1_cosmic_dist_v", &_par1_cosmic_dist_v);
+    _outtree->Branch("par1_cosmic_dist_v"    , &_par1_cosmic_dist_v);
+    _outtree->Branch("par1_cosmic_dist_end_v", &_par1_cosmic_dist_end_v);
 
     _outtree->Branch("par2_theta"    , &_par2_theta  , "par2_theta/F");
     _outtree->Branch("par2_phi"      , &_par2_phi    , "par2_phi/F");
@@ -109,7 +114,8 @@ namespace llcv {
     _outtree->Branch("par2_nplanes"  , &_par2_nplanes, "par2_nplanes/I");
     _outtree->Branch("par2_planes_v" , &_par2_planes_v);
     _outtree->Branch("par2_xdead_v"  , &_par2_xdead_v);
-    _outtree->Branch("par2_cosmic_dist_v", &_par2_cosmic_dist_v);
+    _outtree->Branch("par2_cosmic_dist_v"    , &_par2_cosmic_dist_v);
+    _outtree->Branch("par2_cosmic_dist_end_v", &_par2_cosmic_dist_end_v);
     
 
     //
@@ -248,12 +254,26 @@ namespace llcv {
     _outtree->Branch("par2_dqdx_step_V", &_par2_dqdx_step_V, "par2_dqdx_step_V/F");
     _outtree->Branch("par2_dqdx_step_Y", &_par2_dqdx_step_Y, "par2_dqdx_step_Y/F");
 
+    _outtree->Branch("par1_dqdx_pitch_U", &_par1_dqdx_pitch_U, "par1_dqdx_pitch_U/F");
+    _outtree->Branch("par1_dqdx_pitch_V", &_par1_dqdx_pitch_V, "par1_dqdx_pitch_V/F");
+    _outtree->Branch("par1_dqdx_pitch_Y", &_par1_dqdx_pitch_Y, "par1_dqdx_pitch_Y/F");
+    _outtree->Branch("par2_dqdx_pitch_U", &_par2_dqdx_pitch_U, "par2_dqdx_pitch_U/F");
+    _outtree->Branch("par2_dqdx_pitch_V", &_par2_dqdx_pitch_V, "par2_dqdx_pitch_V/F");
+    _outtree->Branch("par2_dqdx_pitch_Y", &_par2_dqdx_pitch_Y, "par2_dqdx_pitch_Y/F");
+
     _outtree->Branch("par1_dqdx_U_v", &_par1_dqdx_U_v);
     _outtree->Branch("par1_dqdx_V_v", &_par1_dqdx_V_v);
     _outtree->Branch("par1_dqdx_Y_v", &_par1_dqdx_Y_v);
     _outtree->Branch("par2_dqdx_U_v", &_par2_dqdx_U_v);
     _outtree->Branch("par2_dqdx_V_v", &_par2_dqdx_V_v);
     _outtree->Branch("par2_dqdx_Y_v", &_par2_dqdx_Y_v);
+
+    _outtree->Branch("par1_tdqdx_U_v", &_par1_tdqdx_U_v);
+    _outtree->Branch("par1_tdqdx_V_v", &_par1_tdqdx_V_v);
+    _outtree->Branch("par1_tdqdx_Y_v", &_par1_tdqdx_Y_v);
+    _outtree->Branch("par2_tdqdx_U_v", &_par2_tdqdx_U_v);
+    _outtree->Branch("par2_tdqdx_V_v", &_par2_tdqdx_V_v);
+    _outtree->Branch("par2_tdqdx_Y_v", &_par2_tdqdx_Y_v);
 
     _outtree->Branch("par1_length3d_U", &_par1_length3d_U, "par1_length3d_U/F");
     _outtree->Branch("par1_length3d_V", &_par1_length3d_V, "par1_length3d_V/F");
@@ -785,6 +805,7 @@ namespace llcv {
       obj_col.SetddZ(pca_v[2]);
 
       _ShowerTools.ReconstructdQdxProfile(img_v,aimg_v,obj_col);
+      _ShowerTools.TruncatedQdxProfile(obj_col,_tsigma);
 
     }
 
@@ -1022,12 +1043,15 @@ namespace llcv {
 	*_par_expand_charge           = obj2d.Charge(*(img_v[plane]),aimg_v[plane]);
 	*_par_dqdx                    = obj2d.dQdx();
 	*_par_dqdx_v                  = obj2d.dQdxProfile();
+	*_par_tdqdx_v                 = obj2d.TdQdxProfile();
 	*_par_dqdx_step               = obj2d.dQdxStep(); 
+	*_par_dqdx_pitch              = obj2d.dQdxPitch(); 
 	*_par_length3d                = obj2d.Length();
 	*_par_brem_idx                = obj2d.BremIndex();
 	*_par_showerfrac              = obj2d.Fraction(*shr_v[plane],aimg_v[plane]);
 	
-	(*_par_cosmic_dist_v)[plane] = NearestPolygonToCosmic(obj2d.Polygons(),plane);
+	(*_par_cosmic_dist_v)[plane]     = NearestPolygonToCosmic(obj2d.Polygons(),plane);
+	(*_par_cosmic_dist_end_v)[plane] = PointCosmicDistance(obj2d.Edge(),plane);
 
 	auto nexpanded_polygons = obj2d.ExpandedPolygons().size();
 	ResizePlanePolygon(nexpanded_polygons);
@@ -1530,12 +1554,18 @@ namespace llcv {
     _par1_dy2      = -1.0*larocv::kINVALID_FLOAT;
     _par1_dz2      = -1.0*larocv::kINVALID_FLOAT;
     _par1_nplanes  = -1*larocv::kINVALID_INT;
+
     _par1_planes_v.clear();
     _par1_planes_v.resize(3,-1);
+
     _par1_xdead_v.clear();
     _par1_xdead_v.resize(3,-1);
+
     _par1_cosmic_dist_v.clear();
     _par1_cosmic_dist_v.resize(3,-1);    
+
+    _par1_cosmic_dist_end_v.clear();
+    _par1_cosmic_dist_end_v.resize(3,-1);    
 
     _par2_theta   = -1.0*larocv::kINVALID_FLOAT;
     _par2_phi     = -1.0*larocv::kINVALID_FLOAT;
@@ -1548,12 +1578,18 @@ namespace llcv {
     _par2_dy2     = -1.0*larocv::kINVALID_FLOAT;
     _par2_dz2     = -1.0*larocv::kINVALID_FLOAT;
     _par2_nplanes = -1*larocv::kINVALID_INT;
+
     _par2_planes_v.clear();
     _par2_planes_v.resize(3,-1);
+
     _par2_xdead_v.clear();
     _par2_xdead_v.resize(3,-1);
+
     _par2_cosmic_dist_v.clear();
     _par2_cosmic_dist_v.resize(3,-1);
+
+    _par2_cosmic_dist_end_v.clear();
+    _par2_cosmic_dist_end_v.resize(3,-1);
 
     _par_theta         = nullptr;
     _par_phi           = nullptr;
@@ -1568,7 +1604,9 @@ namespace llcv {
     _par_nplanes       = nullptr;
     _par_planes_v      = nullptr;
     _par_xdead_v       = nullptr;
-    _par_cosmic_dist_v = nullptr;
+
+    _par_cosmic_dist_v     = nullptr;
+    _par_cosmic_dist_end_v = nullptr;
 
     //
     // 2D information
@@ -1718,6 +1756,14 @@ namespace llcv {
     _par2_dqdx_Y_v.clear();
     _par_dqdx_v = nullptr;
 
+    _par1_tdqdx_U_v.clear();
+    _par1_tdqdx_V_v.clear();
+    _par1_tdqdx_Y_v.clear();
+    _par2_tdqdx_U_v.clear();
+    _par2_tdqdx_V_v.clear();
+    _par2_tdqdx_Y_v.clear();
+    _par_tdqdx_v = nullptr;
+
     _par1_dqdx_step_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_dqdx_step_V = -1.0*larocv::kINVALID_FLOAT;
     _par1_dqdx_step_Y = -1.0*larocv::kINVALID_FLOAT;
@@ -1725,6 +1771,14 @@ namespace llcv {
     _par2_dqdx_step_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_dqdx_step_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_dqdx_step = nullptr;
+
+    _par1_dqdx_pitch_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_pitch_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_dqdx_pitch_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_pitch_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_pitch_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_dqdx_pitch_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_dqdx_pitch = nullptr;
     
     _par1_brem_idx_U = -1.0*larocv::kINVALID_INT;
     _par1_brem_idx_V = -1.0*larocv::kINVALID_INT;
@@ -2029,7 +2083,8 @@ namespace llcv {
       _par_planes_v = &_par1_planes_v;
       _par_xdead_v  = &_par1_xdead_v;
 
-      _par_cosmic_dist_v = &_par1_cosmic_dist_v;
+      _par_cosmic_dist_v     = &_par1_cosmic_dist_v;
+      _par_cosmic_dist_end_v = &_par1_cosmic_dist_end_v;
       break;
     }
     case 1 : {
@@ -2047,7 +2102,8 @@ namespace llcv {
       _par_planes_v = &_par2_planes_v;
       _par_xdead_v  = &_par2_xdead_v;
 
-      _par_cosmic_dist_v = &_par2_cosmic_dist_v;
+      _par_cosmic_dist_v     = &_par2_cosmic_dist_v;
+      _par_cosmic_dist_end_v = &_par2_cosmic_dist_end_v;
       break;
     }
     default : { break; }
@@ -2083,7 +2139,9 @@ namespace llcv {
 	_par_expand_charge           = &_par1_expand_charge_U;
 	_par_dqdx                    = &_par1_dqdx_U;
 	_par_dqdx_step               = &_par1_dqdx_step_U;
+	_par_dqdx_pitch              = &_par1_dqdx_pitch_U;
 	_par_dqdx_v                  = &_par1_dqdx_U_v;
+	_par_tdqdx_v                 = &_par1_tdqdx_U_v;
 	_par_length3d                = &_par1_length3d_U;
 	_par_showerfrac              = &_par1_showerfrac_U;
 
@@ -2126,7 +2184,9 @@ namespace llcv {
 	_par_expand_charge           = &_par1_expand_charge_V;
 	_par_dqdx                    = &_par1_dqdx_V;
 	_par_dqdx_step               = &_par1_dqdx_step_V;
+	_par_dqdx_pitch              = &_par1_dqdx_pitch_V;
 	_par_dqdx_v                  = &_par1_dqdx_V_v;
+	_par_tdqdx_v                 = &_par1_tdqdx_V_v;
 	_par_length3d                = &_par1_length3d_V;
 	_par_showerfrac              = &_par1_showerfrac_V;
 
@@ -2169,7 +2229,9 @@ namespace llcv {
 	_par_expand_charge           = &_par1_expand_charge_Y;
 	_par_dqdx                    = &_par1_dqdx_Y;
 	_par_dqdx_step               = &_par1_dqdx_step_Y;
+	_par_dqdx_pitch              = &_par1_dqdx_pitch_Y;
 	_par_dqdx_v                  = &_par1_dqdx_Y_v;
+	_par_tdqdx_v                 = &_par1_tdqdx_Y_v;
 	_par_length3d                = &_par1_length3d_Y;
 	_par_showerfrac              = &_par1_showerfrac_Y;
 
@@ -2219,7 +2281,9 @@ namespace llcv {
 	_par_expand_charge           = &_par2_expand_charge_U;
 	_par_dqdx                    = &_par2_dqdx_U;
 	_par_dqdx_step               = &_par2_dqdx_step_U;
+	_par_dqdx_pitch              = &_par2_dqdx_pitch_U;
 	_par_dqdx_v                  = &_par2_dqdx_U_v;
+	_par_tdqdx_v                 = &_par2_tdqdx_U_v;
 	_par_length3d                = &_par2_length3d_U;
 	_par_showerfrac              = &_par2_showerfrac_U;
 
@@ -2262,7 +2326,9 @@ namespace llcv {
 	_par_expand_charge           = &_par2_expand_charge_V;
 	_par_dqdx                    = &_par2_dqdx_V;
 	_par_dqdx_step               = &_par2_dqdx_step_V;
+	_par_dqdx_pitch              = &_par2_dqdx_pitch_V;
 	_par_dqdx_v                  = &_par2_dqdx_V_v;
+	_par_tdqdx_v                 = &_par2_tdqdx_V_v;
 	_par_length3d                = &_par2_length3d_V;
 	_par_showerfrac              = &_par2_showerfrac_V;
 
@@ -2305,7 +2371,9 @@ namespace llcv {
 	_par_expand_charge           = &_par2_expand_charge_Y;
 	_par_dqdx                    = &_par2_dqdx_Y;
 	_par_dqdx_step               = &_par2_dqdx_step_Y;
+	_par_dqdx_pitch              = &_par2_dqdx_pitch_Y;
 	_par_dqdx_v                  = &_par2_dqdx_Y_v;
+	_par_tdqdx_v                 = &_par2_tdqdx_Y_v;
 	_par_length3d                = &_par2_length3d_Y;
 	_par_showerfrac              = &_par2_showerfrac_Y;
 
@@ -2418,7 +2486,15 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     }
     return ret;
   }
-  
+
+  float SelNueID::PointCosmicDistance(const geo2d::Vector<float>& pt, const size_t plane) {
+    float ret = larocv::kINVALID_FLOAT;
+    const auto& _CosmicTag = _CosmicTag_v[plane];
+    geo2d::Vector<int> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
+    auto id = _CosmicTag.NearestCosmicToPoint(pt_i,ret);
+    return ret;
+  }
+
   int SelNueID::DetectBrem(Triangle& triangle, 
 			   const larocv::GEO2D_ContourArray_t& other_ctor_v,
 			   std::vector<size_t>& id_v,
