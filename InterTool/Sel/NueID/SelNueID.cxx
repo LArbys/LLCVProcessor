@@ -1073,7 +1073,7 @@ namespace llcv {
 	  (*_par_polycharge_v)[polyid]        = polygon.Charge(*(img_v[plane]),aimg_v[plane]);
 	  (*_par_polyedges_v)[polyid]         = (int)polygon.Edges().size();
 	  (*_par_polybranches_v)[polyid]      = (int)polygon.Branches().size();
-	  (*_par_showerfrac_v)[polyid]        = (int)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
+	  (*_par_showerfrac_v)[polyid]        = (float)polygon.Fraction(*shr_v[plane],aimg_v[plane]);
 
 	} // end polygon on plane
 
