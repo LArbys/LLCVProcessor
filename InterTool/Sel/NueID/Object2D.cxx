@@ -135,10 +135,11 @@ namespace llcv {
   }
 
 
-  std::vector<float> Object2D::LineVertex(const larcv::Image2D& img2d,
-					  const cv::Mat& img,
-					  const cv::Mat& white_img,
-					  float radius) const {
+  void Object2D::LineVertex(const larcv::Image2D& img2d,
+			    const cv::Mat& img,
+			    const cv::Mat& white_img,
+			    float radius) {
+    
     std::vector<float> ret_v;
     ret_v.resize(3,-1*larocv::kINVALID_FLOAT);
     
@@ -167,13 +168,25 @@ namespace llcv {
     for(const auto& nz_pt : nz_pt_v)
       charge += MatToImage2DPixel(nz_pt,img,img2d);
 
-    ret_v[0] = density;
-    ret_v[1] = coverage;
-    ret_v[2] = charge;
-
-    return ret_v;
+    _vtx_density = density;
+    _vtx_coverage = coverage;
+    _vtx_charge = charge;
+    _vtx_pt_v = std::move(nz_pt_v);
+    
   }
 
+  std::vector<float> Object2DCollection::EndPoint() const {
+    std::vector<float> ret_v;
+    ret_v.resize(3);
+
+    ret_v[0] = _end_x;
+    ret_v[1] = _end_y;
+    ret_v[2] = _end_z;
+    
+    return ret_v;
+  }
+  
+  
 }
 
 #endif

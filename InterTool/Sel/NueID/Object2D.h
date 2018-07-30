@@ -55,10 +55,14 @@ namespace llcv {
     
     float Fraction(const cv::Mat& img1, const cv::Mat& img2) const;
     
-    std::vector<float> LineVertex(const larcv::Image2D& img2d,
-				  const cv::Mat& img,
-				  const cv::Mat& white_img, 
-				  float radius) const;
+    void LineVertex(const larcv::Image2D& img2d,
+		    const cv::Mat& img,
+		    const cv::Mat& white_img, 
+		    float radius);
+
+    float LineVertexDensity() const { return _vtx_density; }
+    float LineVertexCoverage() const { return _vtx_coverage; }
+    float LineVertexCharge() const { return _vtx_charge; }
 
   public:
 
@@ -88,7 +92,12 @@ namespace llcv {
     
     geo2d::Vector<float> _dir;
 
-    
+    float _vtx_density;
+    float _vtx_coverage;
+    float _vtx_charge;
+
+    larocv::GEO2D_Contour_t _vtx_pt_v;
+
   };
 
   class Object2DCollection : public std::vector<Object2D> {
@@ -133,6 +142,12 @@ namespace llcv {
     float ddY() const { return _ddy; }
     float ddZ() const { return _ddz; }
     
+    std::vector<float> EndPoint() const;
+    
+    void SetEndX(float ex) { _end_x = ex; }
+    void SetEndY(float ey) { _end_y = ey; }
+    void SetEndZ(float ez) { _end_z = ez; }
+
   private:
 
     float _theta;
@@ -144,6 +159,10 @@ namespace llcv {
     float _ddx;
     float _ddy;
     float _ddz;
+
+    float _end_x;
+    float _end_y;
+    float _end_z;
 
   };
 

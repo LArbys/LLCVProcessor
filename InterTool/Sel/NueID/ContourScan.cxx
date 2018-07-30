@@ -11,6 +11,8 @@ namespace llcv {
       ctor.clear();
 
     _scan_v.clear();
+    _end_pt_v.clear();
+    _end_pt_plane_v.clear();
     return;
   }
   
@@ -189,6 +191,77 @@ namespace llcv {
     }
     
 
+    return ret_v;
+  }
+
+  void ContourScan::RegisterEndPoint(const geo2d::Vector<float>& pt,
+				     const size_t plane) {
+    
+    _end_pt_v.push_back(pt);
+    _end_pt_plane_v.push_back(plane);
+    
+    return;
+  }
+
+  std::array<float,3> ContourScan::EndPoint() const {
+
+    std::array<float,3> ret_v;
+    ret_v[0] = -1*larocv::kINVALID_FLOAT;
+    ret_v[1] = -1*larocv::kINVALID_FLOAT;
+    ret_v[2] = -1*larocv::kINVALID_FLOAT;
+    
+    if (_end_pt_v.size() == 2) {
+      
+      larocv::data::Vertex3D res;
+      auto compat = _geo.YZPoint(_end_pt_v.front(),_end_pt_plane_v.front(),
+				 _end_pt_v.back() ,_end_pt_plane_v.back(),
+				 res);
+    
+      if (compat) {
+	ret_v[0] = res.x;
+	ret_v[1] = res.y;
+	ret_v[2] = res.z;
+      }
+
+    } // end size == 2
+    else if (_end_pt_v.size() == 3) {
+    
+      std::vector<larocv::data::Vertex3D> res_v;
+      res_v.reserve(3);
+      
+      for(size_t pid1=0; pid1 < _end_pt_v.size(); ++pid1) {
+	for(size_t pid2=pid1+1; pid2 < _end_pt_v.size(); ++pid2) {
+	  
+	  larocv::data::Vertex3D res;
+	  auto compat = _geo.YZPoint(_end_pt_v[pid1], _end_pt_plane_v[pid1],
+				     _end_pt_v[pid2], _end_pt_plane_v[pid2],
+				     res);
+	  
+	  if (compat)
+	    res_v.emplace_back(std::move(res));
+	  
+	}
+      }
+
+      // average
+      ret_v[0] = 0;
+      ret_v[1] = 0;
+      ret_v[2] = 0;
+      for(const auto& res : res_v) {
+	ret_v[0] += res.x;
+	ret_v[1] += res.y;
+	ret_v[2] += res.z;
+      }
+
+      if (!res_v.empty()) {
+	ret_v[0] /= (float)res_v.size();
+	ret_v[1] /= (float)res_v.size();
+	ret_v[2] /= (float)res_v.size();
+      }
+
+    } // end size == 3;
+    
+    
     return ret_v;
   }
 

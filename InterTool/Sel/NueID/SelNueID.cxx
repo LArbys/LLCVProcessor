@@ -100,6 +100,7 @@ namespace llcv {
     _outtree->Branch("par1_xdead_v"  , &_par1_xdead_v);
     _outtree->Branch("par1_cosmic_dist_v"    , &_par1_cosmic_dist_v);
     _outtree->Branch("par1_cosmic_dist_end_v", &_par1_cosmic_dist_end_v);
+    _outtree->Branch("par1_end_pt_v"         , &_par1_end_pt_v);
 
     _outtree->Branch("par2_theta"    , &_par2_theta  , "par2_theta/F");
     _outtree->Branch("par2_phi"      , &_par2_phi    , "par2_phi/F");
@@ -116,6 +117,7 @@ namespace llcv {
     _outtree->Branch("par2_xdead_v"  , &_par2_xdead_v);
     _outtree->Branch("par2_cosmic_dist_v"    , &_par2_cosmic_dist_v);
     _outtree->Branch("par2_cosmic_dist_end_v", &_par2_cosmic_dist_end_v);
+    _outtree->Branch("par2_end_pt_v"         , &_par2_end_pt_v);
     
 
     //
@@ -740,10 +742,9 @@ namespace llcv {
 		     << " @start=[" << start.x << "," << start.y << "]"
 		     << "& @edge=[" << new_edge.x << "," << new_edge.y << "]" << std::endl;
       } // end this triangle
-    }
+    } // end plane
 
     LLCV_DEBUG() << "...done" << std::endl;
-
 
     _Match.ClearEvent();
     _Match.ClearMatch();
@@ -787,6 +788,7 @@ namespace llcv {
 
       LLCV_DEBUG() << "@mid=" << mid << std::endl;
      
+
       _ShowerTools.ReconstructAngle(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructLength(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructdQdx(img_v,aimg_v,obj_col,3+3); //offset by ~2cm for 5 pixel vertex mask out
@@ -803,10 +805,25 @@ namespace llcv {
       obj_col.SetddX(pca_v[0]);
       obj_col.SetddY(pca_v[1]);
       obj_col.SetddZ(pca_v[2]);
+      
+      // determine near vertex parameters
+      for(auto& obj2d : obj_col) {
+	const auto plane = obj2d.Plane();
+	_white_img.setTo(cv::Scalar(1));
+	obj2d.LineVertex(*(img_v[plane]),aimg_v[plane],_white_img,5);
+      }
 
       _ShowerTools.ReconstructdQdxProfile(img_v,aimg_v,obj_col);
       _ShowerTools.TruncatedQdxProfile(obj_col,_tsigma);
 
+      // determine the end point
+      for(const auto& obj2d : obj_col) 
+	_ContourScan.RegisterEndPoint(obj2d.Edge(),obj2d.Plane());
+      
+      auto end_pt_v = _ContourScan.EndPoint();
+      obj_col.SetEndX(end_pt_v[0]);
+      obj_col.SetEndY(end_pt_v[1]);
+      obj_col.SetEndZ(end_pt_v[2]);
     }
 
     
@@ -891,7 +908,7 @@ namespace llcv {
       }
     }
     LLCV_DEBUG() << "...done" << std::endl;
-    
+
     ResetEvent();
 
     // number of matched particles
@@ -1008,6 +1025,7 @@ namespace llcv {
 
       _white_img.setTo(cv::Scalar(1));
       *_par_xdead_v  = obj_col.XDead(dimg_v,_white_img);
+      *_par_end_pt_v = obj_col.EndPoint();
 
       for(size_t plane=0; plane<3; ++plane) {
 	LLCV_DEBUG() << "@plane=" << plane << std::endl;
@@ -1026,12 +1044,9 @@ namespace llcv {
 	*_par_linedx      = obj2d.LinedX();
 	*_par_linedy      = obj2d.LinedY();
 
-	_white_img.setTo(cv::Scalar(1));
-	auto linevertex_v = obj2d.LineVertex(*(img_v[plane]),aimg_v[plane],_white_img,5);
-	
-	*_par_line_vtx_density  = linevertex_v[0];
-	*_par_line_vtx_coverage = linevertex_v[1];
-	*_par_line_vtx_charge   = linevertex_v[2];
+	*_par_line_vtx_density  = obj2d.LineVertexDensity();
+	*_par_line_vtx_coverage = obj2d.LineVertexCoverage();
+	*_par_line_vtx_charge   = obj2d.LineVertexCharge();
 	
 	*_par_triangle_height         = obj2d.triangle().Height();
 	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
@@ -1567,6 +1582,9 @@ namespace llcv {
     _par1_cosmic_dist_end_v.clear();
     _par1_cosmic_dist_end_v.resize(3,-1);    
 
+    _par1_end_pt_v.clear();
+    _par1_end_pt_v.resize(3,-1);
+
     _par2_theta   = -1.0*larocv::kINVALID_FLOAT;
     _par2_phi     = -1.0*larocv::kINVALID_FLOAT;
     _par2_length  = -1.0*larocv::kINVALID_FLOAT;
@@ -1591,6 +1609,9 @@ namespace llcv {
     _par2_cosmic_dist_end_v.clear();
     _par2_cosmic_dist_end_v.resize(3,-1);
 
+    _par2_end_pt_v.clear();
+    _par2_end_pt_v.resize(3,-1);
+
     _par_theta         = nullptr;
     _par_phi           = nullptr;
     _par_length        = nullptr;
@@ -1607,6 +1628,7 @@ namespace llcv {
 
     _par_cosmic_dist_v     = nullptr;
     _par_cosmic_dist_end_v = nullptr;
+    _par_end_pt_v          = nullptr;
 
     //
     // 2D information
@@ -2085,6 +2107,8 @@ namespace llcv {
 
       _par_cosmic_dist_v     = &_par1_cosmic_dist_v;
       _par_cosmic_dist_end_v = &_par1_cosmic_dist_end_v;
+      _par_end_pt_v          = &_par1_end_pt_v;
+
       break;
     }
     case 1 : {
@@ -2104,6 +2128,8 @@ namespace llcv {
 
       _par_cosmic_dist_v     = &_par2_cosmic_dist_v;
       _par_cosmic_dist_end_v = &_par2_cosmic_dist_end_v;
+      _par_end_pt_v          = &_par2_end_pt_v;
+      
       break;
     }
     default : { break; }

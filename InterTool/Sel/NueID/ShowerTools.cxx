@@ -393,29 +393,36 @@ namespace llcv {
       
       std::vector<float> q_v;
       std::vector<float> dx_v;
-      
-      // loop over hits
+
+      larocv::GEO2D_Contour_t nz_pt_v;
+
+      // put in the near vertex region
+      for(const auto& nz_pt_line : obj._vtx_pt_v)
+	nz_pt_v.push_back(nz_pt_line);
+
+      // put in the polygons
       for(const auto& poly : obj._polygon_v) {
-	auto nz_pt_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
-	
-	for(size_t nid=0; nid < nz_pt_v.size(); ++nid) {
-	  const auto& nz_pt = nz_pt_v[nid];
+	auto nz_v = larocv::FindNonZero(larocv::MaskImage(aimg_v[pl],poly.Contour(),-1,false));
+	for(auto& nz : nz_v) nz_pt_v.emplace_back(std::move(nz));
+      }
+
+      // loop over ``hits''
+      for(const auto& nz_pt : nz_pt_v) {
 	  
-	  geo2d::Vector<float> pt_nz(nz_pt.x,nz_pt.y);
-	  geo2d::Vector<float> pt_li;
+	geo2d::Vector<float> pt_nz(nz_pt.x,nz_pt.y);
+	geo2d::Vector<float> pt_li;
 	  
-	  geo2d::ClosestPoint(line, pt_nz, pt_li, pt_nz);
+	geo2d::ClosestPoint(line, pt_nz, pt_li, pt_nz);
 	  
-	  float q = MatToImage2DPixel(nz_pt,aimg_v[pl],*(img_v[pl]));
+	float q = MatToImage2DPixel(nz_pt,aimg_v[pl],*(img_v[pl]));
 	  
-	  q_v.emplace_back(q);
+	q_v.emplace_back(q);
 	  
-	  auto dx = geo2d::dist(pt_li*0.3,start2D*0.3);
+	auto dx = geo2d::dist(pt_li*0.3,start2D*0.3);
 	  
-	  dx_v.emplace_back(dx);
+	dx_v.emplace_back(dx);
 	  
-	} // end "hit"
-      } // loop over all polygons
+      } // end "hit"
 
 
       // sort the dx vector

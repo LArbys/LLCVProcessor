@@ -159,6 +159,7 @@ namespace llcv {
     std::vector<int>   _par1_xdead_v;
     std::vector<float> _par1_cosmic_dist_v;
     std::vector<float> _par1_cosmic_dist_end_v;
+    std::vector<float> _par1_end_pt_v;
 
     float _par2_theta;
     float _par2_phi;
@@ -175,6 +176,7 @@ namespace llcv {
     std::vector<int>   _par2_xdead_v;
     std::vector<float> _par2_cosmic_dist_v;
     std::vector<float> _par2_cosmic_dist_end_v;
+    std::vector<float> _par2_end_pt_v;
 
     float* _par_theta;
     float* _par_phi;
@@ -191,6 +193,7 @@ namespace llcv {
     std::vector<int>*   _par_xdead_v;
     std::vector<float>* _par_cosmic_dist_v;
     std::vector<float>* _par_cosmic_dist_end_v;
+    std::vector<float>* _par_end_pt_v;
 
     int _par1_n_polygons_U;
     int _par1_n_polygons_V;

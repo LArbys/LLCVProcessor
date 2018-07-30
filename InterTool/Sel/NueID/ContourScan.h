@@ -40,6 +40,9 @@ namespace llcv {
 			 const size_t plane,
 			 const float rad);
 
+    void RegisterEndPoint(const geo2d::Vector<float>& pt,
+			  const size_t plane);
+
     void AddPixels(const larocv::GEO2D_Contour_t& pt_v,
 		   const size_t plane);
     
@@ -51,8 +54,10 @@ namespace llcv {
 
     std::vector<std::array<float,3> > Voxelize(const float dx, const float dy, const float dz) const;
     
+    std::array<float,3> EndPoint() const;
+    
   private:
-
+    
     larocv::LArPlaneGeo _geo;
 
     std::array<larocv::GEO2D_Contour_t,3> _ctor_v;
@@ -63,6 +68,10 @@ namespace llcv {
 
     std::vector<larocv::data::Vertex3D> _scan_v;
     
+    std::vector<geo2d::Vector<float> > _end_pt_v;
+    
+    std::vector<size_t> _end_pt_plane_v;
+
   };
 
 
