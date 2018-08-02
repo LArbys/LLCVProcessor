@@ -95,8 +95,10 @@ namespace llcv {
     float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
     
     float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
+    float NearestPolygonToCosmicEnd(const std::vector<Polygon>& polygon_v,size_t plane);
 
     float PointCosmicDistance(const geo2d::Vector<float>& pt, const size_t plane);
+    float PointCosmicEndDistance(const geo2d::Vector<float>& pt, const size_t plane);
 
     int DetectBrem(Triangle& triangle, 
 		   const larocv::GEO2D_ContourArray_t& other_ctor_v,
@@ -159,6 +161,8 @@ namespace llcv {
     std::vector<int>   _par1_xdead_v;
     std::vector<float> _par1_cosmic_dist_v;
     std::vector<float> _par1_cosmic_dist_end_v;
+    std::vector<float> _par1_cosmic_end_dist_v;
+    std::vector<float> _par1_cosmic_end_dist_end_v;
     std::vector<float> _par1_end_pt_v;
 
     float _par2_theta;
@@ -176,6 +180,8 @@ namespace llcv {
     std::vector<int>   _par2_xdead_v;
     std::vector<float> _par2_cosmic_dist_v;
     std::vector<float> _par2_cosmic_dist_end_v;
+    std::vector<float> _par2_cosmic_end_dist_v;
+    std::vector<float> _par2_cosmic_end_dist_end_v;
     std::vector<float> _par2_end_pt_v;
 
     float* _par_theta;
@@ -193,6 +199,8 @@ namespace llcv {
     std::vector<int>*   _par_xdead_v;
     std::vector<float>* _par_cosmic_dist_v;
     std::vector<float>* _par_cosmic_dist_end_v;
+    std::vector<float>* _par_cosmic_end_dist_v;
+    std::vector<float>* _par_cosmic_end_dist_end_v;
     std::vector<float>* _par_end_pt_v;
 
     int _par1_n_polygons_U;
@@ -218,6 +226,14 @@ namespace llcv {
     float _par2_linefrac_V;
     float _par2_linefrac_Y;
     float* _par_linefrac;
+
+    float _par1_linefrac_empty_U;
+    float _par1_linefrac_empty_V;
+    float _par1_linefrac_empty_Y;
+    float _par2_linefrac_empty_U;
+    float _par2_linefrac_empty_V;
+    float _par2_linefrac_empty_Y;
+    float* _par_linefrac_empty;
 
     float _par1_linedx_U;
     float _par1_linedx_V;
@@ -258,6 +274,14 @@ namespace llcv {
     float _par2_line_vtx_charge_V;
     float _par2_line_vtx_charge_Y;
     float* _par_line_vtx_charge;
+
+    float _par1_triangle_mid_to_edge_U;
+    float _par1_triangle_mid_to_edge_V;
+    float _par1_triangle_mid_to_edge_Y;
+    float _par2_triangle_mid_to_edge_U;
+    float _par2_triangle_mid_to_edge_V;
+    float _par2_triangle_mid_to_edge_Y;
+    float* _par_triangle_mid_to_edge;
 
     float _par1_triangle_height_U;
     float _par1_triangle_height_V;
@@ -314,6 +338,14 @@ namespace llcv {
     float _par2_triangle_coverage_V;
     float _par2_triangle_coverage_Y;
     float* _par_triangle_coverage;
+
+    float _par1_brem_triangle_coverage_U;
+    float _par1_brem_triangle_coverage_V;
+    float _par1_brem_triangle_coverage_Y;
+    float _par2_brem_triangle_coverage_U;
+    float _par2_brem_triangle_coverage_V;
+    float _par2_brem_triangle_coverage_Y;
+    float* _par_brem_triangle_coverage;
 
     float _par1_expand_charge_U;
     float _par1_expand_charge_V;

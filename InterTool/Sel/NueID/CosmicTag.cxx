@@ -20,6 +20,7 @@ namespace llcv {
   void CosmicTag::Reset() {
     _cosmic_ctor_v.clear();
     _cosmic_line_ctor_vv.clear();
+    _cosmic_end_v.clear();
     return;
   }
 
@@ -30,6 +31,7 @@ namespace llcv {
 
     LLCV_DEBUG() << "got edge sz=" << edge_v.size() << std::endl;
     _cosmic_line_ctor_vv.resize(edge_v.size());
+    _cosmic_end_v.reserve(edge_v.size());
     _cosmic_ctor_v.reserve(edge_v.size());
 
     for(size_t eid=0; eid<edge_v.size(); ++eid) {
@@ -44,8 +46,12 @@ namespace llcv {
 
       auto cosmic_ctor = LinesToContour(cosmic_line_ctor_v);
 
+      geo2d::Vector<float> cosmic_end_pt(-1,-1);
+      larocv::FindEdge(cosmic_ctor,edge,cosmic_end_pt);
+
+      _cosmic_end_v.emplace_back(std::move(cosmic_end_pt));
       _cosmic_ctor_v.emplace_back(std::move(cosmic_ctor));
-    }	
+    }
       
   }
   
@@ -109,6 +115,32 @@ namespace llcv {
     
     return ret;
   }
+
+  geo2d::Vector<float> CosmicTag::NearestCosmicEndToPoint(const cv::Point_<int>& pt, float& distance) const {
+
+    geo2d::Vector<float> ret_pt(larocv::kINVALID_FLOAT,larocv::kINVALID_FLOAT);
+
+    size_t ret = larocv::kINVALID_SIZE;
+    distance = larocv::kINVALID_FLOAT;
+    
+    geo2d::Vector<float> pt_f(pt.x,pt.y);
+
+    for(size_t cid=0; cid<_cosmic_end_v.size(); ++cid) {
+      const auto& cosmic_end = _cosmic_end_v[cid];
+      auto dist = geo2d::dist(pt_f,cosmic_end);
+      if (dist < distance) {
+	distance = dist;
+	ret = cid;
+      }
+    }
+    
+    if (ret == larocv::kINVALID_SIZE)
+      return ret_pt;
+
+    ret_pt = _cosmic_end_v[ret];
+    
+    return ret_pt;
+  }
     
   size_t CosmicTag::NearestCosmicToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const {
     size_t ret = larocv::kINVALID_SIZE;
@@ -124,6 +156,30 @@ namespace llcv {
     }
       
     return ret;
+  }
+
+
+  geo2d::Vector<float> CosmicTag::NearestCosmicEndToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const {
+    
+    geo2d::Vector<float> ret_pt(larocv::kINVALID_FLOAT,larocv::kINVALID_FLOAT);
+    size_t ret = larocv::kINVALID_SIZE;
+    distance = larocv::kINVALID_FLOAT;
+      
+    for(size_t cid=0; cid<_cosmic_end_v.size(); ++cid) {
+      const auto& cosmic_end = _cosmic_end_v[cid];
+      auto dist = larocv::Pt2PtDistance(cosmic_end,ctor);
+      if (dist < distance) {
+	distance = dist;
+	ret = cid;
+      }
+    }
+      
+    if (ret == larocv::kINVALID_SIZE)
+      return ret_pt;
+    
+    ret_pt = _cosmic_end_v[ret];
+
+    return ret_pt;
   }
 
 }

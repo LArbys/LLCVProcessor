@@ -22,7 +22,9 @@ namespace llcv {
     const geo2d::Vector<float>& Edge() const { return _edge; }
     int NPolygons() const { return (int)(_polygon_v.size()); }
     float LineFrac() const { return _line_frac; }
-    
+    float LineFracEmpty(const cv::Mat& white_img) const;
+
+
     const Triangle& triangle() const { return _triangle; }
     const Triangle& brem_triangle() const { return _brem_triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }

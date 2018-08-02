@@ -185,7 +185,25 @@ namespace llcv {
     
     return ret_v;
   }
-  
+ 
+  float Object2D::LineFracEmpty(const cv::Mat& white_img) const {
+    
+    auto line_img = larocv::MaskImage(white_img,this->Line(),-1,false);
+    
+    float nline_px = larocv::CountNonZero(line_img);
+
+    for(const auto& polygon : this->Polygons())
+      line_img = larocv::MaskImage(line_img,polygon.Contour(),-1,true);
+
+    float nline_ctor_px = larocv::CountNonZero(line_img);
+
+    float ratio = 0;
+    if (nline_px > 0)
+      ratio = nline_ctor_px / nline_px;
+    
+    return ratio;
+  }
+ 
   
 }
 
