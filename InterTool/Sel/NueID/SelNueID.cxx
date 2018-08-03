@@ -24,7 +24,7 @@ namespace llcv {
 
     _extension_cutoff = pset.get<float>("ExtensionFraction",0.8);
     _Match.Configure(pset.get<larcv::PSet>("MatchIOU"));
-
+    
     _twatch.Stop();
   
     _CosmicTag_v.clear();
@@ -76,10 +76,11 @@ namespace llcv {
     _outtree->Branch("vtx_linefrac_U_v", &_vtx_linefrac_U_v);
     _outtree->Branch("vtx_linefrac_V_v", &_vtx_linefrac_V_v);
     _outtree->Branch("vtx_linefrac_Y_v", &_vtx_linefrac_Y_v);
-
-    _outtree->Branch("edge_dist_v"           , &_edge_dist_v);
-    _outtree->Branch("edge_n_cosmic_v"       , &_edge_n_cosmic_v);
-    _outtree->Branch("edge_cosmic_vtx_dist_v", &_edge_cosmic_vtx_dist_v);
+    
+    _outtree->Branch("edge_dist_v"               , &_edge_dist_v);
+    _outtree->Branch("edge_n_cosmic_v"           , &_edge_n_cosmic_v);
+    _outtree->Branch("edge_cosmic_vtx_dist_v"    , &_edge_cosmic_vtx_dist_v);
+    _outtree->Branch("edge_cosmic_end_vtx_dist_v", &_edge_cosmic_end_vtx_dist_v);
 
 
     //
@@ -125,7 +126,6 @@ namespace llcv {
     _outtree->Branch("par2_cosmic_end_dist_v"    , &_par2_cosmic_end_dist_v);
     _outtree->Branch("par2_cosmic_end_dist_end_v", &_par2_cosmic_end_dist_end_v);
 
-    
 
     //
     // 2D information
@@ -192,6 +192,34 @@ namespace llcv {
     _outtree->Branch("par2_line_vtx_charge_U", &_par2_line_vtx_charge_U, "par2_line_vtx_charge_U/F");
     _outtree->Branch("par2_line_vtx_charge_V", &_par2_line_vtx_charge_V, "par2_line_vtx_charge_V/F");
     _outtree->Branch("par2_line_vtx_charge_Y", &_par2_line_vtx_charge_Y, "par2_line_vtx_charge_Y/F");
+
+    _outtree->Branch("par1_line_mean_dist_U", &_par1_line_mean_dist_U, "par1_line_mean_dist_U/F");
+    _outtree->Branch("par1_line_mean_dist_V", &_par1_line_mean_dist_V, "par1_line_mean_dist_V/F");
+    _outtree->Branch("par1_line_mean_dist_Y", &_par1_line_mean_dist_Y, "par1_line_mean_dist_Y/F");
+    _outtree->Branch("par2_line_mean_dist_U", &_par2_line_mean_dist_U, "par2_line_mean_dist_U/F");
+    _outtree->Branch("par2_line_mean_dist_V", &_par2_line_mean_dist_V, "par2_line_mean_dist_V/F");
+    _outtree->Branch("par2_line_mean_dist_Y", &_par2_line_mean_dist_Y, "par2_line_mean_dist_Y/F");
+
+    _outtree->Branch("par1_line_max_dist_U", &_par1_line_max_dist_U, "par1_line_max_dist_U/F");
+    _outtree->Branch("par1_line_max_dist_V", &_par1_line_max_dist_V, "par1_line_max_dist_V/F");
+    _outtree->Branch("par1_line_max_dist_Y", &_par1_line_max_dist_Y, "par1_line_max_dist_Y/F");
+    _outtree->Branch("par2_line_max_dist_U", &_par2_line_max_dist_U, "par2_line_max_dist_U/F");
+    _outtree->Branch("par2_line_max_dist_V", &_par2_line_max_dist_V, "par2_line_max_dist_V/F");
+    _outtree->Branch("par2_line_max_dist_Y", &_par2_line_max_dist_Y, "par2_line_max_dist_Y/F");
+
+    _outtree->Branch("par1_line_first_half_linefrac_U", &_par1_line_first_half_linefrac_U, "par1_line_first_half_linefrac_U");
+    _outtree->Branch("par1_line_first_half_linefrac_V", &_par1_line_first_half_linefrac_V, "par1_line_first_half_linefrac_V");
+    _outtree->Branch("par1_line_first_half_linefrac_Y", &_par1_line_first_half_linefrac_Y, "par1_line_first_half_linefrac_Y");
+    _outtree->Branch("par2_line_first_half_linefrac_U", &_par2_line_first_half_linefrac_U, "par2_line_first_half_linefrac_U");
+    _outtree->Branch("par2_line_first_half_linefrac_V", &_par2_line_first_half_linefrac_V, "par2_line_first_half_linefrac_V");
+    _outtree->Branch("par2_line_first_half_linefrac_Y", &_par2_line_first_half_linefrac_Y, "par2_line_first_half_linefrac_Y");
+
+    _outtree->Branch("par1_line_second_half_linefrac_U", &_par1_line_second_half_linefrac_U, "par1_line_second_half_linefrac_U");
+    _outtree->Branch("par1_line_second_half_linefrac_V", &_par1_line_second_half_linefrac_V, "par1_line_second_half_linefrac_V");
+    _outtree->Branch("par1_line_second_half_linefrac_Y", &_par1_line_second_half_linefrac_Y, "par1_line_second_half_linefrac_Y");
+    _outtree->Branch("par2_line_second_half_linefrac_U", &_par2_line_second_half_linefrac_U, "par2_line_second_half_linefrac_U");
+    _outtree->Branch("par2_line_second_half_linefrac_V", &_par2_line_second_half_linefrac_V, "par2_line_second_half_linefrac_V");
+    _outtree->Branch("par2_line_second_half_linefrac_Y", &_par2_line_second_half_linefrac_Y, "par2_line_second_half_linefrac_Y");
 
     _outtree->Branch("par1_triangle_mid_to_edge_U", &_par1_triangle_mid_to_edge_U, "par1_triangle_mid_to_edge_U/F");
     _outtree->Branch("par1_triangle_mid_to_edge_V", &_par1_triangle_mid_to_edge_V, "par1_triangle_mid_to_edge_V/F");
@@ -466,7 +494,6 @@ namespace llcv {
   double SelNueID::Select() {
     LLCV_DEBUG() << "start" << std::endl;
 
-    
     float Vertex_X = Data().PGraph()->ParticleArray().front().X();
     float Vertex_Y = Data().PGraph()->ParticleArray().front().Y();
     float Vertex_Z = Data().PGraph()->ParticleArray().front().Z();
@@ -488,7 +515,7 @@ namespace llcv {
 
     _white_img = larocv::BlankImage(*(mat_v.front()),0);
     _white_img.setTo(cv::Scalar(0));
-    
+
     _ContourScan.Reset();
     
     for(const auto& meta : meta_v)
@@ -634,7 +661,12 @@ namespace llcv {
 	  geo2d::Vector<float> local_edge;
 	  float nline_pixels = 0;
 	  float npar_pixels  = 0;
-	  auto local_line_ctor = MaximizeTriangleLine(cimg,local_triangle,nline_pixels,npar_pixels,local_edge);
+	  auto local_line_ctor = MaximizeTriangleLine(cimg,
+						      local_triangle,
+						      nline_pixels,
+						      npar_pixels,
+						      local_edge,
+						      _white_img);
 	  if (local_line_ctor.empty()) continue;
 	  
 	  float nratio = 0;
@@ -736,7 +768,13 @@ namespace llcv {
 	  Triangle new_triangle(start,inv_pt,inv_pt);
 	  float nline_pixels = 0;
 	  float npar_pixels  = 0;
-	  auto line_ctor = MaximizePolygonLine(cimg,object._polygon_v,new_triangle,nline_pixels,npar_pixels,new_edge);
+	  auto line_ctor = MaximizePolygonLine(cimg,
+					       object._polygon_v,
+					       new_triangle,
+					       nline_pixels,
+					       npar_pixels,
+					       new_edge,
+					       _white_img);
 
 	  if ((new_edge.x == old_edge.x) and (new_edge.y == old_edge.y)) {
 	    LLCV_DEBUG() << "circular logic, break" << std::endl;
@@ -754,7 +792,13 @@ namespace llcv {
 	Triangle new_triangle(start,inv_pt,inv_pt);
 	float nline_pixels = 0;
 	float npar_pixels  = 0;
-	auto line_ctor = MaximizePolygonLine(cimg,object._polygon_v,new_triangle,nline_pixels,npar_pixels,new_edge);
+	auto line_ctor = MaximizePolygonLine(cimg,
+					     object._polygon_v,
+					     new_triangle,
+					     nline_pixels,
+					     npar_pixels,
+					     new_edge,
+					     _white_img);
 
 	float nratio = 0;
 	if (npar_pixels > 0)
@@ -816,7 +860,6 @@ namespace llcv {
 
       LLCV_DEBUG() << "@mid=" << mid << std::endl;
      
-
       _ShowerTools.ReconstructAngle(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructLength(img_v,aimg_v,obj_col);
       _ShowerTools.ReconstructdQdx(img_v,aimg_v,obj_col,3+3); //offset by ~2cm for 5 pixel vertex mask out
@@ -826,7 +869,7 @@ namespace llcv {
       LLCV_DEBUG() << "length=" << obj_col.Length() << std::endl;
       LLCV_DEBUG() << "score=" << score << std::endl;
 
-      auto pca_v = EstimateDirection(obj_col);
+      auto pca_v = EstimateDirection(obj_col,_white_img,_ContourScan,_ShowerTools);
 
       LLCV_DEBUG() << "pca=(" << pca_v[0] << "," << pca_v[1] << "," << pca_v[2] << ")" << std::endl;
      
@@ -852,6 +895,10 @@ namespace llcv {
       obj_col.SetEndX(end_pt_v[0]);
       obj_col.SetEndY(end_pt_v[1]);
       obj_col.SetEndZ(end_pt_v[2]);
+
+      // determine line fraction parameters
+      ComputeLineParameters(obj_col,cimg_v,_white_img);
+      SplitLineParameters(obj_col,cimg_v,_white_img);
     }
 
     
@@ -898,7 +945,12 @@ namespace llcv {
 	// look for brem
 	std::vector<size_t> brem_v;
 	std::vector<size_t> inside_v;
-	auto nbrem = DetectBrem(obj2d._brem_triangle,cimg_ctor_v,brem_v,inside_v);
+	auto nbrem = DetectBrem(obj2d._brem_triangle,
+				cimg_ctor_v,
+				brem_v,
+				inside_v,
+				_brem_dist,
+				_brem_size);
 	
 	obj2d._n_brem = nbrem;
 
@@ -971,7 +1023,7 @@ namespace llcv {
     for(size_t plane=0; plane<3; ++plane) {
       const auto& vertex_ctor = vertex_ctor_v[plane];
       auto& edge_dist = _edge_dist_v[plane];
-      edge_dist = MinimizeToEdge(vertex_ctor);
+      edge_dist = MinimizeToEdge(vertex_ctor,_cropx,_cropy);
     }
 
     // cosmic stuff
@@ -979,12 +1031,14 @@ namespace llcv {
       const auto& vertex_pt = vertex_pt_v[plane];
       const auto& _CosmicTag = _CosmicTag_v[plane];
 
-      auto& edge_n_cosmic        = _edge_n_cosmic_v[plane];
+      auto& edge_n_cosmic = _edge_n_cosmic_v[plane];
       auto& edge_cosmic_vtx_dist = _edge_cosmic_vtx_dist_v[plane];
+      auto& edge_cosmic_end_vtx_dist = _edge_cosmic_end_vtx_dist_v[plane];
 
       edge_n_cosmic = (int)_CosmicTag.CosmicContours().size();
 
       auto near_id = _CosmicTag.NearestCosmicToPoint(vertex_pt,edge_cosmic_vtx_dist);
+      auto near_pt = _CosmicTag.NearestCosmicEndToPoint(vertex_pt,edge_cosmic_end_vtx_dist);
     }
 
     // vertex stuff
@@ -1079,7 +1133,12 @@ namespace llcv {
 	*_par_line_vtx_density  = obj2d.LineVertexDensity();
 	*_par_line_vtx_coverage = obj2d.LineVertexCoverage();
 	*_par_line_vtx_charge   = obj2d.LineVertexCharge();
-	
+	*_par_line_mean_dist    = obj2d.LineMeanDist();
+	*_par_line_max_dist     = obj2d.LineMaxDist();
+
+	*_par_line_first_half_linefrac  = obj2d.LineFirstHalfLineFrac();
+	*_par_line_second_half_linefrac = obj2d.LineSecondHalfLineFrac();
+
 	*_par_triangle_height         = obj2d.triangle().Height();
 	*_par_triangle_mid_to_edge    = geo2d::dist(obj2d.triangle().MidPoint(),obj2d.Edge());
 	*_par_triangle_emptyarearatio = obj2d.triangle().EmptyAreaRatio();
@@ -1099,10 +1158,10 @@ namespace llcv {
 	*_par_brem_idx                = obj2d.BremIndex();
 	*_par_showerfrac              = obj2d.Fraction(*shr_v[plane],aimg_v[plane]);
 	
-	(*_par_cosmic_dist_v)[plane]         = NearestPolygonToCosmic(obj2d.Polygons(),plane);
-	(*_par_cosmic_dist_end_v)[plane]     = PointCosmicDistance(obj2d.Edge(),plane);
-	(*_par_cosmic_end_dist_v)[plane]     = NearestPolygonToCosmicEnd(obj2d.Polygons(),plane);
-	(*_par_cosmic_end_dist_end_v)[plane] = PointCosmicEndDistance(obj2d.Edge(),plane);
+	(*_par_cosmic_dist_v)[plane]         = NearestPolygonToCosmic(obj2d.Polygons(),_CosmicTag_v,plane);
+	(*_par_cosmic_dist_end_v)[plane]     = PointCosmicDistance(obj2d.Edge(),_CosmicTag_v,plane);
+	(*_par_cosmic_end_dist_v)[plane]     = NearestPolygonToCosmicEnd(obj2d.Polygons(),_CosmicTag_v,plane);
+	(*_par_cosmic_end_dist_end_v)[plane] = PointCosmicEndDistance(obj2d.Edge(),_CosmicTag_v,plane);
 
 	auto nexpanded_polygons = obj2d.ExpandedPolygons().size();
 	ResizePlanePolygon(nexpanded_polygons);
@@ -1385,178 +1444,6 @@ namespace llcv {
     return 0.0;
   }
 
-  size_t SelNueID::FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
-				      const geo2d::Vector<float>& pt,
-				      float& distance) {
-
-    size_t res;
-    
-    // get the contour closest to the vertex
-    float dist = kINVALID_FLOAT;
-    size_t close_id = kINVALID_SIZE;
-    for(size_t cid=0; cid<ctor_v.size(); ++cid) {
-      const auto& ctor = ctor_v[cid];
-      auto dist_tmp = larocv::Pt2PtDistance(pt,ctor);
-      if (dist_tmp < dist) {
-	dist = dist_tmp;
-	close_id = cid;
-      }
-    }
-    
-    distance = dist;
-    res = close_id;
-    return res;
-  }
-  
-
-  larocv::GEO2D_Contour_t SelNueID::MaximizeLine(const cv::Mat& timg3d_par,
-						 const Triangle& triangle,
-						 float& nline_pixels,
-						 geo2d::Vector<float>& edge) {
-    larocv::GEO2D_Contour_t res;
-
-    nline_pixels = -1*larocv::kINVALID_FLOAT;
-
-    const geo2d::Vector<float>* base_left  = nullptr;
-    const geo2d::Vector<float>* base_right = nullptr;
-
-    const geo2d::Vector<float>* base_up   = nullptr;
-    const geo2d::Vector<float>* base_down = nullptr;
-
-    bool isinf = false;
-    
-    if (triangle.Base1().x < triangle.Base2().x) {
-      base_left  = &triangle.Base1();
-      base_right = &triangle.Base2();
-    }
-    else if(triangle.Base1().x > triangle.Base2().x) {
-      base_left  = &triangle.Base2();
-      base_right = &triangle.Base1();
-    }
-    // it's infinity
-    else {
-      isinf = true;
-      if (triangle.Base1().y < triangle.Base2().y) {
-	base_down = &triangle.Base1();
-	base_up   = &triangle.Base2();
-      }
-      else {
-	base_down = &triangle.Base2();
-	base_up   = &triangle.Base1();
-      }
-    }
-
-    geo2d::LineSegment<float> base_seg;
-    
-    float lo;
-    float hi; 
-
-    if (!isinf)  {
-      base_seg = geo2d::LineSegment<float>(*base_left,*base_right);
-      lo = base_left->x;
-      hi = base_right->x;
-    }
-    else {
-      base_seg = geo2d::LineSegment<float>(*base_down,*base_up);
-      lo = base_down->y;
-      hi = base_up->y;
-    }
-
-    geo2d::Vector<float> pt;
-    
-    float step = 0.1;
-    for(float rid=lo; rid<hi; rid+=step) {
-      
-      _white_img.setTo(cv::Scalar(0));
-      
-      if (!isinf) {
-	pt.x = rid;
-	pt.y = -1;
-	try {
-	  pt.y = base_seg.y(pt.x);
-	}
-	catch (...) {
-	  continue;
-	}
-      } 
-      
-      else {
-	pt.x = base_down->x;
-	pt.y = rid;
-      }
-
-      // draw a line
-      cv::line(_white_img,triangle.Apex(),pt,cv::Scalar(255),3);
-      
-      // find the contour
-      auto line_ctor_v = larocv::FindContours(_white_img);
-      if (line_ctor_v.empty()) continue;
-      const auto& line_ctor = line_ctor_v.front();
-      
-      if (line_ctor.empty()) continue;
-      
-      auto timg3d_par_line = larocv::MaskImage(timg3d_par,line_ctor,-1,false);
-      float nline_pixels_tmp = (float)larocv::CountNonZero(timg3d_par_line);
-      
-      if (nline_pixels_tmp > nline_pixels) {
-	nline_pixels = nline_pixels_tmp;
-	edge = pt;
-	res = line_ctor;
-      }
-      
-    }
-
-    return res;
-    
-  }
-
-
-  larocv::GEO2D_Contour_t SelNueID::MaximizePolygonLine(const cv::Mat& timg3d_mask,
-							const std::vector<Polygon>& polygon_v,
-							Triangle& triangle,
-							float& nline_pixels,
-							float& npar_pixels,
-							geo2d::Vector<float>& edge) {
-    auto timg3d_par = timg3d_mask.clone();
-    timg3d_par.setTo(cv::Scalar(0));
-
-    for(const auto& polygon : polygon_v)
-      timg3d_par += larocv::MaskImage(timg3d_mask,polygon.Contour(),-1,false);
-    
-    npar_pixels = (float)larocv::CountNonZero(timg3d_par);
-
-    size_t size_estimate = 0;
-    for(const auto& polygon : polygon_v)
-      size_estimate += polygon.Contour().size();
-
-    larocv::GEO2D_Contour_t comb_ctor_v;
-    comb_ctor_v.reserve(size_estimate);
-
-    for(const auto& polygon : polygon_v)
-      for(const auto& pt : polygon.Contour())
-	comb_ctor_v.emplace_back(pt);
-
-    triangle = Triangle(comb_ctor_v,triangle.Apex());
-
-    return MaximizeLine(timg3d_par, triangle, nline_pixels, edge);
-  }
-  
-
-  larocv::GEO2D_Contour_t SelNueID::MaximizeTriangleLine(const cv::Mat& timg3d_mask,
-							 const Triangle& triangle,
-							 float& nline_pixels,
-							 float& npar_pixels,
-							 geo2d::Vector<float>& edge) {
-    
-
-    auto timg3d_par = larocv::MaskImage(timg3d_mask,triangle.Contour(),-1,false);
-    
-    npar_pixels = (float)larocv::CountNonZero(timg3d_par);
-    
-    return MaximizeLine(timg3d_par,triangle,nline_pixels,edge);
-  }
-
-
 
   void SelNueID::ResetEvent() {
     
@@ -1570,6 +1457,9 @@ namespace llcv {
 
     _edge_cosmic_vtx_dist_v.clear();
     _edge_cosmic_vtx_dist_v.resize(3,-1);
+
+    _edge_cosmic_end_vtx_dist_v.clear();
+    _edge_cosmic_end_vtx_dist_v.resize(3,-1);
 
     _vtx_xing_U = -1.0*larocv::kINVALID_INT;
     _vtx_xing_V = -1.0*larocv::kINVALID_INT;
@@ -1753,6 +1643,39 @@ namespace llcv {
     _par2_line_vtx_charge_V = -1.0*larocv::kINVALID_FLOAT;
     _par2_line_vtx_charge_Y = -1.0*larocv::kINVALID_FLOAT;
     _par_line_vtx_charge = nullptr;
+
+    _par1_line_mean_dist_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_mean_dist_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_mean_dist_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_mean_dist_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_mean_dist_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_mean_dist_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_mean_dist = nullptr;
+    
+    _par1_line_max_dist_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_max_dist_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_max_dist_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_max_dist_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_max_dist_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_max_dist_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_max_dist = nullptr;
+    
+    _par1_line_first_half_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_first_half_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_first_half_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_first_half_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_first_half_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_first_half_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_first_half_linefrac = nullptr;
+    
+    _par1_line_second_half_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_second_half_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par1_line_second_half_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_second_half_linefrac_U = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_second_half_linefrac_V = -1.0*larocv::kINVALID_FLOAT;
+    _par2_line_second_half_linefrac_Y = -1.0*larocv::kINVALID_FLOAT;
+    _par_line_second_half_linefrac = nullptr;
+
 
     _par1_triangle_mid_to_edge_U = -1.0*larocv::kINVALID_FLOAT;
     _par1_triangle_mid_to_edge_V = -1.0*larocv::kINVALID_FLOAT;
@@ -2223,33 +2146,37 @@ namespace llcv {
     case 0 : {
       switch(plane) {
       case 0 : {
-	_par_n_polygons              = &_par1_n_polygons_U;
-	_par_linelength              = &_par1_linelength_U;
-	_par_linefrac                = &_par1_linefrac_U;
-	_par_linefrac_empty          = &_par1_linefrac_empty_U;
-	_par_linedx                  = &_par1_linedx_U;
-	_par_linedy                  = &_par1_linedy_U;
-	_par_line_vtx_density        = &_par1_line_vtx_density_U;
-	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_U;
-	_par_line_vtx_charge         = &_par1_line_vtx_charge_U;
-	_par_triangle_mid_to_edge    = &_par1_triangle_mid_to_edge_U;
-	_par_triangle_height         = &_par1_triangle_height_U;
-	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_U;
-	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_U;
-	_par_triangle_baselength     = &_par1_triangle_baselength_U;
-	_par_triangle_area           = &_par1_triangle_area_U;
-	_par_triangle_brem           = &_par1_triangle_brem_U;	
-	_par_triangle_coverage       = &_par1_triangle_coverage_U;
-	_par_brem_triangle_coverage  = &_par1_brem_triangle_coverage_U;
-	_par_brem_idx                = &_par1_brem_idx_U;
-	_par_expand_charge           = &_par1_expand_charge_U;
-	_par_dqdx                    = &_par1_dqdx_U;
-	_par_dqdx_step               = &_par1_dqdx_step_U;
-	_par_dqdx_pitch              = &_par1_dqdx_pitch_U;
-	_par_dqdx_v                  = &_par1_dqdx_U_v;
-	_par_tdqdx_v                 = &_par1_tdqdx_U_v;
-	_par_length3d                = &_par1_length3d_U;
-	_par_showerfrac              = &_par1_showerfrac_U;
+	_par_n_polygons                = &_par1_n_polygons_U;
+	_par_linelength                = &_par1_linelength_U;
+	_par_linefrac                  = &_par1_linefrac_U;
+	_par_linefrac_empty            = &_par1_linefrac_empty_U;
+	_par_linedx                    = &_par1_linedx_U;
+	_par_linedy                    = &_par1_linedy_U;
+	_par_line_vtx_density          = &_par1_line_vtx_density_U;
+	_par_line_vtx_coverage         = &_par1_line_vtx_coverage_U;
+	_par_line_vtx_charge           = &_par1_line_vtx_charge_U;
+	_par_line_mean_dist            = &_par1_line_mean_dist_U;
+	_par_line_max_dist             = &_par1_line_max_dist_U;
+	_par_line_first_half_linefrac  = &_par1_line_first_half_linefrac_U;
+	_par_line_second_half_linefrac = &_par1_line_second_half_linefrac_U;
+	_par_triangle_mid_to_edge      = &_par1_triangle_mid_to_edge_U;
+	_par_triangle_height           = &_par1_triangle_height_U;
+	_par_triangle_emptyarearatio   = &_par1_triangle_emptyarearatio_U;
+	_par_triangle_emptyarea        = &_par1_triangle_emptyarea_U;
+	_par_triangle_baselength       = &_par1_triangle_baselength_U;
+	_par_triangle_area             = &_par1_triangle_area_U;
+	_par_triangle_brem             = &_par1_triangle_brem_U;	
+	_par_triangle_coverage         = &_par1_triangle_coverage_U;
+	_par_brem_triangle_coverage    = &_par1_brem_triangle_coverage_U;
+	_par_brem_idx                  = &_par1_brem_idx_U;
+	_par_expand_charge             = &_par1_expand_charge_U;
+	_par_dqdx                      = &_par1_dqdx_U;
+	_par_dqdx_step                 = &_par1_dqdx_step_U;
+	_par_dqdx_pitch                = &_par1_dqdx_pitch_U;
+	_par_dqdx_v                    = &_par1_dqdx_U_v;
+	_par_tdqdx_v                   = &_par1_tdqdx_U_v;
+	_par_length3d                  = &_par1_length3d_U;
+	_par_showerfrac                = &_par1_showerfrac_U;
 
 	_par_numberdefects_v     = &_par1_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_U_v;
@@ -2271,33 +2198,37 @@ namespace llcv {
 	break;
       }
       case 1: {
-	_par_n_polygons              = &_par1_n_polygons_V;
-	_par_linelength              = &_par1_linelength_V;
-	_par_linefrac                = &_par1_linefrac_V;
-	_par_linefrac_empty          = &_par1_linefrac_empty_V;
-	_par_linedx                  = &_par1_linedx_V;
-	_par_linedy                  = &_par1_linedy_V;
-	_par_line_vtx_density        = &_par1_line_vtx_density_V;
-	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_V;
-	_par_line_vtx_charge         = &_par1_line_vtx_charge_V;
-	_par_triangle_mid_to_edge    = &_par1_triangle_mid_to_edge_V;
-	_par_triangle_height         = &_par1_triangle_height_V;
-	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_V;
-	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_V;
-	_par_triangle_baselength     = &_par1_triangle_baselength_V;
-	_par_triangle_area           = &_par1_triangle_area_V;
-	_par_triangle_brem           = &_par1_triangle_brem_V;
-	_par_triangle_coverage       = &_par1_triangle_coverage_V;
-	_par_brem_triangle_coverage  = &_par1_brem_triangle_coverage_V;
-	_par_brem_idx                = &_par1_brem_idx_V;
-	_par_expand_charge           = &_par1_expand_charge_V;
-	_par_dqdx                    = &_par1_dqdx_V;
-	_par_dqdx_step               = &_par1_dqdx_step_V;
-	_par_dqdx_pitch              = &_par1_dqdx_pitch_V;
-	_par_dqdx_v                  = &_par1_dqdx_V_v;
-	_par_tdqdx_v                 = &_par1_tdqdx_V_v;
-	_par_length3d                = &_par1_length3d_V;
-	_par_showerfrac              = &_par1_showerfrac_V;
+	_par_n_polygons                = &_par1_n_polygons_V;
+	_par_linelength                = &_par1_linelength_V;
+	_par_linefrac                  = &_par1_linefrac_V;
+	_par_linefrac_empty            = &_par1_linefrac_empty_V;
+	_par_linedx                    = &_par1_linedx_V;
+	_par_linedy                    = &_par1_linedy_V;
+	_par_line_vtx_density          = &_par1_line_vtx_density_V;
+	_par_line_vtx_coverage         = &_par1_line_vtx_coverage_V;
+	_par_line_vtx_charge           = &_par1_line_vtx_charge_V;
+	_par_line_mean_dist            = &_par1_line_mean_dist_V;
+	_par_line_max_dist             = &_par1_line_max_dist_V;
+	_par_line_first_half_linefrac  = &_par1_line_first_half_linefrac_V;
+	_par_line_second_half_linefrac = &_par1_line_second_half_linefrac_V;
+	_par_triangle_mid_to_edge      = &_par1_triangle_mid_to_edge_V;
+	_par_triangle_height           = &_par1_triangle_height_V;
+	_par_triangle_emptyarearatio   = &_par1_triangle_emptyarearatio_V;
+	_par_triangle_emptyarea        = &_par1_triangle_emptyarea_V;
+	_par_triangle_baselength       = &_par1_triangle_baselength_V;
+	_par_triangle_area             = &_par1_triangle_area_V;
+	_par_triangle_brem             = &_par1_triangle_brem_V;
+	_par_triangle_coverage         = &_par1_triangle_coverage_V;
+	_par_brem_triangle_coverage    = &_par1_brem_triangle_coverage_V;
+	_par_brem_idx                  = &_par1_brem_idx_V;
+	_par_expand_charge             = &_par1_expand_charge_V;
+	_par_dqdx                      = &_par1_dqdx_V;
+	_par_dqdx_step                 = &_par1_dqdx_step_V;
+	_par_dqdx_pitch                = &_par1_dqdx_pitch_V;
+	_par_dqdx_v                    = &_par1_dqdx_V_v;
+	_par_tdqdx_v                   = &_par1_tdqdx_V_v;
+	_par_length3d                  = &_par1_length3d_V;
+	_par_showerfrac                = &_par1_showerfrac_V;
 
 	_par_numberdefects_v     = &_par1_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_V_v;
@@ -2319,33 +2250,37 @@ namespace llcv {
 	break;
       }
       case 2: {
-	_par_n_polygons              = &_par1_n_polygons_Y;
-	_par_linelength              = &_par1_linelength_Y;
-	_par_linefrac                = &_par1_linefrac_Y;
-	_par_linefrac_empty          = &_par1_linefrac_empty_Y;
-	_par_linedx                  = &_par1_linedx_Y;
-	_par_linedy                  = &_par1_linedy_Y;
-	_par_line_vtx_density        = &_par1_line_vtx_density_Y;
-	_par_line_vtx_coverage       = &_par1_line_vtx_coverage_Y;
-	_par_line_vtx_charge         = &_par1_line_vtx_charge_Y;
-	_par_triangle_mid_to_edge    = &_par1_triangle_mid_to_edge_Y;
-	_par_triangle_height         = &_par1_triangle_height_Y;
-	_par_triangle_emptyarearatio = &_par1_triangle_emptyarearatio_Y;
-	_par_triangle_emptyarea      = &_par1_triangle_emptyarea_Y;
-	_par_triangle_baselength     = &_par1_triangle_baselength_Y;
-	_par_triangle_area           = &_par1_triangle_area_Y;
-	_par_triangle_brem           = &_par1_triangle_brem_Y;
-	_par_triangle_coverage       = &_par1_triangle_coverage_Y;
-	_par_brem_triangle_coverage  = &_par1_brem_triangle_coverage_Y;
-	_par_brem_idx                = &_par1_brem_idx_Y;
-	_par_expand_charge           = &_par1_expand_charge_Y;
-	_par_dqdx                    = &_par1_dqdx_Y;
-	_par_dqdx_step               = &_par1_dqdx_step_Y;
-	_par_dqdx_pitch              = &_par1_dqdx_pitch_Y;
-	_par_dqdx_v                  = &_par1_dqdx_Y_v;
-	_par_tdqdx_v                 = &_par1_tdqdx_Y_v;
-	_par_length3d                = &_par1_length3d_Y;
-	_par_showerfrac              = &_par1_showerfrac_Y;
+	_par_n_polygons                = &_par1_n_polygons_Y;
+	_par_linelength                = &_par1_linelength_Y;
+	_par_linefrac                  = &_par1_linefrac_Y;
+	_par_linefrac_empty            = &_par1_linefrac_empty_Y;
+	_par_linedx                    = &_par1_linedx_Y;
+	_par_linedy                    = &_par1_linedy_Y;
+	_par_line_vtx_density          = &_par1_line_vtx_density_Y;
+	_par_line_vtx_coverage         = &_par1_line_vtx_coverage_Y;
+	_par_line_vtx_charge           = &_par1_line_vtx_charge_Y;
+	_par_line_mean_dist            = &_par1_line_mean_dist_Y;
+	_par_line_max_dist             = &_par1_line_max_dist_Y;
+	_par_line_first_half_linefrac  = &_par1_line_first_half_linefrac_Y;
+	_par_line_second_half_linefrac = &_par1_line_second_half_linefrac_Y;
+	_par_triangle_mid_to_edge      = &_par1_triangle_mid_to_edge_Y;
+	_par_triangle_height           = &_par1_triangle_height_Y;
+	_par_triangle_emptyarearatio   = &_par1_triangle_emptyarearatio_Y;
+	_par_triangle_emptyarea        = &_par1_triangle_emptyarea_Y;
+	_par_triangle_baselength       = &_par1_triangle_baselength_Y;
+	_par_triangle_area             = &_par1_triangle_area_Y;
+	_par_triangle_brem             = &_par1_triangle_brem_Y;
+	_par_triangle_coverage         = &_par1_triangle_coverage_Y;
+	_par_brem_triangle_coverage    = &_par1_brem_triangle_coverage_Y;
+	_par_brem_idx                  = &_par1_brem_idx_Y;
+	_par_expand_charge             = &_par1_expand_charge_Y;
+	_par_dqdx                      = &_par1_dqdx_Y;
+	_par_dqdx_step                 = &_par1_dqdx_step_Y;
+	_par_dqdx_pitch                = &_par1_dqdx_pitch_Y;
+	_par_dqdx_v                    = &_par1_dqdx_Y_v;
+	_par_tdqdx_v                   = &_par1_tdqdx_Y_v;
+	_par_length3d                  = &_par1_length3d_Y;
+	_par_showerfrac                = &_par1_showerfrac_Y;
 
 	_par_numberdefects_v     = &_par1_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par1_numberdefects_ns_Y_v;
@@ -2374,33 +2309,37 @@ namespace llcv {
     case 1 : {
       switch(plane) {
       case 0 : {
-	_par_n_polygons              = &_par2_n_polygons_U;
-	_par_linelength              = &_par2_linelength_U;
-	_par_linefrac                = &_par2_linefrac_U;
-	_par_linefrac_empty          = &_par2_linefrac_empty_U;
-	_par_linedx                  = &_par2_linedx_U;
-	_par_linedy                  = &_par2_linedy_U;
-	_par_line_vtx_density        = &_par2_line_vtx_density_U;
-	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_U;
-	_par_line_vtx_charge         = &_par2_line_vtx_charge_U;
-	_par_triangle_mid_to_edge    = &_par2_triangle_mid_to_edge_U;
-	_par_triangle_height         = &_par2_triangle_height_U;
-	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_U;
-	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_U;
-	_par_triangle_baselength     = &_par2_triangle_baselength_U;
-	_par_triangle_area           = &_par2_triangle_area_U;
-	_par_triangle_brem           = &_par2_triangle_brem_U;
-	_par_triangle_coverage       = &_par2_triangle_coverage_U;
-	_par_brem_triangle_coverage  = &_par2_brem_triangle_coverage_U;
-	_par_brem_idx                = &_par2_brem_idx_U;
-	_par_expand_charge           = &_par2_expand_charge_U;
-	_par_dqdx                    = &_par2_dqdx_U;
-	_par_dqdx_step               = &_par2_dqdx_step_U;
-	_par_dqdx_pitch              = &_par2_dqdx_pitch_U;
-	_par_dqdx_v                  = &_par2_dqdx_U_v;
-	_par_tdqdx_v                 = &_par2_tdqdx_U_v;
-	_par_length3d                = &_par2_length3d_U;
-	_par_showerfrac              = &_par2_showerfrac_U;
+	_par_n_polygons                = &_par2_n_polygons_U;
+	_par_linelength                = &_par2_linelength_U;
+	_par_linefrac                  = &_par2_linefrac_U;
+	_par_linefrac_empty            = &_par2_linefrac_empty_U;
+	_par_linedx                    = &_par2_linedx_U;
+	_par_linedy                    = &_par2_linedy_U;
+	_par_line_vtx_density          = &_par2_line_vtx_density_U;
+	_par_line_vtx_coverage         = &_par2_line_vtx_coverage_U;
+	_par_line_vtx_charge           = &_par2_line_vtx_charge_U;
+	_par_line_mean_dist            = &_par2_line_mean_dist_U;
+	_par_line_max_dist             = &_par2_line_max_dist_U;
+	_par_line_first_half_linefrac  = &_par2_line_first_half_linefrac_U;
+	_par_line_second_half_linefrac = &_par2_line_second_half_linefrac_U;
+	_par_triangle_mid_to_edge      = &_par2_triangle_mid_to_edge_U;
+	_par_triangle_height           = &_par2_triangle_height_U;
+	_par_triangle_emptyarearatio   = &_par2_triangle_emptyarearatio_U;
+	_par_triangle_emptyarea        = &_par2_triangle_emptyarea_U;
+	_par_triangle_baselength       = &_par2_triangle_baselength_U;
+	_par_triangle_area             = &_par2_triangle_area_U;
+	_par_triangle_brem             = &_par2_triangle_brem_U;
+	_par_triangle_coverage         = &_par2_triangle_coverage_U;
+	_par_brem_triangle_coverage    = &_par2_brem_triangle_coverage_U;
+	_par_brem_idx                  = &_par2_brem_idx_U;
+	_par_expand_charge             = &_par2_expand_charge_U;
+	_par_dqdx                      = &_par2_dqdx_U;
+	_par_dqdx_step                 = &_par2_dqdx_step_U;
+	_par_dqdx_pitch                = &_par2_dqdx_pitch_U;
+	_par_dqdx_v                    = &_par2_dqdx_U_v;
+	_par_tdqdx_v                   = &_par2_tdqdx_U_v;
+	_par_length3d                  = &_par2_length3d_U;
+	_par_showerfrac                = &_par2_showerfrac_U;
 
 	_par_numberdefects_v     = &_par2_numberdefects_U_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_U_v;
@@ -2422,33 +2361,37 @@ namespace llcv {
 	break;
       }
       case 1: {
-	_par_n_polygons              = &_par2_n_polygons_V;
-	_par_linelength              = &_par2_linelength_V;
-	_par_linefrac                = &_par2_linefrac_V;
-	_par_linefrac_empty          = &_par2_linefrac_empty_V;
-	_par_linedx                  = &_par2_linedx_V;
-	_par_linedy                  = &_par2_linedy_V;
-	_par_line_vtx_density        = &_par2_line_vtx_density_V;
-	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_V;
-	_par_line_vtx_charge         = &_par2_line_vtx_charge_V;
-	_par_triangle_mid_to_edge    = &_par2_triangle_mid_to_edge_V;
-	_par_triangle_height         = &_par2_triangle_height_V;
-	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_V;
-	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_V;
-	_par_triangle_baselength     = &_par2_triangle_baselength_V;
-	_par_triangle_area           = &_par2_triangle_area_V;
-	_par_triangle_brem           = &_par2_triangle_brem_V;
-	_par_triangle_coverage       = &_par2_triangle_coverage_V;
-	_par_brem_triangle_coverage  = &_par2_brem_triangle_coverage_V;
-	_par_brem_idx                = &_par2_brem_idx_V;
-	_par_expand_charge           = &_par2_expand_charge_V;
-	_par_dqdx                    = &_par2_dqdx_V;
-	_par_dqdx_step               = &_par2_dqdx_step_V;
-	_par_dqdx_pitch              = &_par2_dqdx_pitch_V;
-	_par_dqdx_v                  = &_par2_dqdx_V_v;
-	_par_tdqdx_v                 = &_par2_tdqdx_V_v;
-	_par_length3d                = &_par2_length3d_V;
-	_par_showerfrac              = &_par2_showerfrac_V;
+	_par_n_polygons                = &_par2_n_polygons_V;
+	_par_linelength                = &_par2_linelength_V;
+	_par_linefrac                  = &_par2_linefrac_V;
+	_par_linefrac_empty            = &_par2_linefrac_empty_V;
+	_par_linedx                    = &_par2_linedx_V;
+	_par_linedy                    = &_par2_linedy_V;
+	_par_line_vtx_density          = &_par2_line_vtx_density_V;
+	_par_line_vtx_coverage         = &_par2_line_vtx_coverage_V;
+	_par_line_vtx_charge           = &_par2_line_vtx_charge_V;
+	_par_line_mean_dist            = &_par2_line_mean_dist_V;
+	_par_line_max_dist             = &_par2_line_max_dist_V;
+	_par_line_first_half_linefrac  = &_par2_line_first_half_linefrac_V;
+	_par_line_second_half_linefrac = &_par2_line_second_half_linefrac_V;
+	_par_triangle_mid_to_edge      = &_par2_triangle_mid_to_edge_V;
+	_par_triangle_height           = &_par2_triangle_height_V;
+	_par_triangle_emptyarearatio   = &_par2_triangle_emptyarearatio_V;
+	_par_triangle_emptyarea        = &_par2_triangle_emptyarea_V;
+	_par_triangle_baselength       = &_par2_triangle_baselength_V;
+	_par_triangle_area             = &_par2_triangle_area_V;
+	_par_triangle_brem             = &_par2_triangle_brem_V;
+	_par_triangle_coverage         = &_par2_triangle_coverage_V;
+	_par_brem_triangle_coverage    = &_par2_brem_triangle_coverage_V;
+	_par_brem_idx                  = &_par2_brem_idx_V;
+	_par_expand_charge             = &_par2_expand_charge_V;
+	_par_dqdx                      = &_par2_dqdx_V;
+	_par_dqdx_step                 = &_par2_dqdx_step_V;
+	_par_dqdx_pitch                = &_par2_dqdx_pitch_V;
+	_par_dqdx_v                    = &_par2_dqdx_V_v;
+	_par_tdqdx_v                   = &_par2_tdqdx_V_v;
+	_par_length3d                  = &_par2_length3d_V;
+	_par_showerfrac                = &_par2_showerfrac_V;
 
 	_par_numberdefects_v     = &_par2_numberdefects_V_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_V_v;
@@ -2470,33 +2413,37 @@ namespace llcv {
 	break;
       }
       case 2: {
-	_par_n_polygons              = &_par2_n_polygons_Y;
-	_par_linelength              = &_par2_linelength_Y;
-	_par_linefrac                = &_par2_linefrac_Y;
-	_par_linefrac_empty          = &_par2_linefrac_empty_Y;
-	_par_linedx                  = &_par2_linedx_Y;
-	_par_linedy                  = &_par2_linedy_Y;
-	_par_line_vtx_density        = &_par2_line_vtx_density_Y;
-	_par_line_vtx_coverage       = &_par2_line_vtx_coverage_Y;
-	_par_line_vtx_charge         = &_par2_line_vtx_charge_Y;
-	_par_triangle_mid_to_edge    = &_par2_triangle_mid_to_edge_Y;
-	_par_triangle_height         = &_par2_triangle_height_Y;
-	_par_triangle_emptyarearatio = &_par2_triangle_emptyarearatio_Y;
-	_par_triangle_emptyarea      = &_par2_triangle_emptyarea_Y;
-	_par_triangle_baselength     = &_par2_triangle_baselength_Y;
-	_par_triangle_area           = &_par2_triangle_area_Y;
-	_par_triangle_brem           = &_par2_triangle_brem_Y;
-	_par_triangle_coverage       = &_par2_triangle_coverage_Y;
-	_par_brem_triangle_coverage  = &_par2_brem_triangle_coverage_Y;
-	_par_brem_idx                = &_par2_brem_idx_Y;
-	_par_expand_charge           = &_par2_expand_charge_Y;
-	_par_dqdx                    = &_par2_dqdx_Y;
-	_par_dqdx_step               = &_par2_dqdx_step_Y;
-	_par_dqdx_pitch              = &_par2_dqdx_pitch_Y;
-	_par_dqdx_v                  = &_par2_dqdx_Y_v;
-	_par_tdqdx_v                 = &_par2_tdqdx_Y_v;
-	_par_length3d                = &_par2_length3d_Y;
-	_par_showerfrac              = &_par2_showerfrac_Y;
+	_par_n_polygons                = &_par2_n_polygons_Y;
+	_par_linelength                = &_par2_linelength_Y;
+	_par_linefrac                  = &_par2_linefrac_Y;
+	_par_linefrac_empty            = &_par2_linefrac_empty_Y;
+	_par_linedx                    = &_par2_linedx_Y;
+	_par_linedy                    = &_par2_linedy_Y;
+	_par_line_vtx_density          = &_par2_line_vtx_density_Y;
+	_par_line_vtx_coverage         = &_par2_line_vtx_coverage_Y;
+	_par_line_vtx_charge           = &_par2_line_vtx_charge_Y;
+	_par_line_mean_dist            = &_par2_line_mean_dist_Y;
+	_par_line_max_dist             = &_par2_line_max_dist_Y;
+	_par_line_first_half_linefrac  = &_par2_line_first_half_linefrac_Y;
+	_par_line_second_half_linefrac = &_par2_line_second_half_linefrac_Y;
+	_par_triangle_mid_to_edge      = &_par2_triangle_mid_to_edge_Y;
+	_par_triangle_height           = &_par2_triangle_height_Y;
+	_par_triangle_emptyarearatio   = &_par2_triangle_emptyarearatio_Y;
+	_par_triangle_emptyarea        = &_par2_triangle_emptyarea_Y;
+	_par_triangle_baselength       = &_par2_triangle_baselength_Y;
+	_par_triangle_area             = &_par2_triangle_area_Y;
+	_par_triangle_brem             = &_par2_triangle_brem_Y;
+	_par_triangle_coverage         = &_par2_triangle_coverage_Y;
+	_par_brem_triangle_coverage    = &_par2_brem_triangle_coverage_Y;
+	_par_brem_idx                  = &_par2_brem_idx_Y;
+	_par_expand_charge             = &_par2_expand_charge_Y;
+	_par_dqdx                      = &_par2_dqdx_Y;
+	_par_dqdx_step                 = &_par2_dqdx_step_Y;
+	_par_dqdx_pitch                = &_par2_dqdx_pitch_Y;
+	_par_dqdx_v                    = &_par2_dqdx_Y_v;
+	_par_tdqdx_v                   = &_par2_tdqdx_Y_v;
+	_par_length3d                  = &_par2_length3d_Y;
+	_par_showerfrac                = &_par2_showerfrac_Y;
 
 	_par_numberdefects_v     = &_par2_numberdefects_Y_v;
 	_par_numberdefects_ns_v  = &_par2_numberdefects_ns_Y_v;
@@ -2526,7 +2473,7 @@ namespace llcv {
     return;
   }
 
-void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
+  void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
 
     LLCV_DEBUG() << "@pid=" << pid << " @plane=" << plane << std::endl;
 
@@ -2586,119 +2533,6 @@ void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
     return;
   }
 
-  float SelNueID::MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor) {
-    float res = larocv::kINVALID_FLOAT;
-    for(const auto& pt : ctor) {
-      res = std::min(res,(float)pt.x);
-      res = std::min(res,(float)pt.y);
-      res = std::min(res,(float)_cropx - (float)pt.x);
-      res = std::min(res,(float)_cropy - (float)pt.y);
-    }
-    return res;
-  }
-
-  float SelNueID::NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane) {
-    float ret = larocv::kINVALID_FLOAT;
-    const auto& _CosmicTag = _CosmicTag_v[plane];
-    for(const auto& polygon : polygon_v) {
-      float distance = larocv::kINVALID_FLOAT;
-      auto id = _CosmicTag.NearestCosmicToContour(polygon.Contour(),distance);
-      ret = std::min(ret,distance);
-    }
-    return ret;
-  }
-
-  float SelNueID::NearestPolygonToCosmicEnd(const std::vector<Polygon>& polygon_v,size_t plane) {
-    float ret = larocv::kINVALID_FLOAT;
-    const auto& _CosmicTag = _CosmicTag_v[plane];
-    for(const auto& polygon : polygon_v) {
-      float distance = larocv::kINVALID_FLOAT;
-      auto id = _CosmicTag.NearestCosmicEndToContour(polygon.Contour(),distance);
-      ret = std::min(ret,distance);
-    }
-    return ret;
-  }
-
-  float SelNueID::PointCosmicDistance(const geo2d::Vector<float>& pt, const size_t plane) {
-    float ret = larocv::kINVALID_FLOAT;
-    const auto& _CosmicTag = _CosmicTag_v[plane];
-    geo2d::Vector<int> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
-    auto id = _CosmicTag.NearestCosmicToPoint(pt_i,ret);
-    return ret;
-  }
-
-  float SelNueID::PointCosmicEndDistance(const geo2d::Vector<float>& pt, const size_t plane) {
-    float ret = larocv::kINVALID_FLOAT;
-    const auto& _CosmicTag = _CosmicTag_v[plane];
-    geo2d::Vector<int> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
-    auto id = _CosmicTag.NearestCosmicEndToPoint(pt_i,ret);
-    return ret;
-  }
-
-  int SelNueID::DetectBrem(Triangle& triangle, 
-			   const larocv::GEO2D_ContourArray_t& other_ctor_v,
-			   std::vector<size_t>& id_v,
-			   std::vector<size_t>& inside_v) {
-    int res = 0;
-
-    //
-    // count the number of other contours inside or touching the expanded triangle
-    //
-    
-    float fraction = (triangle.Height() + _brem_dist) / triangle.Height();
-
-    triangle.Extend(fraction);
-    
-    auto tri_ctor = triangle.AsContour();
-    
-    id_v.reserve(other_ctor_v.size());
-    inside_v.reserve(other_ctor_v.size());
-
-    for(size_t oid=0; oid < other_ctor_v.size(); ++oid) {
-      const auto& other_ctor = other_ctor_v[oid];
-      
-      auto common_area = larocv::AreaOverlap(other_ctor,tri_ctor);
-      if (common_area == 0) continue;
-      
-      int pixel_area = larocv::ContourPixelArea(other_ctor);
-      if (pixel_area > _brem_size) {
-	res += 1;
-	id_v.push_back(oid);
-      }
-      inside_v.push_back(oid);
-    }
-    
-    return res;
-  }
-  
-  std::array<float,3> SelNueID::EstimateDirection(Object2DCollection obj_col) {
-    std::array<float,3> ret_v;
-    ret_v[0] = -1*larocv::kINVALID_FLOAT;
-    ret_v[1] = -1*larocv::kINVALID_FLOAT;
-    ret_v[2] = -1*larocv::kINVALID_FLOAT;
-
-
-    _ContourScan.Reset();
-
-    // register the lines for this object
-    for(const auto& obj2d : obj_col) {
-      _white_img.setTo(cv::Scalar(255));
-      _ContourScan.RegisterContour(_white_img,obj2d.Line(),obj2d.Plane(),-1);
-    }
-
-    // scan 
-    _ContourScan.Scan();
-    
-    // return voxels
-    auto vox_v = _ContourScan.Voxelize(0.3,0.3,0.3);
-
-    LLCV_DEBUG() << "vox_v sz=" << vox_v.size() << std::endl;
-
-    // calculate PCA
-    ret_v = _ShowerTools.ComputePCA(vox_v,obj_col);
- 
-    return ret_v;
-  }
   
   void SelNueID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;

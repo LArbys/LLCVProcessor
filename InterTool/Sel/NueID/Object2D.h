@@ -24,7 +24,6 @@ namespace llcv {
     float LineFrac() const { return _line_frac; }
     float LineFracEmpty(const cv::Mat& white_img) const;
 
-
     const Triangle& triangle() const { return _triangle; }
     const Triangle& brem_triangle() const { return _brem_triangle; }
     const std::vector<Polygon>& Polygons() const { return _polygon_v; }
@@ -66,6 +65,11 @@ namespace llcv {
     float LineVertexCoverage() const { return _vtx_coverage; }
     float LineVertexCharge() const { return _vtx_charge; }
 
+    float LineMeanDist() const { return _line_mean_dist; }
+    float LineMaxDist() const { return _line_max_dist; }
+    float LineFirstHalfLineFrac() const { return _line_first_half_linefrac; }
+    float LineSecondHalfLineFrac() const { return _line_second_half_linefrac; }
+
   public:
 
     Triangle _triangle;
@@ -99,6 +103,12 @@ namespace llcv {
     float _vtx_charge;
 
     larocv::GEO2D_Contour_t _vtx_pt_v;
+
+    float _line_mean_dist;
+    float _line_max_dist;
+    
+    float _line_first_half_linefrac;
+    float _line_second_half_linefrac;
 
   };
 

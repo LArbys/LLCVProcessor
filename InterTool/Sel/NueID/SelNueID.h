@@ -2,23 +2,14 @@
 #define __SELNUEID_H__
 
 #include "InterTool_Core/InterSelBase.h"
-#include "TStopwatch.h"
-#include "ContourScan.h"
-#include "InterTool_Util/Triangle.h"
-#include "MatchObjectAlgoTimeIOU.h"
-#include "Object2D.h"
-#include "CosmicTag.h"
-#include "LineExtension.h"
-#include "ShowerTools.h"
-#include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
-
+#include "NueIDUtil.h"
 
 namespace llcv {
   
   class SelNueID : public InterSelBase { 
-
+    
   public:
-
+    
   SelNueID(std::string name="SelNueID") : InterSelBase(name), _outtree(nullptr) 
     { _ismc = false; _debug = false; }
 
@@ -39,12 +30,15 @@ namespace llcv {
     size_t _cropx;
     size_t _cropy;
     size_t _n_neighbors;
-    float _brem_dist;
+
     int _brem_size;
+
+    float _brem_dist;
     float _tradius;
     float _tsigma;
-
     float _extension_cutoff;
+
+  private:
     
     ShowerTools _ShowerTools;
 
@@ -57,6 +51,7 @@ namespace llcv {
     MatchObjectAlgoTimeIOU _Match;
 
     std::vector<CosmicTag> _CosmicTag_v;
+
     std::vector<LineExtension> _LineExtension_v;
     
     larocv::PixelScan3D _PixelScan3D;
@@ -68,44 +63,6 @@ namespace llcv {
     void SetParticlePlane(size_t pid, size_t plane);
     void SetSegmentPlane(size_t pid, size_t plane);
     void SetParticle(size_t pid);
-
-    size_t FindClosestContour(const larocv::GEO2D_ContourArray_t& ctor_v,
-			      const geo2d::Vector<float>& pt,
-			      float& distance);
-
-    larocv::GEO2D_Contour_t MaximizeLine(const cv::Mat& timg3d_par,
-					 const Triangle& triangle,
-					 float& nline_pixels,
-					 geo2d::Vector<float>& edge);
-    
-    
-    larocv::GEO2D_Contour_t MaximizeTriangleLine(const cv::Mat& timg3d_mask,
-						 const Triangle& triangle,
-						 float& nline_pixels,
-						 float& npar_pixels,
-						 geo2d::Vector<float>& edge);
-    
-    larocv::GEO2D_Contour_t MaximizePolygonLine(const cv::Mat& timg3d_mask,
-						const std::vector<Polygon>& polygon_v,
-						Triangle& triangle,
-						float& nline_pixels,
-						float& npar_pixels,
-						geo2d::Vector<float>& edge);
-
-    float MinimizeToEdge(const larocv::GEO2D_Contour_t& ctor);
-    
-    float NearestPolygonToCosmic(const std::vector<Polygon>& polygon_v,size_t plane);
-    float NearestPolygonToCosmicEnd(const std::vector<Polygon>& polygon_v,size_t plane);
-
-    float PointCosmicDistance(const geo2d::Vector<float>& pt, const size_t plane);
-    float PointCosmicEndDistance(const geo2d::Vector<float>& pt, const size_t plane);
-
-    int DetectBrem(Triangle& triangle, 
-		   const larocv::GEO2D_ContourArray_t& other_ctor_v,
-		   std::vector<size_t>& id_v,
-		   std::vector<size_t>& inside_v);
-    
-    std::array<float,3> EstimateDirection(Object2DCollection obj_col);
     
   private:
     
@@ -145,6 +102,7 @@ namespace llcv {
     std::vector<float> _edge_dist_v;
     std::vector<int>   _edge_n_cosmic_v;
     std::vector<float> _edge_cosmic_vtx_dist_v;
+    std::vector<float> _edge_cosmic_end_vtx_dist_v;
 
     float _par1_theta;
     float _par1_phi;
@@ -274,6 +232,38 @@ namespace llcv {
     float _par2_line_vtx_charge_V;
     float _par2_line_vtx_charge_Y;
     float* _par_line_vtx_charge;
+
+    float _par1_line_mean_dist_U;
+    float _par1_line_mean_dist_V;
+    float _par1_line_mean_dist_Y;
+    float _par2_line_mean_dist_U;
+    float _par2_line_mean_dist_V;
+    float _par2_line_mean_dist_Y;
+    float* _par_line_mean_dist;
+    
+    float _par1_line_max_dist_U;
+    float _par1_line_max_dist_V;
+    float _par1_line_max_dist_Y;
+    float _par2_line_max_dist_U;
+    float _par2_line_max_dist_V;
+    float _par2_line_max_dist_Y;
+    float* _par_line_max_dist;
+    
+    float _par1_line_first_half_linefrac_U;
+    float _par1_line_first_half_linefrac_Y;
+    float _par1_line_first_half_linefrac_V;
+    float _par2_line_first_half_linefrac_U;
+    float _par2_line_first_half_linefrac_Y;
+    float _par2_line_first_half_linefrac_V;
+    float* _par_line_first_half_linefrac;
+    
+    float _par1_line_second_half_linefrac_U;
+    float _par1_line_second_half_linefrac_Y;
+    float _par1_line_second_half_linefrac_V;
+    float _par2_line_second_half_linefrac_U;
+    float _par2_line_second_half_linefrac_Y;
+    float _par2_line_second_half_linefrac_V;
+    float* _par_line_second_half_linefrac;
 
     float _par1_triangle_mid_to_edge_U;
     float _par1_triangle_mid_to_edge_V;
