@@ -491,6 +491,8 @@ namespace llcv {
       float first_half_linefrac = 0;
       if (near_cnt > 0)
 	first_half_linefrac = near_line_cnt / near_cnt;
+      else
+	first_half_linefrac = -1;
 
       // paint the second hald half
       white_img.setTo(cv::Scalar(0));
@@ -504,6 +506,8 @@ namespace llcv {
       float second_half_linefrac = 0;
       if (far_cnt > 0)
 	second_half_linefrac = far_line_cnt / far_cnt;
+      else
+	second_half_linefrac = -1;
 
       obj2d._line_first_half_linefrac = first_half_linefrac;
       obj2d._line_second_half_linefrac = second_half_linefrac;
