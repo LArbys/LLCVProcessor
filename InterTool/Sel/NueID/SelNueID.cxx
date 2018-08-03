@@ -33,7 +33,7 @@ namespace llcv {
     _LineExtension_v.clear();
     _LineExtension_v.resize(3);
 
-    _brem_dist = pset.get<float>("BremDistance",50);
+    _brem_dist = pset.get<float>("BremDistance",60);
     _brem_size = pset.get<int>("BremSize",6);
     _tradius = pset.get<float>("TruncatedRadius",3);
     _tsigma  = pset.get<float>("TruncatedSigma",0.5);
