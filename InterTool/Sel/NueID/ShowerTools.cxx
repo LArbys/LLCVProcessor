@@ -27,6 +27,8 @@ namespace llcv {
 
       const auto pl = obj._plane;
       
+      assert(pl < 3);
+
       larutil::Point2D weightedDir;
       weightedDir.w = 0;
       weightedDir.t = 0;
