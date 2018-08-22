@@ -1,14 +1,15 @@
 import os,sys,gc
 
-if len(sys.argv) != 9:
+if len(sys.argv) != 10:
     print "SUPERA_FILE = str(sys.argv[1])"
     print "SSNET_FILE  = str(sys.argv[2])"
     print "TAGGER_FILE = str(sys.argv[3])"
     print "VTX_FILE    = str(sys.argv[4])"
     print "RECO2D_FILE = str(sys.argv[5])"
-    print "NUM         = str(sys.argv[6])"
-    print "IS_MC       = int(sys.argv[7])"
-    print "OUT_DIR     = str(sys.argv[8])"
+    print "CONFIG_FILE = str(sys.argv[6])"
+    print "NUM         = str(sys.argv[7])"
+    print "IS_MC       = int(sys.argv[8])"
+    print "OUT_DIR     = str(sys.argv[9])"
     sys.exit(1)
 
 SUPERA_FILE = str(sys.argv[1])
@@ -16,9 +17,10 @@ SSNET_FILE  = str(sys.argv[2])
 TAGGER_FILE = str(sys.argv[3])
 VTX_FILE    = str(sys.argv[4])
 RECO2D_FILE = str(sys.argv[5])
-NUM         = str(sys.argv[6])
-IS_MC       = int(str(sys.argv[7]))
-OUT_DIR     = str(sys.argv[8])
+CONFIG_FILE = str(sys.argv[6])
+NUM         = str(sys.argv[7])
+IS_MC       = int(str(sys.argv[8]))
+OUT_DIR     = str(sys.argv[9])
 
 import ROOT
 from larlitecv import larlitecv
@@ -62,10 +64,7 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-if IS_MC == 1:
-    proc.configure(os.path.join(BASE_PATH,"inter_nue_mc.cfg"))
-else:
-    proc.configure(os.path.join(BASE_PATH,"inter_nue_data.cfg"))
+proc.configure(CONFIG_FILE)
 
 proc.add_lcv_input_file(SUPERA_FILE)
 proc.add_lcv_input_file(SSNET_FILE)
