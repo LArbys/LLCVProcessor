@@ -1079,7 +1079,7 @@ namespace llcv {
 
     // object collection stuff
     auto& out_pgraph = Data().MakePGraph();
-    
+
     for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
       const auto& obj_col = obj_col_v[oid];
       
@@ -1189,6 +1189,9 @@ namespace llcv {
 
       } // end plane
 
+      //
+      // fill a ROI per particle
+      //
       larcv::ROI proi;
       proi.Position(Vertex_X,Vertex_Y,Vertex_Z,larocv::kINVALID_DOUBLE);
       
@@ -1215,8 +1218,6 @@ namespace llcv {
 	      pixel_v.emplace_back(row,col);
 	      pixel_v.back().Intensity((*(img_v.at(plane))).pixel(row,col));
 	      
-	      // LLCV_DEBUG() << "@pt=(" << pt.x << "," << pt.y << ") "
-	      // 		   << "@pt_img2d=(" << pt_img2d.x << "," << pt_img2d.y << ")="<<img_v.at(plane)->pixel(pt_img2d.x,pt_img2d.y) << std::endl;
 	    } // cv::Mat pt
 	  
 	  } // end polygon
@@ -1228,13 +1229,18 @@ namespace llcv {
 	out_pixel_cluster = larcv::Pixel2DCluster(std::move(pixel_v));
 	
       } // end plane
-
+      
+      
+      //
+      // fill a larlite track
+      //
+      auto& out_track = Data().MakeTrack();
+      FillTrack(obj_col, out_track);
     } // end particle
 
     //
     // write out the cosmic removed image
     //
-
     for(size_t plane=0; plane<3; ++plane) {
       std::vector<larcv::Pixel2D> pixel_v;
       auto nz_pt_v = larocv::FindNonZero(cimg_v[plane]);
@@ -1255,8 +1261,6 @@ namespace llcv {
     //
     // write out the interaction image
     //
-
-
     for(size_t plane=0; plane<3; ++plane) {
 
       std::vector<larcv::Pixel2D> pixel_v;

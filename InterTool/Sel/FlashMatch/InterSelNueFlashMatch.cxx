@@ -18,9 +18,6 @@ namespace llcv {
     larlitecv::GeneralFlashMatchAlgoConfig genflash_cfg = larlitecv::GeneralFlashMatchAlgoConfig::MakeConfigFromPSet( genflash_pset );
     genflashmatch = new larlitecv::GeneralFlashMatchAlgo( genflash_cfg );
 
-    isMC = pset.get<bool>("IsMC");
-    fSaveHistograms = pset.get<bool>("SaveFlashHistograms",false); // for debugging
-
     fPXtoMEV = pset.get<float>("PXtoMEV");
     
     LLCV_DEBUG() << "end" << std::endl;
@@ -248,33 +245,56 @@ namespace llcv {
     ly_proton_electron_v[0] = 19200;
     ly_proton_electron_v[1] = 20000;
     
-    std::vector<const larlite::track*> proton_electron_v;
+    std::vector<const larlite::track*> proton_electron_v(2,nullptr);
     proton_electron_v[0] = &proton_track;
     proton_electron_v[1] = &electron_track;
+
 
     for(size_t tid=0; tid < proton_electron_v.size(); ++tid) {
       
       const auto& track = *(proton_electron_v[tid]);
-      const auto ly = ly_proton_electron_v[tid];
-
-      for(size_t pid=0; pid < proton_track.NumberTrajectoryPoints(); ++pid) {
-
-	const auto& loc  = track.LocationAtPoint(pid);
-	float dedx = track.DQdxAtPoint(pid);
+      const auto ly     = ly_proton_electron_v[tid];
       
-	if (dedx!=0) continue;
+      bool has_yplane = false;
+      size_t npts = track.NumberdQdx((larlite::geo::View_t)2);
+
+      if ( npts > 0) {
+	has_yplane = true;
+      } 
+      else {
+	has_yplane = false;
+	npts = track.NumberdQdx((larlite::geo::View_t)1);
+      }
+
+      LLCV_DEBUG() << "@tid=" << tid << " npts=" << npts << " yplane=" << (int)has_yplane << std::endl;
+
+      const TVector3* loc_ptr = nullptr;
+      float dedx = -1;
+
+      for(size_t pid=0; pid < npts; ++pid) {
+	
+	if (has_yplane) {
+	  loc_ptr = &(track.LocationAtPoint(pid)); 
+	  dedx    = track.DQdxAtPoint(pid,(larlite::geo::View_t)2);
+	}
+	else {
+	  loc_ptr = &(track.DirectionAtPoint(pid));
+	  dedx    = track.DQdxAtPoint(pid,(larlite::geo::View_t)1);
+	}
+
+	if (dedx==0) continue;
       
 	dedx /= fPXtoMEV;
       
 	float numphotons = dedx * ly;
 
-	LLCV_DEBUG() << "@tid=" << tid << " track: (" << loc.X() << "," << loc.Y() << "," << loc.Z() << ") numphotons=" << numphotons << std::endl;
-
-	flashana::QPoint_t qpt( loc.X(), loc.Y(), loc.Z(), numphotons );
+	flashana::QPoint_t qpt( loc_ptr->X(), loc_ptr->Y(), loc_ptr->Z(), numphotons );
 	qinteraction.emplace_back( std::move(qpt) );
-      }
-    }    
 
+	LLCV_DEBUG() << "@tid=" << tid << ": (" << loc_ptr->X() << "," << loc_ptr->Y() << "," << loc_ptr->Z() << ") dedx=" << dedx << std::endl;
+      }
+
+    } // end track loop
     
     return qinteraction;
   }

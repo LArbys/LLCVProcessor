@@ -50,11 +50,11 @@ driver.AddSelection(selection);
 # process
 proc.add_llcv_ana(imod)
 
-proc.configure(CONFIG))
+proc.configure(CONFIG)
 proc.dataco().set_outputfile(os.path.join(OUT_DIR, "aho.root"),"larcv")
 
-proc.add_lcv_input_file(SSNET_FILE)
-proc.add_lcv_input_file(VTX_FILE)
+proc.add_lcv_input_file(SUPERA_FILE)
+proc.add_lcv_input_file(PGRAPH_FILE)
 proc.add_ll_input_file(FLASH_FILE)
 proc.add_ll_input_file(TRK_FILE)
 

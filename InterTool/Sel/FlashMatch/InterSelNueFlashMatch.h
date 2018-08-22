@@ -60,10 +60,6 @@ namespace llcv {
     // -----------------------------
     // running parameters
     larlitecv::GeneralFlashMatchAlgo* genflashmatch;
-    float shower_correction_factor;
-    float fmax_hit_radius;
-    bool  isMC;
-    bool  fSaveHistograms;
     
     flashana::QCluster_t build1e1pQCluster(const larlite::track& trk1, 
 					   const larlite::track& trk2);

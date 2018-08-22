@@ -384,8 +384,6 @@ namespace llcv {
   }
   
   
-  
-  
   void SplitLineParameters(Object2DCollection& obj_col,
 			   const std::array<cv::Mat,3>& cimg_v,
 			   cv::Mat& white_img) {
@@ -517,9 +515,60 @@ namespace llcv {
     
     return;
   }
+
+  void FillTrack(const Object2DCollection& obj_col,
+		 larlite::track& out_track) {
+    
+    const auto& start3d = obj_col.Start();
+
+    TVector3 dir3d(obj_col.dX(),
+		   obj_col.dY(),
+		   obj_col.dZ());
+
+    for(size_t plane=0; plane<3; ++plane) {
+      
+      std::vector<double> dqdx_v;
+      
+      if (plane==0) { // skip U plane
+	out_track.add_dqdx(dqdx_v); 
+	continue;
+      }
+
+      if (!obj_col.HasObject(plane)) {
+	out_track.add_dqdx(dqdx_v);
+	continue;
+      }
+      
+      const auto& obj2d = obj_col.PlaneObject(plane);
+
+      dqdx_v.reserve(obj2d.dQdxProfile().size());
+
+      for(size_t xid=0; xid < obj2d.dQdxProfile().size(); ++xid) {
+
+	auto dx = obj2d.dxProfile()[xid];
+
+	auto step3d = dir3d*dx;
+	
+	auto xyz = start3d + step3d;
+	
+	// retrieve plane 1 from "DirectionAtPoint(p)"
+	if (plane==1) 
+	  out_track.add_direction(xyz);
+	
+	// retrieve plane 2 from "TrajectoryAtPoint(p)"
+	if (plane==2) 
+	  out_track.add_vertex(xyz);
+
+	dqdx_v.push_back(obj2d.dQdxProfile()[xid]);
+      }
+      
+      out_track.add_dqdx(dqdx_v);
+    }
+
+    return;
+  }
   
 
 }
 
 #endif
-

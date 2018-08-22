@@ -10,6 +10,7 @@
 #include "LineExtension.h"
 #include "ShowerTools.h"
 #include "LArOpenCV/ImageCluster/AlgoClass/PixelScan3D.h"
+#include "DataFormat/track.h"
 
 namespace llcv {
 
@@ -73,10 +74,13 @@ namespace llcv {
   void ComputeLineParameters(Object2DCollection& obj_col,
 			     const std::array<cv::Mat,3>& cimg_v,
 			     cv::Mat& white_img);
-
+  
   void SplitLineParameters(Object2DCollection& obj_col,
 			   const std::array<cv::Mat,3>& cimg_v,
 			   cv::Mat& white_img);
+
+  void FillTrack(const Object2DCollection& obj_col,
+		 larlite::track& out_track);
 
 }
 

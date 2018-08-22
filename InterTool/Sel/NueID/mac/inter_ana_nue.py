@@ -1,14 +1,20 @@
 import os,sys,gc
 
-SSNET_FILE = str(sys.argv[1])
-VTX_FILE   = str(sys.argv[2])
-FLASH_FILE = str(sys.argv[3])
-SHR_FILE   = str(sys.argv[4])
-TRK_FILE   = str(sys.argv[5])
-INTER_FILE = str(sys.argv[6])
-IS_MC      = int(str(sys.argv[7]))
-OUT_DIR    = str(sys.argv[8])
-#EVENT = int(sys.argv[9])
+if len(sys.argv) != 7:
+    print "SSNET_FILE = str(sys.argv[1])"
+    print "VTX_FILE   = str(sys.argv[2])"
+    print "RECO2D_FILE= str(sys.argv[3])"
+    print "NUM        = str(sys.argv[4])"
+    print "IS_MC      = int(sys.argv[5])"
+    print "OUT_DIR    = str(sys.argv[6])"
+    sys.exit(1)
+
+SSNET_FILE  = str(sys.argv[1])
+VTX_FILE    = str(sys.argv[2])
+RECO2D_FILE = str(sys.argv[3])
+NUM         = str(sys.argv[4])
+IS_MC       = int(str(sys.argv[5]))
+OUT_DIR     = str(sys.argv[6])
 
 import ROOT
 from larlitecv import larlitecv
@@ -41,13 +47,11 @@ imod = llcv.InterModule()
 # configure the driver
 driver = imod.Driver()
 
-#NUM=1
-NUM = int(os.path.basename(VTX_FILE).split(".")[0].split("_")[-1])
-driver.SetOutputFilename("nueid_ana_%d.root" % NUM);
+driver.SetOutputFilename(os.path.join(OUT_DIR,"nueid_ana_%s.root" % NUM));
 
 selection = llcv.SelNueID()
 selection.SetIsMC(IS_MC)
-#selection.SetDebug(True)
+selection.SetDebug(True)
 
 driver.AddSelection(selection);
 
@@ -59,19 +63,17 @@ if IS_MC == 1:
 else:
     proc.configure(os.path.join(BASE_PATH,"inter_nue_data.cfg"))
 
-
 proc.add_lcv_input_file(SSNET_FILE)
 proc.add_lcv_input_file(VTX_FILE)
-#proc.add_ll_input_file(FLASH_FILE)
-#proc.add_ll_input_file(SHR_FILE)
-#proc.add_ll_input_file(TRK_FILE)
+proc.add_ll_input_file(RECO2D_FILE)
 
-#proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%d.root" % NUM))
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "nueid_lcv_out_%d.root" % NUM),"larcv")
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "nueid_lcv_out_%s.root" % NUM),"larcv")
+proc.set_output_ll_name(os.path.join(OUT_DIR,"nueid_ll_out_%s.root" % NUM))
 
 proc.initialize()
 
 #proc.batch_process_lcv_reverse(16,1)
+#proc.batch_process_lcv_reverse(0,1)
 proc.batch_process_lcv_reverse()
 
 proc.finalize()
