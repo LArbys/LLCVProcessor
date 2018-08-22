@@ -19,8 +19,10 @@ OUTFILE = os.path.join(OUTDIR,"mc_information_%s.root" % NUM)
 
 my_proc = fmwk.ana_processor()
 
-if MCINFO_FILE != "INVALID":
-    my_proc.add_input_file(MCINFO_FILE)
+if MCINFO_FILE == "INVALID":
+    sys.exit(0) 
+
+my_proc.add_input_file(MCINFO_FILE)
 
 my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 my_proc.set_ana_output_file(OUTFILE)
