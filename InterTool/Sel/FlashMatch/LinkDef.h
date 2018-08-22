@@ -4,5 +4,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class llcv::InterSelFlashMatch+;
+#pragma link C++ class llcv::InterSelNueFlashMatch+;
 
 #endif
