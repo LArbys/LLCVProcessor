@@ -34,7 +34,9 @@ namespace llcv {
 
     std::string _track_vertex_prod;
     std::string _shower_vertex_prod;
-    std::string _shower_shower_prod;
+
+    std::string _track_ass_prod;
+    std::string _shower_ass_prod;
 
     std::string _opflash_prod;
 

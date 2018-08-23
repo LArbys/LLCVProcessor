@@ -33,10 +33,12 @@ namespace llcv {
     _track_vertex_prod  = cfg.get<std::string>("TrackVertexProducer");
     _shower_vertex_prod = cfg.get<std::string>("ShowerVertexProducer");
     
-    _shower_shower_prod = cfg.get<std::string>("ShowerShowerProducer");
+    _track_ass_prod   = cfg.get<std::string>("TrackAssProducer");
+    _shower_ass_prod = cfg.get<std::string>("ShowerAssProducer");
     _opflash_prod       = cfg.get<std::string>("OpFlashProducer");
     _rawhit_prod        = cfg.get<std::string>("HitProducer","");
 
+    LLCV_DEBUG() << "....................." << std::endl;
     LLCV_DEBUG() << "adc_img_prod........." << _adc_img_prod << std::endl;
     LLCV_DEBUG() << "trk_img_prod........." << _trk_img_prod << std::endl;
     LLCV_DEBUG() << "shr_img_prod........." << _shr_img_prod << std::endl;
@@ -45,8 +47,11 @@ namespace llcv {
     LLCV_DEBUG() << "pixel_prod..........." << _pixel_prod << std::endl;
     LLCV_DEBUG() << "track_vertex_prod...." << _track_vertex_prod << std::endl;
     LLCV_DEBUG() << "shower_vertex_prod..." << _shower_vertex_prod << std::endl;
+    LLCV_DEBUG() << "track_ass_prod....." << _track_ass_prod << std::endl;
+    LLCV_DEBUG() << "shower_shower_prod..." << _shower_ass_prod << std::endl;
     LLCV_DEBUG() << "opflash_prod........." << _opflash_prod << std::endl;
     LLCV_DEBUG() << "rawhit_prod.........." << _rawhit_prod << std::endl;
+    LLCV_DEBUG() << "....................." << std::endl;
     
     _epsilon = cfg.get<float>("EPS",1e-5);
 
@@ -190,8 +195,15 @@ namespace llcv {
     larlite::event_track *ev_track = nullptr;
     std::vector<std::vector<unsigned int> > ass_track_vv;
     
-    if (ev_track_vertex)
-      ass_track_vv = sto.find_one_ass(ev_track_vertex->id(), ev_track, ev_track_vertex->name());
+    if (ev_track_vertex) {
+      ass_track_vv = sto.find_one_ass(ev_track_vertex->id(), ev_track, _track_ass_prod);
+      if (!ev_track) 
+	LLCV_DEBUG() << "Found no associated tracks"
+		     << "(" << _track_ass_prod << ")" 
+		     << " to vertex"
+		     << "(" << _track_vertex_prod << ")" << std::endl;
+    }
+
     
     // get showers, cluster, hits
     larlite::event_pfpart *ev_pfpart = nullptr;
@@ -208,7 +220,7 @@ namespace llcv {
       ass_pfpart_vv = sto.find_one_ass(ev_shower_vertex->id(), ev_pfpart, ev_shower_vertex->name());
     
     if (ev_pfpart)
-      ass_shower_vv = sto.find_one_ass(ev_pfpart->id(), ev_shower, _shower_shower_prod);
+      ass_shower_vv = sto.find_one_ass(ev_pfpart->id(), ev_shower, _shower_ass_prod);
 
     if (ev_shower)
       ass_cluster_vv = sto.find_one_ass(ev_shower->id(), ev_cluster, ev_shower->name());
@@ -246,7 +258,7 @@ namespace llcv {
 	auto vid  = _driver.AttachVertex(nullptr);
 	auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
 	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
-
+	
 	// attach all the hits	
 	if (ev_allhits!=nullptr) {
 	  for ( auto const& hit : *ev_allhits ) {
@@ -284,12 +296,15 @@ namespace llcv {
 	}
 
 	// attach tracks
-	const auto& ass_track_v = ass_track_vv[vtxid];
-	for(size_t trk_id=0; trk_id<ass_track_v.size(); ++trk_id) {
-	  auto track_id = ass_track_v[trk_id];
-	  auto& track = ev_track->at(track_id);
-	  auto tid = _driver.AttachTrack(vid,&track);
+	if (ev_track or !ass_track_vv.empty()) {
+	  const auto& ass_track_v = ass_track_vv[vtxid];
+	  for(size_t trk_id=0; trk_id<ass_track_v.size(); ++trk_id) {
+	    auto track_id = ass_track_v[trk_id];
+	    auto& track = ev_track->at(track_id);
+	    auto tid = _driver.AttachTrack(vid,&track);
+	  }
 	}
+	else LLCV_DEBUG() << "No associated tracks found!" << std::endl;
 
 	if (ev_allhits) {
 	  for ( auto const& hit : *ev_allhits ) {
