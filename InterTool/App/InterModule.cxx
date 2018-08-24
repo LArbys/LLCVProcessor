@@ -185,208 +185,206 @@ namespace llcv {
     LLCV_DEBUG() << "GOT VERTICES: pgraph=" << npgraph_vertex << " track=" << ntrack_vertex << " shower=" << nshower_vertex << std::endl;
     
     if (!num_vertex) {
-      LLCV_DEBUG() << "NO VERTEX... return" << std::endl;
-      return true;
-    }
-
-    LLCV_DEBUG() << "NUM VERTICES: " << num_vertex << std::endl;
     
-    // get tracks
-    larlite::event_track *ev_track = nullptr;
-    std::vector<std::vector<unsigned int> > ass_track_vv;
+      LLCV_DEBUG() << "NUM VERTICES: " << num_vertex << std::endl;
     
-    if (ev_track_vertex) {
-      ass_track_vv = sto.find_one_ass(ev_track_vertex->id(), ev_track, _track_ass_prod);
-      if (!ev_track) 
-	LLCV_DEBUG() << "Found no associated tracks"
-		     << "(" << _track_ass_prod << ")" 
-		     << " to vertex"
-		     << "(" << _track_vertex_prod << ")" << std::endl;
-    }
-
+      // get tracks
+      larlite::event_track *ev_track = nullptr;
+      std::vector<std::vector<unsigned int> > ass_track_vv;
     
-    // get showers, cluster, hits
-    larlite::event_pfpart *ev_pfpart = nullptr;
-    larlite::event_shower *ev_shower = nullptr;
-    larlite::event_cluster *ev_cluster = nullptr;
-    larlite::event_hit *ev_hit = nullptr;
-
-    std::vector<std::vector<unsigned int> > ass_pfpart_vv;
-    std::vector<std::vector<unsigned int> > ass_shower_vv;
-    std::vector<std::vector<unsigned int> > ass_cluster_vv;
-    std::vector<std::vector<unsigned int> > ass_hit_vv;
-
-    if(ev_shower_vertex)
-      ass_pfpart_vv = sto.find_one_ass(ev_shower_vertex->id(), ev_pfpart, ev_shower_vertex->name());
-    
-    if (ev_pfpart)
-      ass_shower_vv = sto.find_one_ass(ev_pfpart->id(), ev_shower, _shower_ass_prod);
-
-    if (ev_shower)
-      ass_cluster_vv = sto.find_one_ass(ev_shower->id(), ev_cluster, ev_shower->name());
-
-    if (ev_cluster)
-      ass_hit_vv = sto.find_one_ass(ev_cluster->id(), ev_hit, ev_cluster->name());
-
-    for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
-      
-      LLCV_DEBUG() << "@vtxid=" << vtxid << std::endl;
-
-      const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];
-      
-      const larlite::vertex* track_vertex_ptr = nullptr;
-      const larlite::vertex* shower_vertex_ptr = nullptr;
-      
-      if(ev_track_vertex){
-	track_vertex_ptr = &(*ev_track_vertex)[vtxid];
-	AssertEqual(*track_vertex_ptr,pgraph_vertex);
-      }
-      
-      if(ev_shower_vertex) {
-	shower_vertex_ptr = &(*ev_shower_vertex)[vtxid];
-	AssertEqual(*shower_vertex_ptr,pgraph_vertex);
-      }
-      
-      if(ev_track_vertex && ev_shower_vertex) {
-	AssertEqual(*track_vertex_ptr,*shower_vertex_ptr);      
-      }
-      
-      //
-      // only pgraph exists
-      //
-      if (!ev_track_vertex and !ev_shower_vertex) {
-	auto vid  = _driver.AttachVertex(nullptr);
-	auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-	auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
-	
-	// attach all the hits	
-	if (ev_allhits!=nullptr) {
-	  for ( auto const& hit : *ev_allhits ) {
-	    auto hid = _driver.AttachHit(vid,&hit);
-	  }
-	}
-	continue;
-      }
-
-      LLCV_DEBUG() << "Track and Shower vertex exists" << std::endl;
-      
-      size_t vid = kINVALID_SIZE;
-      size_t pgid = kINVALID_SIZE;
-      size_t pid = kINVALID_SIZE;
-
-      bool attached_opflash = false;
-      bool attached_hits    = false;
-
-      //
-      // track exists
-      //
       if (ev_track_vertex) {
-	// attach vertex & pgraph
-	vid  = _driver.AttachVertex(track_vertex_ptr);
-	pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-	
-	// attach particle
-	pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+	ass_track_vv = sto.find_one_ass(ev_track_vertex->id(), ev_track, _track_ass_prod);
+	if (!ev_track) 
+	  LLCV_DEBUG() << "Found no associated tracks"
+		       << "(" << _track_ass_prod << ")" 
+		       << " to vertex"
+		       << "(" << _track_vertex_prod << ")" << std::endl;
+      }
 
-	if(ev_opflash) {
-	  for(const auto& opflash : *ev_opflash) {
-	    _driver.AttachOpFlash(vid,&opflash);
+    
+      // get showers, cluster, hits
+      larlite::event_pfpart *ev_pfpart = nullptr;
+      larlite::event_shower *ev_shower = nullptr;
+      larlite::event_cluster *ev_cluster = nullptr;
+      larlite::event_hit *ev_hit = nullptr;
+
+      std::vector<std::vector<unsigned int> > ass_pfpart_vv;
+      std::vector<std::vector<unsigned int> > ass_shower_vv;
+      std::vector<std::vector<unsigned int> > ass_cluster_vv;
+      std::vector<std::vector<unsigned int> > ass_hit_vv;
+
+      if(ev_shower_vertex)
+	ass_pfpart_vv = sto.find_one_ass(ev_shower_vertex->id(), ev_pfpart, ev_shower_vertex->name());
+    
+      if (ev_pfpart)
+	ass_shower_vv = sto.find_one_ass(ev_pfpart->id(), ev_shower, _shower_ass_prod);
+
+      if (ev_shower)
+	ass_cluster_vv = sto.find_one_ass(ev_shower->id(), ev_cluster, ev_shower->name());
+
+      if (ev_cluster)
+	ass_hit_vv = sto.find_one_ass(ev_cluster->id(), ev_hit, ev_cluster->name());
+
+      for(size_t vtxid=0; vtxid < num_vertex; ++vtxid) {
+      
+	LLCV_DEBUG() << "@vtxid=" << vtxid << std::endl;
+
+	const auto& pgraph_vertex = ev_pgraph->PGraphArray()[vtxid];
+      
+	const larlite::vertex* track_vertex_ptr = nullptr;
+	const larlite::vertex* shower_vertex_ptr = nullptr;
+      
+	if(ev_track_vertex){
+	  track_vertex_ptr = &(*ev_track_vertex)[vtxid];
+	  AssertEqual(*track_vertex_ptr,pgraph_vertex);
+	}
+      
+	if(ev_shower_vertex) {
+	  shower_vertex_ptr = &(*ev_shower_vertex)[vtxid];
+	  AssertEqual(*shower_vertex_ptr,pgraph_vertex);
+	}
+      
+	if(ev_track_vertex && ev_shower_vertex) {
+	  AssertEqual(*track_vertex_ptr,*shower_vertex_ptr);      
+	}
+      
+	//
+	// only pgraph exists
+	//
+	if (!ev_track_vertex and !ev_shower_vertex) {
+	  auto vid  = _driver.AttachVertex(nullptr);
+	  auto pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+	  auto pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
+	
+	  // attach all the hits	
+	  if (ev_allhits!=nullptr) {
+	    for ( auto const& hit : *ev_allhits ) {
+	      auto hid = _driver.AttachHit(vid,&hit);
+	    }
 	  }
-	  attached_opflash = true;
+	  continue;
 	}
 
-	// attach tracks
-	if (ev_track or !ass_track_vv.empty()) {
-	  const auto& ass_track_v = ass_track_vv[vtxid];
-	  for(size_t trk_id=0; trk_id<ass_track_v.size(); ++trk_id) {
-	    auto track_id = ass_track_v[trk_id];
-	    auto& track = ev_track->at(track_id);
-	    auto tid = _driver.AttachTrack(vid,&track);
-	  }
-	}
-	else LLCV_DEBUG() << "No associated tracks found!" << std::endl;
+	LLCV_DEBUG() << "Track and Shower vertex exists" << std::endl;
+      
+	size_t vid = kINVALID_SIZE;
+	size_t pgid = kINVALID_SIZE;
+	size_t pid = kINVALID_SIZE;
 
-	if (ev_allhits) {
-	  for ( auto const& hit : *ev_allhits ) {
-	    auto hid = _driver.AttachHit(vid,&hit);
-	  }
-	  attached_hits = true;
-	  LLCV_DEBUG() << "Attached hits" << std::endl;
-	}
-	
-      } // end track
+	bool attached_opflash = false;
+	bool attached_hits    = false;
 
-
-      //
-      // shower exists
-      //
-      if (ev_shower_vertex) {
-
-	if (vid == kINVALID_SIZE)
-	  vid = _driver.AttachVertex(shower_vertex_ptr);
-	
-	if (pgid == kINVALID_SIZE)
+	//
+	// track exists
+	//
+	if (ev_track_vertex) {
+	  // attach vertex & pgraph
+	  vid  = _driver.AttachVertex(track_vertex_ptr);
 	  pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
-	  
-	if (pid == kINVALID_SIZE)
+	
+	  // attach particle
 	  pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
-	if(ev_opflash and !attached_opflash) {
-	  for(const auto& opflash : *ev_opflash) {
-	    _driver.AttachOpFlash(vid,&opflash);
+	  if(ev_opflash) {
+	    for(const auto& opflash : *ev_opflash) {
+	      _driver.AttachOpFlash(vid,&opflash);
+	    }
+	    attached_opflash = true;
 	  }
-	  attached_opflash = true;
-	}
 
-	if (ev_allhits and !attached_hits) {
-	  for ( auto const& hit : *ev_allhits ) {
-	    auto hid = _driver.AttachHit(vid,&hit);
+	  // attach tracks
+	  if (ev_track or !ass_track_vv.empty()) {
+	    const auto& ass_track_v = ass_track_vv[vtxid];
+	    for(size_t trk_id=0; trk_id<ass_track_v.size(); ++trk_id) {
+	      auto track_id = ass_track_v[trk_id];
+	      auto& track = ev_track->at(track_id);
+	      auto tid = _driver.AttachTrack(vid,&track);
+	    }
 	  }
-	  attached_hits = true;
-	}
+	  else LLCV_DEBUG() << "No associated tracks found!" << std::endl;
+
+	  if (ev_allhits) {
+	    for ( auto const& hit : *ev_allhits ) {
+	      auto hid = _driver.AttachHit(vid,&hit);
+	    }
+	    attached_hits = true;
+	    LLCV_DEBUG() << "Attached hits" << std::endl;
+	  }
 	
-	// attach shower cluster hit
-	const auto& ass_pfpart_v = ass_pfpart_vv[vtxid];
-	for( size_t pfp_id=0; pfp_id < ass_pfpart_v.size(); ++pfp_id) {
-	  const auto pfpart_id = ass_pfpart_v.at(pfp_id);
+	} // end track
 
-	  // edge case
-	  if (pfpart_id >= ass_shower_vv.size()) continue;
 
-	  const auto& ass_shower_v = ass_shower_vv.at(pfpart_id);
-	  for(size_t shr_id=0; shr_id < ass_shower_v.size(); ++ shr_id) {
-	    const auto shower_id = ass_shower_v.at(shr_id);
-	    const auto& shower = ev_shower->at(shower_id);
+	//
+	// shower exists
+	//
+	if (ev_shower_vertex) {
 
-	    // attach shower
-	    auto sid = _driver.AttachShower(vid,&shower);
+	  if (vid == kINVALID_SIZE)
+	    vid = _driver.AttachVertex(shower_vertex_ptr);
+	
+	  if (pgid == kINVALID_SIZE)
+	    pgid = _driver.AttachPGraph(vid,&pgraph_vertex);
+	  
+	  if (pid == kINVALID_SIZE)
+	    pid  = _driver.AttachParticles(vid,&pgraph_vertex,ev_pixel);
 
-	    const auto& ass_cluster_v = ass_cluster_vv.at(shower_id);
-	    for(size_t clu_id=0; clu_id < ass_cluster_v.size(); ++ clu_id) {
-	      const auto cluster_id = ass_cluster_v.at(clu_id);
-	      const auto& cluster= ev_cluster->at(cluster_id);
+	  if(ev_opflash and !attached_opflash) {
+	    for(const auto& opflash : *ev_opflash) {
+	      _driver.AttachOpFlash(vid,&opflash);
+	    }
+	    attached_opflash = true;
+	  }
 
-	      // attach cluster
-	      auto cid = _driver.AttachCluster(vid,sid,&cluster);
+	  if (ev_allhits and !attached_hits) {
+	    for ( auto const& hit : *ev_allhits ) {
+	      auto hid = _driver.AttachHit(vid,&hit);
+	    }
+	    attached_hits = true;
+	  }
+	
+	  // attach shower cluster hit
+	  const auto& ass_pfpart_v = ass_pfpart_vv[vtxid];
+	  for( size_t pfp_id=0; pfp_id < ass_pfpart_v.size(); ++pfp_id) {
+	    const auto pfpart_id = ass_pfpart_v.at(pfp_id);
+
+	    // edge case
+	    if (pfpart_id >= ass_shower_vv.size()) continue;
+
+	    const auto& ass_shower_v = ass_shower_vv.at(pfpart_id);
+	    for(size_t shr_id=0; shr_id < ass_shower_v.size(); ++ shr_id) {
+	      const auto shower_id = ass_shower_v.at(shr_id);
+	      const auto& shower = ev_shower->at(shower_id);
+
+	      // attach shower
+	      auto sid = _driver.AttachShower(vid,&shower);
+
+	      const auto& ass_cluster_v = ass_cluster_vv.at(shower_id);
+	      for(size_t clu_id=0; clu_id < ass_cluster_v.size(); ++ clu_id) {
+		const auto cluster_id = ass_cluster_v.at(clu_id);
+		const auto& cluster= ev_cluster->at(cluster_id);
+
+		// attach cluster
+		auto cid = _driver.AttachCluster(vid,sid,&cluster);
 	      
-	      const auto& ass_hit_v = ass_hit_vv.at(shower_id);
-	      for(size_t h_id=0; h_id < ass_hit_v.size() and !attached_hits; ++ h_id) {
-		const auto hit_id = ass_hit_v.at(h_id);
-		const auto& hit = ev_hit->at(hit_id);
+		const auto& ass_hit_v = ass_hit_vv.at(shower_id);
+		for(size_t h_id=0; h_id < ass_hit_v.size() and !attached_hits; ++ h_id) {
+		  const auto hit_id = ass_hit_v.at(h_id);
+		  const auto& hit = ev_hit->at(hit_id);
 		
-		// attach hit
-		auto hid = _driver.AttachHit(vid,cid,&hit);
-	      } // end hit
-	    } // end cluster
-	  } //end shrid
-	} //pfpart
+		  // attach hit
+		  auto hid = _driver.AttachHit(vid,cid,&hit);
+		} // end hit
+	      } // end cluster
+	    } //end shrid
+	  } //pfpart
 
-      } // end shower
+	} // end shower
 
-    } // end vertex
+      } // end vertex
     
-    _driver.Process();
+      _driver.Process();
     
+    }
 
     //
     // write out
@@ -426,7 +424,6 @@ namespace llcv {
 	    out_vertex[0] = -1;
 	    out_vertex[1] = -1;
 	    out_vertex[2] = -1;
-	    
 	  } else {
 	    const auto& par = pgraph_vertex.ParticleArray().front();
 	    out_vertex[0] = par.X();
@@ -452,7 +449,7 @@ namespace llcv {
       
 	ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_shower->id(), ass_vtx_to_shr_vv);
 	ev_inter_ass->set_association(ev_inter_vertex->id(), ev_inter_track->id(), ass_vtx_to_trk_vv);
-      }
+      } // end larlite
 
 
 
