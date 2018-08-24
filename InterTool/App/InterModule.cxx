@@ -184,7 +184,7 @@ namespace llcv {
 
     LLCV_DEBUG() << "GOT VERTICES: pgraph=" << npgraph_vertex << " track=" << ntrack_vertex << " shower=" << nshower_vertex << std::endl;
     
-    if (!num_vertex) {
+    if (num_vertex>0) {
     
       LLCV_DEBUG() << "NUM VERTICES: " << num_vertex << std::endl;
     
