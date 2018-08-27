@@ -43,6 +43,9 @@ attach_ssnet(proc)
 # attach dead wire maker
 attach_dead(proc)
 
+# attach the larlite writeout
+attach_writeout(proc)
+
 # intermodule
 imod = llcv.InterModule()
 
