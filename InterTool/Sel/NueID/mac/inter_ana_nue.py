@@ -33,6 +33,7 @@ sys.path.insert(0,os.path.join(TOP_DIR,"Sel"))
 
 from lib.ssnet_modules import attach_ssnet
 from lib.dead_modules import attach_dead
+from lib.writeout_modules import attach_writeout
 
 # proc
 proc = llcv.Processor()

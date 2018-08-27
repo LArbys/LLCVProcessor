@@ -37,6 +37,7 @@ sys.path.insert(0,os.path.join(TOP_DIR,"Sel"))
 
 from lib.ssnet_modules import attach_ssnet
 from lib.dead_modules import attach_dead
+from lib.writeout_modules import attach_writeout
 
 # proc
 proc = llcv.Processor()
@@ -46,6 +47,9 @@ attach_ssnet(proc)
 
 # attach dead wire maker
 attach_dead(proc)
+
+# attach the larlite writeout
+attach_writeout(proc)
 
 # intermodule
 imod = llcv.InterModule()
