@@ -2,19 +2,19 @@ import ROOT
 from larlite import larlite as ll
 from larcv import larcv as lcv
 
-def LL_InterWriteOut():
-    name = "LL_InterWriteOut"
-    return ll.InterWriteOut()
+def InterWriteOutLL():
+    name = "InterWriteOutLL"
+    return ll.InterWriteOutLL()
 
-def LC_InterWriteOut():
-    name = "LC_InterWriteOut"
-    return lcv.InterWriteOut(name)
+def InterWriteOutLC():
+    name = "InterWriteOutLC"
+    return lcv.InterWriteOutLC(name)
 
 def attach_writeout(proc):
-    ll_writeout = LL_InterWriteOut()
+    ll_writeout = InterWriteOutLL()
     proc.add_ll_ana(ll_writeout)
 
-    lc_writeout = LC_InterWriteOut()
+    lc_writeout = InterWriteOutLC()
     proc.add_lc_proc(lc_writeout)
 
     return
