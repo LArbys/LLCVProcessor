@@ -26,8 +26,14 @@ namespace llcv {
     size_t NearestCosmicToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const;
 
     // distance between point and nearest cosmic end point
-    geo2d::Vector<float> NearestCosmicEndToPoint(const cv::Point_<int>& pt, float& distance) const;
-    geo2d::Vector<float> NearestCosmicEndToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const;
+    geo2d::Vector<float> NearestCosmicEndToPoint(const cv::Point_<int>& pt, 
+						 float& distance,
+						 size_t& cosmic_id) const;
+
+    geo2d::Vector<float> NearestCosmicEndToContour(const larocv::GEO2D_Contour_t& ctor,
+						   float& distance,
+						   size_t& cosmic_id) const;
+    
 
   private:
     

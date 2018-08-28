@@ -12,6 +12,6 @@
 #pragma link C++ class llcv::MatchObjectAlgoTimeIOU+;
 #pragma link C++ class llcv::ContourScan+;
 #pragma link C++ class llcv::SelNueID+;
-
+#pragma link C++ class llcv::SelMichelID+;
 
 #endif

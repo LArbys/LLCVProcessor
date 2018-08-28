@@ -216,7 +216,8 @@ namespace llcv {
     const auto& CosmicTag_ = CosmicTag_v[plane];
     for(const auto& polygon : polygon_v) {
       float distance = larocv::kINVALID_FLOAT;
-      auto id = CosmicTag_.NearestCosmicEndToContour(polygon.Contour(),distance);
+      size_t cosmic_id = larocv::kINVALID_SIZE;
+      auto id = CosmicTag_.NearestCosmicEndToContour(polygon.Contour(),distance,cosmic_id);
       ret = std::min(ret,distance);
     }
     return ret;
@@ -240,7 +241,8 @@ namespace llcv {
     float ret = larocv::kINVALID_FLOAT;
     const auto& CosmicTag_ = CosmicTag_v[plane];
     geo2d::Vector<int> pt_i((int)(pt.x+0.5),(int)(pt.y+0.5));
-    auto id = CosmicTag_.NearestCosmicEndToPoint(pt_i,ret);
+    size_t cosmic_id = larocv::kINVALID_SIZE;
+    auto id = CosmicTag_.NearestCosmicEndToPoint(pt_i,ret,cosmic_id);
     return ret;
   }
 

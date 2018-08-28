@@ -116,7 +116,7 @@ namespace llcv {
     return ret;
   }
 
-  geo2d::Vector<float> CosmicTag::NearestCosmicEndToPoint(const cv::Point_<int>& pt, float& distance) const {
+  geo2d::Vector<float> CosmicTag::NearestCosmicEndToPoint(const cv::Point_<int>& pt, float& distance, size_t& cosmic_id) const {
 
     geo2d::Vector<float> ret_pt(larocv::kINVALID_FLOAT,larocv::kINVALID_FLOAT);
 
@@ -134,6 +134,8 @@ namespace llcv {
       }
     }
     
+    cosmic_id = ret;
+
     if (ret == larocv::kINVALID_SIZE)
       return ret_pt;
 
@@ -159,7 +161,7 @@ namespace llcv {
   }
 
 
-  geo2d::Vector<float> CosmicTag::NearestCosmicEndToContour(const larocv::GEO2D_Contour_t& ctor, float& distance) const {
+  geo2d::Vector<float> CosmicTag::NearestCosmicEndToContour(const larocv::GEO2D_Contour_t& ctor, float& distance, size_t& cosmic_id) const {
     
     geo2d::Vector<float> ret_pt(larocv::kINVALID_FLOAT,larocv::kINVALID_FLOAT);
     size_t ret = larocv::kINVALID_SIZE;
@@ -173,7 +175,9 @@ namespace llcv {
 	ret = cid;
       }
     }
-      
+    
+    cosmic_id = ret;
+
     if (ret == larocv::kINVALID_SIZE)
       return ret_pt;
     

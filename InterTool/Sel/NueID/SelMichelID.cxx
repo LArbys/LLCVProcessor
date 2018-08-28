@@ -1,7 +1,7 @@
-#ifndef __SELNUEID_CXX__
-#define __SELNUEID_CXX__
+#ifndef __SELMICHELID_CXX__
+#define __SELMICHELID_CXX__
 
-#include "SelNueID.h"
+#include "SelMichelID.h"
 
 #include <iomanip>
 #include <sstream>
@@ -16,7 +16,7 @@
 
 namespace llcv {
 
-  void SelNueID::Configure (const larcv::PSet &pset) {
+  void SelMichelID::Configure (const larcv::PSet &pset) {
     set_verbosity((msg::Level_t)pset.get<int>("Verbosity",2));
     LLCV_DEBUG() << "start" << std::endl;
     _cropx = 400;
@@ -43,8 +43,8 @@ namespace llcv {
     LLCV_DEBUG() << "end" << std::endl;
   }
 
-  void SelNueID::Initialize() {
-    _outtree = new TTree("SelNueID","");
+  void SelMichelID::Initialize() {
+    _outtree = new TTree("SelMichelID","");
     AttachRSEV(_outtree);
     
     _outtree->Branch("vertex_x", &_vertex_x, "vertex_x/F");
@@ -54,7 +54,8 @@ namespace llcv {
     //
     // vertex information
     //
-    _outtree->Branch("n_par"       , &_n_par      , "n_par/I");
+    _outtree->Branch("n_par"       , &_n_par       , "n_par/I");
+    _outtree->Branch("n_vtx_cosmic", &_n_vtx_cosmic, "n_vtx_cosmic/I");
     _outtree->Branch("par_score_v" , &_par_score_v);
 
     _outtree->Branch("vtx_xing_U", &_vtx_xing_U, "vtx_xing_U/I");
@@ -77,10 +78,11 @@ namespace llcv {
     _outtree->Branch("vtx_linefrac_V_v", &_vtx_linefrac_V_v);
     _outtree->Branch("vtx_linefrac_Y_v", &_vtx_linefrac_Y_v);
     
-    _outtree->Branch("edge_dist_v"               , &_edge_dist_v);
-    _outtree->Branch("edge_n_cosmic_v"           , &_edge_n_cosmic_v);
-    _outtree->Branch("edge_cosmic_vtx_dist_v"    , &_edge_cosmic_vtx_dist_v);
-    _outtree->Branch("edge_cosmic_end_vtx_dist_v", &_edge_cosmic_end_vtx_dist_v);
+    _outtree->Branch("edge_dist_v"                , &_edge_dist_v);
+    _outtree->Branch("edge_n_cosmic_v"            , &_edge_n_cosmic_v);
+    _outtree->Branch("edge_cosmic_vtx_dist_v"     , &_edge_cosmic_vtx_dist_v);
+    _outtree->Branch("edge_cosmic_end_vtx_dist_v" , &_edge_cosmic_end_vtx_dist_v);
+    _outtree->Branch("edge_cosmic_end_vtx_valid_v", &_edge_cosmic_end_vtx_valid_v);
 
 
     //
@@ -491,9 +493,11 @@ namespace llcv {
     return;
   }
 
-  double SelNueID::Select() {
+  double SelMichelID::Select() {
     LLCV_DEBUG() << "start" << std::endl;
-
+    
+    ResetEvent();
+      
     float Vertex_X = Data().PGraph()->ParticleArray().front().X();
     float Vertex_Y = Data().PGraph()->ParticleArray().front().Y();
     float Vertex_Z = Data().PGraph()->ParticleArray().front().Z();
@@ -549,7 +553,8 @@ namespace llcv {
       _LineExtension.SetImageDimension(cimg_v[plane],dimg_v[plane]);
       _LineExtension.SetCosmicPixels(_CosmicTag.CosmicContours());
     }
-    
+
+
     larocv::data::Vertex3D vtx3d;
     vtx3d.x = Vertex_X;
     vtx3d.y = Vertex_Y;
@@ -575,7 +580,86 @@ namespace llcv {
 
       vertex_pt_v[plane] = cv::Point_<int>(px_y,px_x);
     }
+    
+    //
+    // cosmic rejection
+    //
+    size_t vtx_cosmic_ctr = 0;
+    std::array<size_t,3> vtx_cosmic_id_v;
+    std::array<int,3> vtx_cosmic_valid_v;
 
+    for(auto& v : vtx_cosmic_valid_v) v = 0;
+
+    for(size_t plane=0; plane<3; ++plane) {
+      const auto& vertex_pt = vertex_pt_v[plane];
+      const auto& _CosmicTag = _CosmicTag_v[plane];
+
+      auto& edge_n_cosmic = _edge_n_cosmic_v[plane];
+      auto& edge_cosmic_vtx_dist = _edge_cosmic_vtx_dist_v[plane];
+      auto& edge_cosmic_end_vtx_dist = _edge_cosmic_end_vtx_dist_v[plane];
+
+      edge_n_cosmic = (int)_CosmicTag.CosmicContours().size();
+
+      auto near_id = _CosmicTag.NearestCosmicToPoint(vertex_pt,edge_cosmic_vtx_dist);
+
+      auto& vtx_cosmic_id = vtx_cosmic_id_v[plane];
+      auto near_pt = _CosmicTag.NearestCosmicEndToPoint(vertex_pt,
+							edge_cosmic_end_vtx_dist,
+							vtx_cosmic_id);
+      if (edge_cosmic_end_vtx_dist < 20) {
+	_edge_cosmic_end_vtx_valid_v[plane] = 1;
+	vtx_cosmic_ctr+=1;
+      }
+      else 
+	_edge_cosmic_end_vtx_valid_v[plane] = 0;
+
+    }
+
+    // if there are no cosmics near the vertex on at least 2 planes
+    // do not recontruct
+    _n_vtx_cosmic = (int)vtx_cosmic_ctr;
+    if (vtx_cosmic_ctr < 2) {
+      _outtree->Fill();  
+      return 0.0;
+    }
+
+    // add back in the cosmic pixels for the cosmic 
+    // which comes close to the vertex @ cimg
+    for(size_t plane=0; plane<3; ++plane) {
+       const auto& vtx_cosmic_id = vtx_cosmic_id_v[plane];
+       
+       if (vtx_cosmic_id == larocv::kINVALID_SIZE) continue;
+ 
+       const auto& _CosmicTag = _CosmicTag_v[plane];
+       
+       const auto& vtx_cosmic_ctor = _CosmicTag.CosmicContours().at(vtx_cosmic_id);
+       
+       const auto& timg = timg_v[plane];
+       const auto& dimg = dimg_v[plane];
+       auto& cimg = cimg_v[plane];
+
+       // get the nonzero pixels inside this contour
+       _white_img.setTo(cv::Scalar(255));
+       auto vtx_cosmic_ctor_pix_v = larocv::FindNonZero(larocv::MaskImage(_white_img,vtx_cosmic_ctor,-1,false));
+       
+       for(const auto& vtx_cosmic_ctor_pix : vtx_cosmic_ctor_pix_v) {
+	 // check if in dead region, if so, add a 10
+	 auto row = vtx_cosmic_ctor_pix.y;
+	 auto col = vtx_cosmic_ctor_pix.x;
+	 
+	 int dead_px = (int)(dimg.at<uchar>(row,col));
+
+	 if (dead_px == 0) {
+	   cimg.at<uchar>(row,col) = (uchar)255;
+	   continue;
+	 }
+	 
+	 cimg.at<uchar>(row,col) = (uchar)(timg.at<uchar>(row,col));
+       } // end pixel point
+
+    } // end inserting cosmic track @ plane
+
+    
     //
     // Generate initial 2D clusters
     //
@@ -589,8 +673,13 @@ namespace llcv {
     std::array<geo2d::VectorArray<float>,3> edge_vv;
     
     float _distance_tol = 20;
-    
+
     for(size_t plane=0; plane<3; ++plane) {
+      
+      // skip the plane which does not have a incoming muon
+      if (_edge_cosmic_end_vtx_valid_v[plane] == 0)
+	continue;
+      
       auto& cimg         = cimg_v[plane];
       auto& close_id     = close_id_v[plane];
       auto& vertex_ctor  = vertex_ctor_v[plane];
@@ -704,7 +793,6 @@ namespace llcv {
       } // end nz_pt
 
     } // end plane
-
     
     //
     // extend the lines across dead regions, keep going until we run it out
@@ -989,63 +1077,18 @@ namespace llcv {
     }
     LLCV_DEBUG() << "...done" << std::endl;
 
-    ResetEvent();
-
-    // number of matched particles
-    _n_par = (int)obj_col_v.size();
-    _par_score_v.clear();
-    _par_score_v.resize(_n_par,-1*larocv::kINVALID_FLOAT);
-    for(size_t oid=0; oid<obj_col_v.size(); ++oid)
-      _par_score_v[oid] = obj_col_v[oid].Score();
-
-    for(size_t plane=0; plane<3; ++plane) {
-      for(const auto& object : object_vv[plane]) {
-	if (plane==0) {
-	  _vtx_xing_U = (int)object_vv[plane].size();
-	  _vtx_linelen_U_v.push_back(object.LineLength());
-	  _vtx_linefrac_U_v.push_back(object.LineFrac());
-	}
-	if (plane==1) {
-	  _vtx_xing_V = (int)object_vv[plane].size();
-	  _vtx_linelen_V_v.push_back(object.LineLength());
-	  _vtx_linefrac_V_v.push_back(object.LineFrac());
-	}
-	if (plane==2) {
-	  _vtx_xing_Y = (int)object_vv[plane].size();
-	  _vtx_linelen_Y_v.push_back(object.LineLength());
-	  _vtx_linefrac_Y_v.push_back(object.LineFrac());
-	}
-      }
-    }
-
-
+    //
     // distance of vertex contour to edge
+    //
     for(size_t plane=0; plane<3; ++plane) {
       const auto& vertex_ctor = vertex_ctor_v[plane];
       auto& edge_dist = _edge_dist_v[plane];
       edge_dist = MinimizeToEdge(vertex_ctor,_cropx,_cropy);
     }
 
-    // cosmic stuff
-    for(size_t plane=0; plane<3; ++plane) {
-      const auto& vertex_pt = vertex_pt_v[plane];
-      const auto& _CosmicTag = _CosmicTag_v[plane];
-
-      auto& edge_n_cosmic = _edge_n_cosmic_v[plane];
-      auto& edge_cosmic_vtx_dist = _edge_cosmic_vtx_dist_v[plane];
-      auto& edge_cosmic_end_vtx_dist = _edge_cosmic_end_vtx_dist_v[plane];
-
-      edge_n_cosmic = (int)_CosmicTag.CosmicContours().size();
-
-      auto near_id = _CosmicTag.NearestCosmicToPoint(vertex_pt,edge_cosmic_vtx_dist);
-
-      size_t cosmic_id = larocv::kINVALID_SIZE;
-      auto near_pt = _CosmicTag.NearestCosmicEndToPoint(vertex_pt,
-							edge_cosmic_end_vtx_dist,
-							cosmic_id);
-    }
-
-    // vertex stuff
+    //
+    // vertex charge + dead region check
+    //
     for(size_t plane=0; plane<3; ++plane) {
       // mask out the vertex from image
       const auto& vertex_pt = vertex_pt_v[plane];
@@ -1079,6 +1122,36 @@ namespace llcv {
 	_vtx_dead_Y   = near_dead;
       }
     }
+
+
+    // number of matched particles
+    _n_par = (int)obj_col_v.size();
+    _par_score_v.clear();
+    _par_score_v.resize(_n_par,-1*larocv::kINVALID_FLOAT);
+    for(size_t oid=0; oid<obj_col_v.size(); ++oid)
+      _par_score_v[oid] = obj_col_v[oid].Score();
+
+    for(size_t plane=0; plane<3; ++plane) {
+      for(const auto& object : object_vv[plane]) {
+	if (plane==0) {
+	  _vtx_xing_U = (int)object_vv[plane].size();
+	  _vtx_linelen_U_v.push_back(object.LineLength());
+	  _vtx_linefrac_U_v.push_back(object.LineFrac());
+	}
+	if (plane==1) {
+	  _vtx_xing_V = (int)object_vv[plane].size();
+	  _vtx_linelen_V_v.push_back(object.LineLength());
+	  _vtx_linefrac_V_v.push_back(object.LineFrac());
+	}
+	if (plane==2) {
+	  _vtx_xing_Y = (int)object_vv[plane].size();
+	  _vtx_linelen_Y_v.push_back(object.LineLength());
+	  _vtx_linefrac_Y_v.push_back(object.LineFrac());
+	}
+      }
+    }
+
+
 
 
     // object collection stuff
@@ -1315,69 +1388,7 @@ namespace llcv {
       out_inter = larcv::Pixel2DCluster(std::move(pixel_v));
     }
 
-    if (_ismc) {
-
-      auto seg_mat_v = Image().Image<cv::Mat>(kImageTrack,_cropx,_cropy);
-      
-      std::array<cv::Mat,3> electron_mat_v;
-      std::array<cv::Mat,3> muon_mat_v;
-      std::array<cv::Mat,3> proton_mat_v;
-
-      for(size_t plane=0; plane<3; ++plane) {
-	const auto& seg_mat = *(seg_mat_v[plane]);
-
-	auto& electron_mat = electron_mat_v[plane];
-	auto& muon_mat     = muon_mat_v[plane];
-	auto& proton_mat   = proton_mat_v[plane];
-	
-	electron_mat = larocv::BlankImage(seg_mat,0);
-	muon_mat     = larocv::BlankImage(seg_mat,0);
-	proton_mat   = larocv::BlankImage(seg_mat,0);
-
-	cv::inRange(seg_mat,3,3,electron_mat);
-	cv::inRange(seg_mat,6,6,muon_mat);
-	cv::inRange(seg_mat,9,9,proton_mat);
-      }
-
-      for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
-	const auto& obj_col = obj_col_v[oid];
-	for(size_t plane=0; plane<3; ++plane) {
-	  if (!obj_col.HasObject(plane)) continue;
-	  
-	  const auto& obj2d = obj_col.PlaneObject(plane);
-	  SetSegmentPlane(oid,plane);	  
-	  
-	  const auto& adc_mat      = timg_v[plane];
-
-	  const auto& electron_mat = electron_mat_v[plane];
-	  const auto& muon_mat     = muon_mat_v[plane];
-	  const auto& proton_mat   = proton_mat_v[plane];
-
-	  // get the area fraction
-	  float poly_area     = 0.0;
-	  float electron_area = 0.0;
-	  float muon_area     = 0.0;
-	  float proton_area   = 0.0;
-
-	  for(const auto& poly : obj2d.Polygons()) {
-	    poly_area     += larocv::CountNonZero(larocv::MaskImage(adc_mat,poly.Contour(),-1,false));
-	    electron_area += larocv::CountNonZero(larocv::MaskImage(electron_mat,poly.Contour(),-1,false));
-	    muon_area     += larocv::CountNonZero(larocv::MaskImage(muon_mat,poly.Contour(),-1,false));
-	    proton_area   += larocv::CountNonZero(larocv::MaskImage(proton_mat,poly.Contour(),-1,false));
-	  }
-
-	  *_par_electron_frac = electron_area / poly_area;
-	  *_par_muon_frac     = muon_area / poly_area;
-	  *_par_proton_frac   = proton_area / poly_area;
-
-	} // end plane
-	
-      } // end obj_col     
-      
-    } // end ismc
-
     _outtree->Fill();
-    
     
     //
     // Debug print out
@@ -1388,14 +1399,11 @@ namespace llcv {
 
       for(size_t plane=0; plane<3; ++plane) {
 	
-	auto write_img = timg_v[plane].clone();
-
-	auto& _CosmicTag = _CosmicTag_v[plane];
-
-	for(const auto& ctor : _CosmicTag.CosmicContours())
-	  write_img = larocv::MaskImage(write_img,ctor,-1,true);
+	auto write_img = cimg_v[plane].clone();
 
 	auto mat3d = As8UC3(write_img);
+
+	const auto& _CosmicTag = _CosmicTag_v[plane];
 
 	for(size_t oid=0; oid<obj_col_v.size(); ++oid) {
 	  const auto& obj_col = obj_col_v[oid];
@@ -1453,9 +1461,10 @@ namespace llcv {
   }
 
 
-  void SelNueID::ResetEvent() {
+  void SelMichelID::ResetEvent() {
     
-    _n_par     = -1.0*larocv::kINVALID_INT;
+    _n_par        = -1.0*larocv::kINVALID_INT;
+    _n_vtx_cosmic = -1.0*larocv::kINVALID_INT;
 
     _edge_dist_v.clear();
     _edge_dist_v.resize(3,-1);
@@ -1468,6 +1477,9 @@ namespace llcv {
 
     _edge_cosmic_end_vtx_dist_v.clear();
     _edge_cosmic_end_vtx_dist_v.resize(3,-1);
+
+    _edge_cosmic_end_vtx_valid_v.clear();
+    _edge_cosmic_end_vtx_valid_v.resize(3,-1);
 
     _vtx_xing_U = -1.0*larocv::kINVALID_INT;
     _vtx_xing_V = -1.0*larocv::kINVALID_INT;
@@ -1984,7 +1996,7 @@ namespace llcv {
     return;
   }
 
-  void SelNueID::ResizePlanePolygon(size_t sz) {
+  void SelMichelID::ResizePlanePolygon(size_t sz) {
 
     if(!_par_numberdefects_v) {
       LLCV_CRITICAL() << "ptr to _par_numberdefects_v is null" << std::endl;
@@ -2090,7 +2102,7 @@ namespace llcv {
     return;
   }
   
-  void SelNueID::SetParticle(size_t pid) {
+  void SelMichelID::SetParticle(size_t pid) {
 
     switch(pid) {
     case 0 : {
@@ -2146,7 +2158,7 @@ namespace llcv {
     return;
   }
 
-  void SelNueID::SetParticlePlane(size_t pid, size_t plane) {
+  void SelMichelID::SetParticlePlane(size_t pid, size_t plane) {
 
     LLCV_DEBUG() << "@pid=" << pid << " @plane=" << plane << std::endl;
 
@@ -2481,7 +2493,7 @@ namespace llcv {
     return;
   }
 
-  void SelNueID::SetSegmentPlane(size_t pid, size_t plane) {
+  void SelMichelID::SetSegmentPlane(size_t pid, size_t plane) {
 
     LLCV_DEBUG() << "@pid=" << pid << " @plane=" << plane << std::endl;
 
@@ -2542,7 +2554,7 @@ namespace llcv {
   }
 
   
-  void SelNueID::Finalize() {
+  void SelMichelID::Finalize() {
     LLCV_DEBUG() << "start" << std::endl;
     _outtree->Write();
     LLCV_DEBUG() << "end" << std::endl;
