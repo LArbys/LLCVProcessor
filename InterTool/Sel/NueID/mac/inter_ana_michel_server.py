@@ -1,20 +1,24 @@
 import os,sys,gc
 
-if len(sys.argv) != 7:
-    print "SSNET_FILE  = str(sys.argv[1])"
-    print "VTX_FILE    = str(sys.argv[2])"
-    print "RECO2D_FILE = str(sys.argv[3])"
-    print "CONFIG_FILE = str(sys.argv[4])"
-    print "NUM         = str(sys.argv[5])"
-    print "OUT_DIR     = str(sys.argv[6])"
+if len(sys.argv) != 9:
+    print "SUPERA_FILE = str(sys.argv[1])"
+    print "SSNET_FILE  = str(sys.argv[2])"
+    print "TAGGER_FILE = str(sys.argv[3])"
+    print "VTX_FILE    = str(sys.argv[4])"
+    print "RECO2D_FILE = str(sys.argv[5])"
+    print "CONFIG_FILE = str(sys.argv[6])"
+    print "NUM         = str(sys.argv[7])"
+    print "OUT_DIR     = str(sys.argv[8])"
     sys.exit(1)
 
-SSNET_FILE  = str(sys.argv[1])
-VTX_FILE    = str(sys.argv[2])
-RECO2D_FILE = str(sys.argv[3])
-CONFIG_FILE = str(sys.argv[4])
-NUM         = str(sys.argv[5])
-OUT_DIR     = str(sys.argv[6])
+SUPERA_FILE = str(sys.argv[1])
+SSNET_FILE  = str(sys.argv[2])
+TAGGER_FILE = str(sys.argv[3])
+VTX_FILE    = str(sys.argv[4])
+RECO2D_FILE = str(sys.argv[5])
+CONFIG_FILE = str(sys.argv[6])
+NUM         = str(sys.argv[7])
+OUT_DIR     = str(sys.argv[8])
 
 import ROOT
 from larlitecv import larlitecv
@@ -63,16 +67,19 @@ proc.add_llcv_ana(imod)
 
 proc.configure(CONFIG_FILE)
 
+proc.add_lcv_input_file(SUPERA_FILE)
 proc.add_lcv_input_file(SSNET_FILE)
+proc.add_lcv_input_file(TAGGER_FILE)
 proc.add_lcv_input_file(VTX_FILE)
+
 proc.add_ll_input_file(RECO2D_FILE)
 
-proc.dataco().set_outputfile(os.path.join(OUT_DIR, "michelid_lcv_out_%s.root" % NUM),"larcv")
 proc.set_output_ll_name(os.path.join(OUT_DIR,"michelid_ll_out_%s.root" % NUM))
+proc.dataco().set_outputfile(os.path.join(OUT_DIR, "michelid_lcv_out_%s.root" % NUM),"larcv")
 
 proc.initialize()
 
-proc.batch_process_lcv_reverse(30,1)
+proc.batch_process_lcv_reverse()
 
 proc.finalize()
 
