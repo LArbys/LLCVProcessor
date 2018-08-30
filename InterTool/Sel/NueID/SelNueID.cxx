@@ -788,17 +788,6 @@ namespace llcv {
 	  LLCV_DEBUG() << "new_edge=(" << new_edge.x << "," << new_edge.y << ")" << std::endl;
 	  ix+=1;
 	}
-	
-
-	// make sure the ege is _not_ outside the image
-	if (new_edge.x >= (float)_cropx) {
-	  LLCV_WARNING() << "new_edge.x=" << new_edge.x << " outside cropx" << std::endl;
-	  new_edge.x = _cropx - 1;
-	}
-	if (new_edge.y >= (float)_cropy)  {
-	  LLCV_WARNING() << "new_edge.y=" << new_edge.y << " outside cropy" << std::endl;
-	  new_edge.y = _cropy - 1;
-	}
 
 	Triangle new_triangle(start,inv_pt,inv_pt);
 	float nline_pixels = 0;
@@ -810,6 +799,16 @@ namespace llcv {
 					     npar_pixels,
 					     new_edge,
 					     _white_img);
+
+	// make sure the ege is _not_ outside the image
+	if (new_edge.x >= (float)_cropx) {
+	  LLCV_WARNING() << "new_edge.x=" << new_edge.x << " outside cropx" << std::endl;
+	  new_edge.x = _cropx - 1;
+	}
+	if (new_edge.y >= (float)_cropy)  {
+	  LLCV_WARNING() << "new_edge.y=" << new_edge.y << " outside cropy" << std::endl;
+	  new_edge.y = _cropy - 1;
+	}
 
 	float nratio = 0;
 	if (npar_pixels > 0)

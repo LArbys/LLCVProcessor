@@ -292,7 +292,7 @@ namespace llcv {
 	  auto charge = MatToImage2DPixel(nz_pt,aimg_v[pl],*(img_v[pl]));
 
 	  if (charge <= 0) continue;
-
+	  
 	  dqdx_v.at((size_t)(d3D * 3)) += charge;
 
 	  nhits++;
