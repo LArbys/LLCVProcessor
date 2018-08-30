@@ -877,7 +877,6 @@ namespace llcv {
 	  ix+=1;
 	}
 
-
 	Triangle new_triangle(start,inv_pt,inv_pt);
 	float nline_pixels = 0;
 	float npar_pixels  = 0;
@@ -890,11 +889,11 @@ namespace llcv {
 					     _white_img);
 
 	// make sure the ege is _not_ outside the image
-	if (new_edge.x >= (float)_cropx) {
+	if (new_edge.x >= (float)((_cropx)-0.5)) {
 	  LLCV_WARNING() << "new_edge.x=" << new_edge.x << " outside cropx" << std::endl;
 	  new_edge.x = _cropx - 1;
 	}
-	if (new_edge.y >= (float)_cropy)  {
+	if (new_edge.y >= (float)((_cropy)-0.5))  {
 	  LLCV_WARNING() << "new_edge.y=" << new_edge.y << " outside cropy" << std::endl;
 	  new_edge.y = _cropy - 1;
 	}
