@@ -432,13 +432,14 @@ namespace llcv {
       } // end "hit"
 
 
+      if (dx_v.empty()) continue;
+
       // sort the dx vector
       std::vector<size_t> idx_v(dx_v.size());
       std::iota(idx_v.begin(), idx_v.end(), 0);
 
       std::sort(idx_v.begin(), idx_v.end(),
 		[&dx_v](size_t i1, size_t i2) { return dx_v[i1] < dx_v[i2]; });
-      
       
       float min_dx = 0;
       float max_dx = dx_v.at(idx_v.back());
@@ -448,7 +449,7 @@ namespace llcv {
       size_t xlo = 0;
       size_t xhi = (size_t)((max_dx / ddx)+0.5)+1;
 
-      if (xhi == 0) return;
+      if (xhi == 0) continue;
 
       std::vector<float> dqdx_v(xhi,0.0);
       std::vector<float> ddx_v(xhi,0.0);
