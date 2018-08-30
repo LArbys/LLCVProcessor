@@ -50,7 +50,12 @@ namespace llcv {
 	  nhits++;
 	}
       }
-      
+     
+
+      if (Qtot==0)  {
+        LLCV_WARNING() << "Qtot=0!" << std::endl;
+        Qtot=1; 
+      }
       weightedDir.w /= Qtot;
       weightedDir.t /= Qtot;
 
