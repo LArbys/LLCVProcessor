@@ -35,9 +35,9 @@ namespace llcv {
     virtual float Match(const Object2D& obj1, const Object2D& obj2, const Object2D& obj3) = 0;
     
     bool  _match_three_planes;
+    bool  _require_plane2;
     float _three_planes_boost;
     float _plane_two_boost;
-    
     float _threshold;
     
   private:

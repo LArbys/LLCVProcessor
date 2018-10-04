@@ -9,10 +9,9 @@ namespace llcv {
     this->set_verbosity((msg::Level_t)(pset.get<unsigned short>("Verbosity", (unsigned short)(this->logger().level()))));
     // this->set_verbosity((msg::Level_t)0);
     _threshold = pset.get<float>("Threshold",0.1);
-
+    _require_plane2 = pset.get<bool>("RequirePlane2",false);
     _match_three_planes = pset.get<bool>  ("MatchThreePlanes",true);
     _three_planes_boost = pset.get<float> ("ThreePlanesBoost",1.1);
-    // _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
     _plane_two_boost    = pset.get<float> ("PlaneTwoBoost", 1.0);
   }
 

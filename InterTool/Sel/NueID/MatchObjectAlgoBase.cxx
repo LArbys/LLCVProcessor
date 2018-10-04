@@ -115,10 +115,16 @@ namespace llcv {
 	if (plane0 == 2 or plane1 == 2)
 	  score *= _plane_two_boost;
 
+	if (_require_plane2) {
+	  if (plane0 != 2 and plane1 != 2) {
+	    score = 0.0;
+	  }
+	}
+
 	LLCV_DEBUG() << "score=" << score << std::endl;
 	if (score<_threshold) continue;
 	LLCV_DEBUG() << "...pass" << std::endl;
-	
+
 	_MatchBookKeeper.Match(_match_v,score);
       }
       else if (comb_v.size()==3 && _match_three_planes) {
