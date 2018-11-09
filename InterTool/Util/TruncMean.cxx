@@ -4,7 +4,7 @@
 #include "TruncMean.h"
 #include <cassert>
 #include <stdexcept>
-
+#include <numeric>
 namespace llcv {
 
   float TruncMean::CalcIterativeTruncMean(std::vector<float> v, const size_t& nmin,
