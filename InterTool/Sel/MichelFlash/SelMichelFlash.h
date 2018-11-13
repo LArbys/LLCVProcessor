@@ -2,6 +2,7 @@
 #define __SELMICHELFLASH_H__
 
 #include "InterTool_Core/InterSelBase.h"
+#include <numeric>
 
 namespace llcv {
   

@@ -8,6 +8,7 @@
 #include "InterTool_Util/TruncMean.h"
 
 #include <array>
+#include <numeric>
 
 namespace llcv {
   
