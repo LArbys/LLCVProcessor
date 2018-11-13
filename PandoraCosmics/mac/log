@@ -1,0 +1,24 @@
+     [94m[DEBUG][00m [0m [94m<PandoraCosmics::configure>[00m PandoraCosmics.cxx::L20 start
+     [94m[DEBUG][00m [0m [94m<PandoraCosmics::configure>[00m PandoraCosmics.cxx::L22 end
+[DataCoodinator] Initializing
+[DataCoordinator] initializing filemanager for larcv
+Hash: 7a0385dbc076e03c21fcbaa4e4822006
+set idtreeproducer: wire dtype=image2d
+File ../inputs/larcv.root file-flavor: 36beac399a83fce15dab8e2f8d9031d3 number of events: 10: 7014 535 26751
+final list: ../inputs/larcv.root (ientry=10,rse=7014,535)
+  larcv loading 1 files.
+[DataCoordinator] initializing filemanager for larlite
+Hash: e0cf2cc4dc7aef3c4bd42e9315725af1
+[LarliteFileManager] File ../inputs/larlite_reco2d.root flavor-hash: 071dc23b6c86d1f7c0e341da87f6c4d2 number of events: 10: 7014 535 26751
+final list: ../inputs/larlite_reco2d.root (ientry=10,rse=7014,535)
+  larlite loading 1 files.
+[DataCoordinator] num larlite files=1
+[95m    [NORMAL]  [0m[95m<open> [0mOpening a file in READ mode: ../inputs/larlite_reco2d.root
+[DataCoordinator] num larcv files=1
+    [95m[NORMAL][00m [0m [94m<IOManager::prepare_input>[00m Opening a file in READ mode: ../inputs/larcv.root
+    [95m[NORMAL][00m [0m [94m<IOManager::initialize>[00m Prepared input with 10 entries...
+     [94m[DEBUG][00m [0m [94m<PandoraCosmics::initialize>[00m PandoraCosmics.cxx::L26 start
+     [94m[DEBUG][00m [0m [94m<PandoraCosmics::initialize>[00m PandoraCosmics.cxx::L33 end
+[DataCoordinator] LC RSEE=(7014,535,26751,0)
+[DataCoordinator] LL RSEE=(7014,535,26751,0)
+     [94m[DEBUG][00m [0m [94m<PandoraCosmics::process>[00m PandoraCosmics.cxx::L37 start
